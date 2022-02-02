@@ -10,6 +10,23 @@ import java.util.ArrayList;
  */
 
 public class Table implements ITable{
+
+    private static int numTables = 0; // tracks how many tables have been created; used to establish table ID
+
+    private String name;
+    private int ID;
+    private Attribute PrimaryKey;
+    private ArrayList<Attribute> Attributes;
+    private ArrayList<ForeignKey> ForeignKeys;
+    // ADD INDEX LIST HERE - FOURTH PHASE
+
+    public Table(){
+        ID = numTables;
+        numTables++;
+    }
+
+
+
     @Override
     public String getTableName() {
         return null;
@@ -22,7 +39,7 @@ public class Table implements ITable{
 
     @Override
     public int getTableId() {
-        return 0;
+        return ID;
     }
 
     @Override
