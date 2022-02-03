@@ -30,7 +30,7 @@ public record Attribute(String attributeName, String attributeType) {
      */
     @Override
     public String toString() {
-        return String.format("%s %s%s",
+        return String.format("%s %s",
                 getAttributeName(),
                 getAttributeType());
     }

@@ -20,61 +20,87 @@ public class Table implements ITable{
     private ArrayList<ForeignKey> ForeignKeys;
     // ADD INDEX LIST HERE - FOURTH PHASE
 
-    public Table(){
+    public Table(String name,ArrayList<Attribute> Attributes,Attribute PrimaryKey ){
         ID = numTables;
         numTables++;
+        this.Attributes = Attributes;
+        this.name = name;
+        this.PrimaryKey = PrimaryKey;
     }
 
 
 
     @Override
     public String getTableName() {
-        return null;
+        return this.name;
     }
 
     @Override
     public void setTableName(String name) {
-
+        this.name = name;
     }
 
     @Override
     public int getTableId() {
-        return ID;
+        return this.ID;
     }
 
     @Override
     public ArrayList<Attribute> getAttributes() {
-        return null;
+        return Attributes;
     }
 
     @Override
     public Attribute getAttrByName(String name) {
+
+        for(Attribute attribute:Attributes) {
+            if (attribute.attributeName().equals(name)) {
+                return attribute;
+            }
+        }
         return null;
     }
 
     @Override
     public Attribute getPrimaryKey() {
-        return null;
+        return this.PrimaryKey;
     }
 
     @Override
     public ArrayList<ForeignKey> getForeignKeys() {
-        return null;
+        return this.ForeignKeys;
     }
 
     @Override
     public boolean addAttribute(String name, String type) {
-        return false;
+        // test if attribute already exists
+        for(Attribute attribute:Attributes){
+            if (attribute.attributeName().equals(name)){
+                return false;
+            }
+        }
+        this.Attributes.add( new Attribute(name,type));
+        return true;
     }
 
     @Override
     public boolean dropAttribute(String name) {
+
+        int idx = 0;
+
+        for(Attribute attribute:Attributes){
+            if (attribute.attributeName().equals(name)){
+                this.Attributes.remove(idx);
+                return true;
+            }
+            idx++;
+        }
         return false;
     }
 
     @Override
     public boolean addForeignKey(ForeignKey fk) {
-        return false;
+        return this.ForeignKeys.add(fk);
     }
 
     @Override
