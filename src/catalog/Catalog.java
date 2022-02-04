@@ -2,42 +2,62 @@ package catalog;
 
 import common.Attribute;
 import common.ITable;
+import common.Table;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Catalog extends ACatalog{
 
-    public Catalog(String location, int pageSize, int pageBufferSize) {
+    // db location
+    private String location;
 
+    private int pageSize;
+    private int pageBufferSize;
+
+    private HashMap<String,ITable> CurrentTablesInBD;
+
+    public Catalog(String location, int pageSize, int pageBufferSize) {
+        this.location = location;
+        this.pageSize = pageSize;
+        this.pageBufferSize = pageBufferSize;
     }
 
     @Override
     public String getDbLocation() {
-        return null;
+        return this.location;
     }
 
     @Override
     public int getPageSize() {
-        return 0;
+        return this.pageSize;
     }
 
     @Override
     public int getPageBufferSize() {
-        return 0;
+        return this.pageBufferSize;
     }
 
     @Override
     public boolean containsTable(String tableName) {
-        return false;
+        return CurrentTablesInBD.containsKey(tableName);
     }
 
+
+    // add table to CurrentTablesInBD
     @Override
     public ITable addTable(String tableName, ArrayList<Attribute> attributes, Attribute primaryKey) {
+        // mk table
+
+        // add to CurrentTablesInBD  name --> table
         return null;
     }
 
     @Override
     public ITable getTable(String tableName) {
+        if (containsTable(tableName)){
+            return CurrentTablesInBD.get(tableName);
+        }
         return null;
     }
 
