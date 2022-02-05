@@ -1,3 +1,10 @@
+/*
+  Implementation of the catalog interface.
+  @author Aaron Berghash (amb8489@rit.edu)
+
+ */
+
+
 package catalog;
 
 import common.Attribute;
@@ -41,17 +48,23 @@ public class Catalog extends ACatalog{
 
     @Override
     public boolean containsTable(String tableName) {
-        return CurrentTablesInBD.containsKey(tableName);
+        return this.CurrentTablesInBD.containsKey(tableName);
     }
 
 
     // add table to CurrentTablesInBD
     @Override
     public ITable addTable(String tableName, ArrayList<Attribute> attributes, Attribute primaryKey) {
-        // mk table
+        // table already exist or not
+        if (containsTable(tableName)){
+            return null;
+        }
 
+        // mk table
+        ITable newTable = new Table(tableName, attributes, primaryKey);
         // add to CurrentTablesInBD  name --> table
-        return null;
+        this.CurrentTablesInBD.put(tableName, newTable);
+        return newTable;
     }
 
     @Override
