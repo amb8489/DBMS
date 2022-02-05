@@ -77,6 +77,12 @@ public class Catalog extends ACatalog{
 
     @Override
     public boolean dropTable(String tableName) {
+
+        // table already exist or not
+        if (containsTable(tableName)){
+            this.CurrentTablesInBD.remove(tableName);
+            return true;
+        }
         return false;
     }
 
