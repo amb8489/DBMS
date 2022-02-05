@@ -83,6 +83,8 @@ public class Catalog extends ACatalog{
             this.CurrentTablesInBD.remove(tableName);
             return true;
         }
+
+        // TODO remove all data stored in the table.
         return false;
     }
 
