@@ -11,6 +11,7 @@ import common.Attribute;
 import common.ITable;
 import common.Table;
 
+import java.text.Format;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -26,9 +27,9 @@ public class Catalog extends ACatalog{
     private HashMap<String,ITable> CurrentTablesInBD;
 
     public Catalog(String location, int pageSize, int pageBufferSize) {
-        this.location = location;
-        this.pageSize = pageSize;
-        this.pageBufferSize = pageBufferSize;
+
+        //todo if catalog exits in mem restore and return that, else make new and return that
+
     }
 
     @Override
@@ -57,6 +58,7 @@ public class Catalog extends ACatalog{
     public ITable addTable(String tableName, ArrayList<Attribute> attributes, Attribute primaryKey) {
         // table already exist or not
         if (containsTable(tableName)){
+            System.err.println(String.format("table with name %s is already taken",tableName));
             return null;
         }
 
@@ -72,6 +74,8 @@ public class Catalog extends ACatalog{
         if (containsTable(tableName)){
             return CurrentTablesInBD.get(tableName);
         }
+        System.err.println(String.format("table with name %s is does not exist",tableName));
+
         return null;
     }
 
@@ -81,10 +85,12 @@ public class Catalog extends ACatalog{
         // table already exist or not
         if (containsTable(tableName)){
             this.CurrentTablesInBD.remove(tableName);
+            // TODO  remove all pages and information stored about the table.
+
             return true;
         }
+        System.err.println(String.format("table with name %s is does not exist",tableName));
 
-        // TODO remove all data stored in the table.
         return false;
     }
 
