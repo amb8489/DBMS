@@ -14,7 +14,7 @@ public class Table implements ITable{
 
     private static int numTables = 0; // tracks how many tables have been created; used to establish table ID
 
-    private String name;
+    private String TableName;
     private int ID;
     private Attribute PrimaryKey;
     private ArrayList<Attribute> Attributes;
@@ -25,7 +25,7 @@ public class Table implements ITable{
         ID = numTables;
         numTables++;
         this.Attributes = Attributes;
-        this.name = name;
+        this.TableName = name;
         this.PrimaryKey = PrimaryKey;
     }
 
@@ -33,12 +33,12 @@ public class Table implements ITable{
 
     @Override
     public String getTableName() {
-        return this.name;
+        return this.TableName;
     }
 
     @Override
     public void setTableName(String name) {
-        this.name = name;
+        this.TableName = name;
     }
 
     @Override
@@ -77,10 +77,13 @@ public class Table implements ITable{
         // test if attribute already exists
         for(Attribute attribute:Attributes){
             if (attribute.attributeName().equals(name)){
+                System.err.println(String.format("Error: Cant add attribute [ %s ] because it already exists in table",name));
                 return false;
             }
         }
         this.Attributes.add( new Attribute(name,type));
+        // TODO tell the storage manager to add the attribute to the data stored in the table. (later phase)
+
         return true;
     }
 
@@ -92,16 +95,27 @@ public class Table implements ITable{
         for(Attribute attribute:Attributes){
             if (attribute.attributeName().equals(name)){
                 this.Attributes.remove(idx);
+                // TODO tell the storage manager to drop the attribute from the data stored in the table. (later phase)
                 return true;
             }
             idx++;
         }
+        System.err.println(String.format("Error: Cant drop attribute [ %s ] because it does not exist in the table",name));
         return false;
     }
 
     @Override
     public boolean addForeignKey(ForeignKey fk) {
-        return this.ForeignKeys.add(fk);
+
+        // test if fk already exists
+        for(ForeignKey foreignKey :ForeignKeys){
+            if (foreignKey.getAttrName().equals(fk.getAttrName())){
+                System.err.println("Error: Cant add ForeignKey because it already exists");
+                return false;
+            }
+        }
+        this.ForeignKeys.add(fk);
+        return true;
     }
 
     @Override
