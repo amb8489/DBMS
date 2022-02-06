@@ -39,6 +39,7 @@ public class PageBuffer {
 
 
 
+
     ///////////////////////methods////////////////////////////////////////////
 
     public Page getPageFromBuffer(String name){
@@ -46,6 +47,7 @@ public class PageBuffer {
         //todo
         // check if page is in the buffer already
         // if not call loadNewPageToBuffer() and the page will be at index
+        // remove page from buffer and append it to the end to enforce LRU order in pageBuffer
 
         return null;
     }
