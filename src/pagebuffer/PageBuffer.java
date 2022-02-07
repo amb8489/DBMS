@@ -45,9 +45,12 @@ public class PageBuffer {
     public Page getPageFromBuffer(String name){
 
         //todo
-        // check if page is in the buffer already
-        // if not call loadNewPageToBuffer() and the page will be at index
-        // remove page from buffer and append it to the end to enforce LRU order in pageBuffer
+        // -
+        // if page is not already in buffer,
+        //         call loadNewPageToBuffer(location) and the new page will be loc at pageBuffer[maxBufferSize]
+        // else:
+        //         remove page from buffer and append it to the end of pageBuffer
+        //         because now this page is the most recently used
 
         return null;
     }
