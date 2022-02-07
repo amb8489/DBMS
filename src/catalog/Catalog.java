@@ -26,6 +26,10 @@ public class Catalog extends ACatalog{
     // string table name    the table
     private HashMap<String,ITable> CurrentTablesInBD;
 
+
+    // tablename to the name of the pages that belong to that table
+    private HashMap<String,ArrayList<String>> tableToPages;
+
     public Catalog(String location, int pageSize, int pageBufferSize) {
 
         //todo if catalog exits in mem restore and return that, else make new and return that
@@ -114,6 +118,8 @@ public class Catalog extends ACatalog{
         return false;
     }
 
+
+    // ~/Desktop/DB/catalog/metadata
     @Override
     public boolean saveToDisk() {
 
