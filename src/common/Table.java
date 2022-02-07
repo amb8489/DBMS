@@ -122,4 +122,12 @@ public class Table implements ITable{
     public boolean addIndex(String attributeName) {
         return false;
     }
+
+    // TODO
+    // ~/Deskt op/DB/catalog/tables
+    public boolean saveToDisk() {
+
+        return false;
+
+    }
 }
