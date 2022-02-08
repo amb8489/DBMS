@@ -13,6 +13,10 @@ public class Page {
     private String IBelongTo;
     private ArrayList<ArrayList<Object>> pageRecords = new ArrayList<>();
 
+    public Page(String name) {
+        this.pageName = name;
+    }
+
     public ArrayList<ArrayList<Object>> getPageRecords() {
         return pageRecords;
     }

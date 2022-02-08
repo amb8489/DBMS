@@ -7,6 +7,7 @@ Aaron Berghash
 package pagebuffer;
 
 import common.Page;
+import common.Table;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -81,7 +82,11 @@ public class PageBuffer {
         if (pageBuffer.size() == maxBufferSize){
 
             // write LRU page to disk / check for successful page write
-            if(! pageBuffer.get(0).writeToDisk("TODO",null)){
+            Page p = pageBuffer.get(0);
+
+            //TODO fix null
+            Table table = null;
+            if(! p.writeToDisk(p.getPageName(),table)){
                 System.err.println("error loading new page to buffer [LRU write to disk failed]");
                 return false;
             }
@@ -89,19 +94,19 @@ public class PageBuffer {
             pageBuffer.remove(0);
         }
 
-        Page newPage = getPageFromDisk(name);
+        //TODO fix null
+        Table table = null;
+        Page newPage = getPageFromDisk(name,table);
         pageBuffer.add(newPage);
 
         return true;
     }
 
-    // TODO load requested page
-    public Page getPageFromDisk(String name){
+    public Page getPageFromDisk(String name, Table table){
+        Page newPage = new Page(name);
+        newPage.LoadFromDisk(name,table);
+        return newPage;
 
-
-        
-
-        return null;
     }
 
 

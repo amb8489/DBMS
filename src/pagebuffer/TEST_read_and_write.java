@@ -52,7 +52,7 @@ public class TEST_read_and_write {
 
 
         // making N records
-        int numrecs = 5;
+        int numrecs = 100;
         outputStream.write(ByteBuffer.allocate(4).putInt(numrecs).array());
 
         for (int i = 0; i < numrecs; i++) {
