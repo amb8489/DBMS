@@ -25,8 +25,16 @@ public class TEST_read_and_write {
         return salt.toString();
 
     }
-
-
+    private static ArrayList<Object> mkRandomRec() {
+        ArrayList<Object> row = new ArrayList<>();
+        row.add(69);
+        Random r = new Random();
+        row.add(r.nextDouble());
+        row.add(r.nextBoolean());
+        row.add(getSaltString(5));
+        row.add(getSaltString(Math.abs(r.nextInt()) % 10 + 1));
+        return row;
+    }
 
     public static void main(String[] args) throws IOException {
 
@@ -34,62 +42,66 @@ public class TEST_read_and_write {
         // todo TRY TO KEEP TRACK OF HOW MANY bytes WOULD BE half of the records to we ca split pages easy
 
 
-
         String[] schema = "Integer Double Boolean Char(5) varchar(10)".split(" ");
         String fileName = "src/pagebuffer/page1.txt";
-        DataOutputStream out = new DataOutputStream( new BufferedOutputStream(new FileOutputStream(fileName)));
-        ArrayList<ArrayList<Object>> data3 = new ArrayList<>();
+        DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fileName)));
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
 
-        // making records
+        // making N records
         int numrecs = 10;
-        ArrayList<byte[]> totalRecord= new ArrayList<>();
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
         for (int i = 0; i < numrecs; i++) {
-            ArrayList<Object> row = new ArrayList<>();
-            row.add(0);
-            Random r = new Random();
-            row.add(r.nextDouble());
-            row.add(r.nextBoolean());
-            row.add(getSaltString(5));
-            row.add(getSaltString(Math.abs(r.nextInt()) % 10 + 1));
-            data3.add(row);
-            System.out.println("record to store: "+ row);
 
-            // writing record to file using schema
+            //Make random record
+            ArrayList<Object> record = mkRandomRec();
+            System.out.println("record to store: " + record);
+
+            // make byte array from record
             System.out.println("writing record ");
 
-            for (int idx = 0; idx < row.size(); idx++) {
+            // look though reach attribute and check the schema for its type and convert it to its bytes
+            // and add it to outputStream btye array
+            for (int idx = 0; idx < record.size(); idx++) {
                 switch (schema[idx]) {
                     case "Integer":
-                        outputStream.write( ByteBuffer.allocate(4).putInt((Integer) row.get(idx)).array() );
+                        //add it to outputStream btye array
+                        outputStream.write(ByteBuffer.allocate(4).putInt((Integer) record.get(idx)).array());
                         break;
                     case "Double":
-                        outputStream.write(ByteBuffer.allocate(8).putDouble((Double) row.get(idx)).array());
+                        //add it to outputStream btye array
+
+                        outputStream.write(ByteBuffer.allocate(8).putDouble((Double) record.get(idx)).array());
                         break;
                     case "Boolean":
-                        outputStream.write(ByteBuffer.allocate(1).put(new byte[]{(byte) ((Boolean) row.get(idx)?1:0)}).array());
+                        //add it to outputStream btye array
+
+                        outputStream.write(ByteBuffer.allocate(1).put(new byte[]{(byte) ((Boolean) record.get(idx) ? 1 : 0)}).array());
                         break;
                     default:
+                        //add it to outputStream btye array
+
                         // char vs varchar
                         if (schema[idx].startsWith("Char")) {
-                            outputStream.write(((String) row.get(idx)).getBytes());
+                            outputStream.write(((String) record.get(idx)).getBytes());
                         } else {
-                            int len = ((String) row.get(idx)).length();
+                            // add the len of var char before we write var char
+                            int len = ((String) record.get(idx)).length();
                             outputStream.write(ByteBuffer.allocate(4).putInt(len).array());
-                            outputStream.write(((String) row.get(idx)).getBytes());
+                            outputStream.write(((String) record.get(idx)).getBytes());
                         }
                 }
             }
         }
-        // all records
-        byte record_out[] = outputStream.toByteArray( );
 
-        // write out records and close file
+
+        // all records added to byte array
+        byte[] record_out = outputStream.toByteArray();
+
+        // write out byte array to file
         out.write(record_out);
         out.close();
 
-
+        ////////////////////////// reading file given table schema
         System.out.println("reading record from page");
 
         ////////////// reading in knowing schema
@@ -98,11 +110,18 @@ public class TEST_read_and_write {
         // Create data input stream
         DataInputStream dataInputStr = new DataInputStream(inputStream);
 
+        // for each record stored
         System.out.println("\\\\\\\\\\");
         for (int i = 0; i < numrecs; i++) {
-            System.out.println("-------------record# "+i+"------------");
+            System.out.println("-------------record# " + i + "------------");
+
+            // read in int
             System.out.println(dataInputStr.readInt());
+
+            // read in double
             System.out.println(dataInputStr.readDouble());
+
+            // read in bool ... ect
             System.out.println(dataInputStr.readBoolean());
             System.out.println(new String(dataInputStr.readNBytes(5), StandardCharsets.UTF_8));
             int size = dataInputStr.readInt();
