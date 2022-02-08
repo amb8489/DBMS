@@ -45,11 +45,14 @@ public class TEST_read_and_write {
         String[] schema = "Integer Double Boolean Char(5) varchar(10)".split(" ");
         String fileName = "src/pagebuffer/page1.txt";
         DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fileName)));
+
+
+        // sorta like a page in a page buffer
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
 
         // making N records
-        int numrecs = 10;
+        int numrecs = 5;
         for (int i = 0; i < numrecs; i++) {
 
             //Make random record
