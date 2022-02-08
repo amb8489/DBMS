@@ -119,7 +119,7 @@ public class Catalog extends ACatalog{
     }
 
 
-    // ~/Desktop/DB/catalog/metadata
+    // ~/Desktop/DB/catalog/table
     @Override
     public boolean saveToDisk() {
 

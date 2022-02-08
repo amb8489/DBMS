@@ -8,7 +8,11 @@ package pagebuffer;
 
 import common.Page;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Set;
 
 
 // an in-memory buffer to store recently used pages
@@ -23,7 +27,6 @@ public class PageBuffer {
     // in order from least recently used to what was last used at the end
     // order enforced in loadNewPage()
     private static ArrayList<Page>pageBuffer = new ArrayList<>();
-
 
 
 
@@ -43,16 +46,15 @@ public class PageBuffer {
     ///////////////////////methods////////////////////////////////////////////
 
     public Page getPageFromBuffer(String name){
-
-        //todo
-        // -
-        // if page is not already in buffer,
-        //         call loadNewPageToBuffer(location) and the new page will be loc at pageBuffer[maxBufferSize]
-        // else:
-        //         remove page from buffer and append it to the end of pageBuffer
-        //         because now this page is the most recently used
-
-        return null;
+        int idx = 0;
+        for (Page p:pageBuffer){
+            if (p.getPageName().equals(name)){
+                pageBuffer.add(pageBuffer.remove(idx));
+                return pageBuffer.get(pageBuffer.size());
+            }
+            idx++;
+        }
+        return getPageFromBuffer(name);
     }
 
     //write all pages in the buffer to disk and empty th e buffer
@@ -73,7 +75,7 @@ public class PageBuffer {
 
 
 
-    public boolean loadNewPageToBuffer(String location){
+    public boolean loadNewPageToBuffer(String name){
 
         // if buffer is full
         if (pageBuffer.size() == maxBufferSize){
@@ -87,11 +89,19 @@ public class PageBuffer {
             pageBuffer.remove(0);
         }
 
-       // TODO load requested page and place in buffer
-        //Page newPage = getPageFromDisk(location)
-        //pageBuffer.add(newPage);
+        Page newPage = getPageFromDisk(name);
+        pageBuffer.add(newPage);
 
         return true;
+    }
+
+    // TODO load requested page
+    public Page getPageFromDisk(String name){
+
+
+        
+
+        return null;
     }
 
 

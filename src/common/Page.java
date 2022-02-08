@@ -5,7 +5,11 @@ public class Page {
 
 
 
+    private String pageName;
 
+    public String getPageName() {
+        return pageName;
+    }
 
     public boolean readFromDisk(String location) {
         System.err.println("ERROR: read from disk failed");
