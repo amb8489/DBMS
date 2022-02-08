@@ -31,24 +31,20 @@ public class TEST_read_and_write {
     public static void main(String[] args) throws IOException {
 
 
+        // todo TRY TO KEEP TRACK OF HOW MANY bytes WOULD BE half of the records to we ca split pages easy
 
 
-        //////////////////////////////////////////////////////////////////////////
-                                        //v1
-        //////////////////////////////////////////////////////////////////////////
+
         String[] schema = "Integer Double Boolean Char(5) varchar(10)".split(" ");
-
-        // TRY TO KEEP TRACK OF HOW MANY bytes WOULD BE half of the records to we ca split pages easy
-
         String fileName = "src/pagebuffer/page1.txt";
-
-        // out stream
         DataOutputStream out = new DataOutputStream( new BufferedOutputStream(new FileOutputStream(fileName)));
-
-        // making records
         ArrayList<ArrayList<Object>> data3 = new ArrayList<>();
 
-        int numrecs = 100;
+
+        // making records
+        int numrecs = 10;
+        ArrayList<byte[]> totalRecord= new ArrayList<>();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
         for (int i = 0; i < numrecs; i++) {
             ArrayList<Object> row = new ArrayList<>();
             row.add(0);
@@ -60,38 +56,39 @@ public class TEST_read_and_write {
             data3.add(row);
             System.out.println("record to store: "+ row);
 
-
             // writing record to file using schema
             System.out.println("writing record ");
 
             for (int idx = 0; idx < row.size(); idx++) {
                 switch (schema[idx]) {
                     case "Integer":
-                        out.writeInt((Integer) row.get(idx));
+                        outputStream.write( ByteBuffer.allocate(4).putInt((Integer) row.get(idx)).array() );
                         break;
                     case "Double":
-                        out.writeDouble((Double) row.get(idx));
+                        outputStream.write(ByteBuffer.allocate(8).putDouble((Double) row.get(idx)).array());
                         break;
                     case "Boolean":
-                        out.writeBoolean((Boolean) row.get(idx));
+                        outputStream.write(ByteBuffer.allocate(1).put(new byte[]{(byte) ((Boolean) row.get(idx)?1:0)}).array());
                         break;
                     default:
-
+                        // char vs varchar
                         if (schema[idx].startsWith("Char")) {
-                            out.writeBytes((String) row.get(idx));
+                            outputStream.write(((String) row.get(idx)).getBytes());
                         } else {
                             int len = ((String) row.get(idx)).length();
-//                            System.out.println(len);
-
-                            // storing len of var char
-                            out.writeInt(len);
-                            // storing varchar
-                            out.writeBytes((String) row.get(idx));
+                            outputStream.write(ByteBuffer.allocate(4).putInt(len).array());
+                            outputStream.write(((String) row.get(idx)).getBytes());
                         }
                 }
             }
         }
+        // all records
+        byte record_out[] = outputStream.toByteArray( );
+
+        // write out records and close file
+        out.write(record_out);
         out.close();
+
 
         System.out.println("reading record from page");
 
@@ -104,7 +101,6 @@ public class TEST_read_and_write {
         System.out.println("\\\\\\\\\\");
         for (int i = 0; i < numrecs; i++) {
             System.out.println("-------------record# "+i+"------------");
-
             System.out.println(dataInputStr.readInt());
             System.out.println(dataInputStr.readDouble());
             System.out.println(dataInputStr.readBoolean());
