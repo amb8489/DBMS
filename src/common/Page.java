@@ -112,6 +112,8 @@ public class Page {
             // byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
+            // WRITE num records to page first
+            outputStream.write(ByteBuffer.allocate(4).putInt(this.pageRecords.size()).array());
 
             System.out.println("storing record");
 
@@ -159,8 +161,6 @@ public class Page {
 
             // all records added to byte array
 
-            // WRITE num records to page first
-            outputStream.write(ByteBuffer.allocate(4).putInt(this.pageRecords.size()).array());
 
             byte[] record_out = outputStream.toByteArray();
 
