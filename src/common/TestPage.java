@@ -28,18 +28,15 @@ public class TestPage {
         attrs4.add(new Attribute("attr5", "Varchar(10)"));
         Attribute pk = attrs4.get(0);
 
-
+        
         ITable table1 = new Table(name4,attrs4,pk);
 
         // make page
         Page p = new Page();
 
         // read data from page
-        try {
-            p.readFromDisk("src/pagebuffer/page1.txt",table1);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            p.LoadFromDisk("src/pagebuffer/page1.txt",table1);
+
 
 
         // print out page records that were read in

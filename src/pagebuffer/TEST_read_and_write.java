@@ -52,7 +52,9 @@ public class TEST_read_and_write {
 
 
         // making N records
-        int numrecs = 5;
+        int numrecs = 100;
+        outputStream.write(ByteBuffer.allocate(4).putInt(numrecs).array());
+
         for (int i = 0; i < numrecs; i++) {
 
             //Make random record
@@ -114,7 +116,8 @@ public class TEST_read_and_write {
         DataInputStream dataInputStr = new DataInputStream(inputStream);
 
         // for each record stored
-        System.out.println("\\\\\\\\\\");
+        System.out.println("--------num recs:"+dataInputStr.readInt()+"----------");
+
         for (int i = 0; i < numrecs; i++) {
             System.out.println("-------------record# " + i + "------------");
 

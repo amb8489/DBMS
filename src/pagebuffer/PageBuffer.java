@@ -63,7 +63,7 @@ public class PageBuffer {
         //write all pages in buffer to disk
         for(Page page: pageBuffer){
             // check for successful page write
-            if(! page.writeToDisk()){
+            if(! page.writeToDisk("TODO",null)){
                 System.err.println("error purging buffer [write to disk failed]");
                 return false;
             }
@@ -81,7 +81,7 @@ public class PageBuffer {
         if (pageBuffer.size() == maxBufferSize){
 
             // write LRU page to disk / check for successful page write
-            if(! pageBuffer.get(0).writeToDisk()){
+            if(! pageBuffer.get(0).writeToDisk("TODO",null)){
                 System.err.println("error loading new page to buffer [LRU write to disk failed]");
                 return false;
             }
