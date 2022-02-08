@@ -57,8 +57,6 @@ public class TEST_read_and_write {
             System.out.println("record to store: " + record);
 
             // make byte array from record
-            System.out.println("writing record ");
-
             // look though reach attribute and check the schema for its type and convert it to its bytes
             // and add it to outputStream btye array
             for (int idx = 0; idx < record.size(); idx++) {
@@ -98,6 +96,8 @@ public class TEST_read_and_write {
         byte[] record_out = outputStream.toByteArray();
 
         // write out byte array to file
+        System.out.println("writing record ");
+
         out.write(record_out);
         out.close();
 
