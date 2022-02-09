@@ -207,10 +207,14 @@ public class Page {
         List<ArrayList<Object>> rightHalf = pageRecords.subList(half, pageRecords.size());
         this.pageRecords = pageRecords.subList(0, half-1);
 
-        // TODO set this pages ptr to point to this page
-        Page right = new Page(rightHalf);
+        //Set new page to point to whateber this page points to and then set this to point to new page
+        // like adding a node in a linked list
 
-        return right;
+        Page SplitPage = new Page(rightHalf);
+        SplitPage.ptrToNextPage = this.ptrToNextPage;
+        this.ptrToNextPage = SplitPage.pageName;
+
+        return SplitPage;
 
     }
 }
