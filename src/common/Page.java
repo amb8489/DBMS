@@ -207,7 +207,7 @@ public class Page {
         ArrayList<ArrayList<Object>> rightHalf = (ArrayList<ArrayList<Object>>) pageRecords.subList(half, pageRecords.size());
         this.pageRecords = (ArrayList<ArrayList<Object>>) pageRecords.subList(0, half-1);
 
-        // TODO set this pages ptr to point to this page name (numPages++)
+        // TODO set this pages ptr to point to this page
         Page right = new Page(rightHalf);
 
         return right;
