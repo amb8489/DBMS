@@ -40,18 +40,33 @@ public class TestPage {
 
 
         // print out page records that were read in
-        for(Object record:p.getPageRecords()){
-            System.out.println(record);
-        }
+//        for(Object record:p.getPageRecords()){
+//            System.out.println(record);
+//        }
 
         p.writeToDisk("src/pagebuffer/page1.txt",table1);
 
         p.LoadFromDisk("src/pagebuffer/page1.txt",table1);
 
         // print out page records that we just wrote in
-                for(Object record:p.getPageRecords()){
-                    System.out.println(record);
-                }
+//                for(Object record:p.getPageRecords()){
+//                    System.out.println(record);
+//                }
+
+
+
+        Page splitPage = p.split();
+
+
+        for(Object record:p.getPageRecords()){
+            System.out.println(record);
+        }
+        System.out.println("----------------------");
+        for(Object record:splitPage.getPageRecords()){
+            System.out.println(record);
+        }
+
+
 
     }
 }

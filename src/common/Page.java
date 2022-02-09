@@ -18,7 +18,7 @@ public class Page {
 
     private String IBelongTo;
 
-    private ArrayList<ArrayList<Object>> pageRecords = new ArrayList<>();
+    private List<ArrayList<Object>> pageRecords = new ArrayList<>();
 
     public Page() {
         numPages++;
@@ -26,7 +26,7 @@ public class Page {
         this.pageName = String.valueOf(numPages);
     }
 
-    public Page(ArrayList<ArrayList<Object>> records) {
+    public Page(List<ArrayList<Object>> records) {
 
         numPages++;
         this.currentSize = records.size();
@@ -37,7 +37,7 @@ public class Page {
     }
 
 
-    public ArrayList<ArrayList<Object>> getPageRecords() {
+    public List<ArrayList<Object>> getPageRecords() {
         return pageRecords;
     }
 
@@ -204,8 +204,8 @@ public class Page {
 
         int half = (int) Math.floor(pageRecords.size()/2.0);
 
-        ArrayList<ArrayList<Object>> rightHalf = (ArrayList<ArrayList<Object>>) pageRecords.subList(half, pageRecords.size());
-        this.pageRecords = (ArrayList<ArrayList<Object>>) pageRecords.subList(0, half-1);
+        List<ArrayList<Object>> rightHalf = pageRecords.subList(half, pageRecords.size());
+        this.pageRecords = pageRecords.subList(0, half-1);
 
         // TODO set this pages ptr to point to this page
         Page right = new Page(rightHalf);
