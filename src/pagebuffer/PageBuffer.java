@@ -64,7 +64,8 @@ public class PageBuffer {
         //write all pages in buffer to disk
         for(Page page: pageBuffer){
             // check for successful page write
-            if(! page.writeToDisk("TODO",null)){
+            // TODO fix null to be the tab that this page belongs to
+            if(! page.writeToDisk(page.getPageName(),null)){
                 System.err.println("error purging buffer [write to disk failed]");
                 return false;
             }
@@ -94,7 +95,7 @@ public class PageBuffer {
             pageBuffer.remove(0);
         }
 
-        //TODO fix null
+        //TODO fix null get table that this page belongs to
         Table table = null;
         Page newPage = getPageFromDisk(name,table);
         pageBuffer.add(newPage);
@@ -103,7 +104,7 @@ public class PageBuffer {
     }
 
     public Page getPageFromDisk(String name, Table table){
-        Page newPage = new Page(name);
+        Page newPage = new Page();
         newPage.LoadFromDisk(name,table);
         return newPage;
 

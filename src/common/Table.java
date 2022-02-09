@@ -1,4 +1,7 @@
 package common;
+import javax.imageio.IIOException;
+import java.io.*;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 /*
@@ -13,7 +16,6 @@ import java.util.ArrayList;
 public class Table implements ITable{
 
     private static int numTables = 0; // tracks how many tables have been created; used to establish table ID
-
     private String TableName;
     private int ID;
     private Attribute PrimaryKey;
@@ -125,9 +127,37 @@ public class Table implements ITable{
 
     // TODO
     // ~/Deskt op/DB/catalog/tables
-    public boolean saveToDisk() {
+    public boolean saveToDisk(String location) {
 
-        return false;
+        try {
 
+
+            DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(location)));
+
+            // byte array
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+            // WRITE table details
+
+            //TODO
+//            private Attribute PrimaryKey;
+//            private ArrayList<Attribute> Attributes;
+//            private ArrayList<ForeignKey> ForeignKeys;
+
+            outputStream.write(ByteBuffer.allocate(4).putInt(Table.numTables).array());
+            outputStream.write(this.TableName.getBytes());
+            outputStream.write(ByteBuffer.allocate(4).putInt(this.ID).array());
+
+
+            return true;
+
+        }catch (FileNotFoundException e) {
+            System.err.println("LOCATion NOT FOUND");
+            return false;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+
+        }
     }
 }

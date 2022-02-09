@@ -4,18 +4,38 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Page {
 
     private static int numPages = 0;
 
+    //todo add in pageSplit that left pts to right and right to null
+    private String ptrToNextPage;
     private String pageName;
+    private int MaxSize;
+    private int currentSize;
+
     private String IBelongTo;
+
     private ArrayList<ArrayList<Object>> pageRecords = new ArrayList<>();
 
-    public Page(String name) {
-        this.pageName = name;
+    public Page() {
+        numPages++;
+        this.currentSize = 0;
+        this.pageName = String.valueOf(numPages);
     }
+
+    public Page(ArrayList<ArrayList<Object>> records) {
+
+        numPages++;
+        this.currentSize = records.size();
+        this.pageName = String.valueOf(numPages);
+        this.pageRecords =  records;
+
+
+    }
+
 
     public ArrayList<ArrayList<Object>> getPageRecords() {
         return pageRecords;
@@ -174,7 +194,23 @@ public class Page {
             out.close();
             return true;
         } catch (IOException e) {
+            System.err.println("COULD NOT FILE PAGE");
             return false;
         }
+    }
+
+    // splits this page into two by returning one page
+    public Page split(){
+
+        int half = (int) Math.floor(pageRecords.size()/2.0);
+
+        ArrayList<ArrayList<Object>> rightHalf = (ArrayList<ArrayList<Object>>) pageRecords.subList(half, pageRecords.size());
+        this.pageRecords = (ArrayList<ArrayList<Object>>) pageRecords.subList(0, half-1);
+
+        // TODO set this pages ptr to point to this page name (numPages++)
+        Page right = new Page(rightHalf);
+
+        return right;
+
     }
 }
