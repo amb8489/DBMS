@@ -218,7 +218,7 @@ public class Page {
         int half = (int) Math.floor(pageRecords.size()/2.0);
 
         List<ArrayList<Object>> rightHalf = pageRecords.subList(half, pageRecords.size());
-        this.pageRecords = pageRecords.subList(0, half-1);
+        this.pageRecords = pageRecords.subList(0, half);
 
         //Set new page to point to whateber this page points to and then set this to point to new page
         // like adding a node in a linked list

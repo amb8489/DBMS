@@ -39,7 +39,7 @@ public class TestPage {
 
 
 
-        // print out page records that were read in
+//         print out page records that were read in
 //        for(Object record:p.getPageRecords()){
 //            System.out.println(record);
 //        }
@@ -48,12 +48,13 @@ public class TestPage {
 
         p.LoadFromDisk("src/pagebuffer/page1.txt",table1);
 
-        // print out page records that we just wrote in
-//                for(Object record:p.getPageRecords()){
-//                    System.out.println(record);
-//                }
+//         print out page records that we just wrote in
+                for(Object record:p.getPageRecords()){
+                    System.out.println(record);
+                }
 
 
+        System.out.println("--------TEST SPLITTING PAGE "+p.getPageName()+"----------");
 
         Page splitPage = p.split();
 
@@ -68,7 +69,21 @@ public class TestPage {
         for(Object record:splitPage.getPageRecords()){
             System.out.println(record);
         }
+        System.out.println("--------TEST SPLITTING PAGE "+splitPage.getPageName()+"----------");
 
+        Page splitPage2 = splitPage.split();
+
+        System.out.println("--------page "+splitPage.getPageName()+" points to "+splitPage.getPtrToNextPage()+"----------");
+
+        for(Object record:splitPage.getPageRecords()){
+            System.out.println(record);
+        }
+
+        System.out.println("--------page "+splitPage2.getPageName()+" points to "+splitPage2.getPtrToNextPage()+"----------");
+
+        for(Object record:splitPage2.getPageRecords()){
+            System.out.println(record);
+        }
 
 
     }
