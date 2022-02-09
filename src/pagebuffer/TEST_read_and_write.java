@@ -13,7 +13,7 @@ import java.util.Random;
 
 public class TEST_read_and_write {
 
-
+    // stole this for m the given tester to help make random strings
     private static String getSaltString(int length) {
         String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
         StringBuilder salt = new StringBuilder();
@@ -25,6 +25,7 @@ public class TEST_read_and_write {
         return salt.toString();
 
     }
+    // makes a random record with the schema  " Integer Double Boolean Char(5) varchar(10)"
     private static ArrayList<Object> mkRandomRec() {
         ArrayList<Object> row = new ArrayList<>();
         row.add(69);
@@ -39,22 +40,18 @@ public class TEST_read_and_write {
     public static void main(String[] args) throws IOException {
 
 
-        // todo TRY TO KEEP TRACK OF HOW MANY bytes WOULD BE half of the records to we ca split pages easy
-
-
         String[] schema = "Integer Double Boolean Char(5) varchar(10)".split(" ");
         String fileName = "src/pagebuffer/page1.txt";
+
+        // outstreams
         DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fileName)));
-
-
-        // sorta like a page in a page buffer
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
 
         // making N records
         int numrecs = 10;
 
-        //wriotng num records and ptr to next (null because first page)
+        //writng num records and ptr to next (null because first page)
         outputStream.write(ByteBuffer.allocate(4).putInt(numrecs).array());
         outputStream.write(ByteBuffer.allocate(4).putInt(-1).array());
 
@@ -92,8 +89,8 @@ public class TEST_read_and_write {
                             outputStream.write(((String) record.get(idx)).getBytes());
                         } else {
                             // add the len of var char before we write var char
-                            int len = ((String) record.get(idx)).length();
-                            outputStream.write(ByteBuffer.allocate(4).putInt(len).array());
+                            int VarChalen = ((String) record.get(idx)).length();
+                            outputStream.write(ByteBuffer.allocate(4).putInt(VarChalen).array());
                             outputStream.write(((String) record.get(idx)).getBytes());
                         }
                 }

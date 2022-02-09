@@ -133,13 +133,12 @@ public class Table implements ITable{
 
 
             DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(location)));
-
             // byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
             // WRITE table details
 
-            //TODO
+            //TODO write these out to disk
 //            private Attribute PrimaryKey;
 //            private ArrayList<Attribute> Attributes;
 //            private ArrayList<ForeignKey> ForeignKeys;
@@ -147,6 +146,8 @@ public class Table implements ITable{
             outputStream.write(ByteBuffer.allocate(4).putInt(Table.numTables).array());
             outputStream.write(this.TableName.getBytes());
             outputStream.write(ByteBuffer.allocate(4).putInt(this.ID).array());
+
+            out.write(outputStream.toByteArray());
 
 
             return true;
