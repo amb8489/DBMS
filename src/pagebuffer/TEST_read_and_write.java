@@ -53,7 +53,11 @@ public class TEST_read_and_write {
 
         // making N records
         int numrecs = 10;
+
+        //wriotng num records and ptr to next (null because first page)
         outputStream.write(ByteBuffer.allocate(4).putInt(numrecs).array());
+        outputStream.write(ByteBuffer.allocate(4).putInt(-1).array());
+
 
         for (int i = 0; i < numrecs; i++) {
 
@@ -117,6 +121,8 @@ public class TEST_read_and_write {
 
         // for each record stored
         System.out.println("--------num recs:"+dataInputStr.readInt()+"----------");
+        System.out.println("--------ptr to next page is:"+dataInputStr.readInt()+"----------");
+
 
         for (int i = 0; i < numrecs; i++) {
             System.out.println("-------------record# " + i + "------------");

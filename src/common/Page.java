@@ -10,8 +10,11 @@ public class Page {
 
     private static int numPages = 0;
 
-    //todo add in pageSplit that left pts to right and right to null
-    private String ptrToNextPage;
+
+    //negitive number means null
+    private int ptrToNextPage;
+
+
     private String pageName;
     private int MaxSize;
     private int currentSize;
@@ -36,6 +39,9 @@ public class Page {
 
     }
 
+    public int getPtrToNextPage() {
+        return ptrToNextPage;
+    }
 
     public List<ArrayList<Object>> getPageRecords() {
         return pageRecords;
@@ -72,8 +78,9 @@ public class Page {
 
             // reading all the records in page
 
-            // get num records in a page is first thing stored in page
+            // get num records and next ptr in a page is first thing stored in page
             int numRecs = dataInputStr.readInt();
+            this.ptrToNextPage = dataInputStr.readInt();
 
             //for each record
             for (int rn = 0; rn < numRecs; rn++) {
@@ -136,8 +143,14 @@ public class Page {
             // byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-            // WRITE num records to page first
+
+
+            // WRITE num records to page and name of next page (even if null)
             outputStream.write(ByteBuffer.allocate(4).putInt(this.pageRecords.size()).array());
+            outputStream.write(ByteBuffer.allocate(4).putInt(this.ptrToNextPage).array());
+
+
+
 
             System.out.println("storing record");
 
@@ -212,8 +225,7 @@ public class Page {
 
         Page SplitPage = new Page(rightHalf);
         SplitPage.ptrToNextPage = this.ptrToNextPage;
-        this.ptrToNextPage = SplitPage.pageName;
-
+        this.ptrToNextPage = Integer.parseInt(SplitPage.pageName);
         return SplitPage;
 
     }

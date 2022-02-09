@@ -57,11 +57,14 @@ public class TestPage {
 
         Page splitPage = p.split();
 
+        System.out.println("--------page "+p.getPageName()+" points to "+p.getPtrToNextPage()+"----------");
 
         for(Object record:p.getPageRecords()){
             System.out.println(record);
         }
-        System.out.println("----------------------");
+
+        System.out.println("--------page "+splitPage.getPageName()+" points to "+splitPage.getPtrToNextPage()+"----------");
+
         for(Object record:splitPage.getPageRecords()){
             System.out.println(record);
         }
