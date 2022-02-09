@@ -86,5 +86,19 @@ public class TestPage {
         }
 
 
+
+        Page splitPage3 = splitPage.split();
+
+        System.out.println("--------page "+splitPage.getPageName()+" points to "+splitPage.getPtrToNextPage()+"----------");
+
+        for(Object record:splitPage.getPageRecords()){
+            System.out.println(record);
+        }
+        System.out.println("--------page "+splitPage3.getPageName()+" points to "+splitPage3.getPtrToNextPage()+"----------");
+
+        for(Object record:splitPage3.getPageRecords()){
+            System.out.println(record);
+        }
+
     }
 }
