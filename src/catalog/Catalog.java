@@ -27,6 +27,8 @@ public class Catalog extends ACatalog {
     private int pageBufferSize;
     // string table name    the table
     private HashMap<String, ITable> CurrentTablesInBD;
+    private HashMap<Integer, String> PageToTable;
+
 
     //TODO store what pages belong to what tables.... should the table keep track of this
 
@@ -48,11 +50,13 @@ public class Catalog extends ACatalog {
             // we know this is the location b/c its given
             this.location = location;
 
-
             // TODO read in data and make new catalog
 
-            // failure to find page or read fail
+
+
         } catch (IOException e) {
+            // failure to find page or read fail
+
             System.out.println("NO catalog in disk.. making new catalog");
             this.location = location;
             this.pageSize = pageSize;
