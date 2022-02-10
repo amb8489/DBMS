@@ -11,11 +11,15 @@ import common.Attribute;
 import common.ITable;
 import common.Table;
 
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.text.Format;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class Catalog extends ACatalog{
+public class Catalog extends ACatalog {
 
     // db location
     private String location;
@@ -24,16 +28,31 @@ public class Catalog extends ACatalog{
     private int pageBufferSize;
 
     // string table name    the table
-    private HashMap<String,ITable> CurrentTablesInBD;
-
+    private HashMap<String, ITable> CurrentTablesInBD;
 
 
     public Catalog(String location, int pageSize, int pageBufferSize) {
 
-        //todo if catalog exits in mem restore and return that, else make new and return that
+        // atempt to read catalog file from DB if its there
+        System.out.println("attempting to find catalog in src/DB/catalog");
 
+
+        try {
+            System.out.println("found catalog .. restoring");
+
+
+
+            // read in streams
+            FileInputStream inputStream;
+            inputStream = new FileInputStream(location);
+            DataInputStream dataInputStr = new DataInputStream(inputStream);
+
+            // failure to find page or read fail
+        } catch (IOException e) {
+            System.out.println("could not restore from disk.. making new catalog");
+
+        }
     }
-
 
 
     @Override
@@ -61,8 +80,8 @@ public class Catalog extends ACatalog{
     @Override
     public ITable addTable(String tableName, ArrayList<Attribute> attributes, Attribute primaryKey) {
         // table already exist or not
-        if (containsTable(tableName)){
-            System.err.println(String.format("table with name %s is already taken",tableName));
+        if (containsTable(tableName)) {
+            System.err.println(String.format("table with name %s is already taken", tableName));
             return null;
         }
 
@@ -75,10 +94,10 @@ public class Catalog extends ACatalog{
 
     @Override
     public ITable getTable(String tableName) {
-        if (containsTable(tableName)){
+        if (containsTable(tableName)) {
             return CurrentTablesInBD.get(tableName);
         }
-        System.err.println(String.format("table with name %s is does not exist",tableName));
+        System.err.println(String.format("table with name %s is does not exist", tableName));
 
         return null;
     }
@@ -87,13 +106,13 @@ public class Catalog extends ACatalog{
     public boolean dropTable(String tableName) {
 
         // table already exist or not
-        if (containsTable(tableName)){
+        if (containsTable(tableName)) {
             this.CurrentTablesInBD.remove(tableName);
             // TODO  remove all pages and information stored about the table.
 
             return true;
         }
-        System.err.println(String.format("table with name %s is does not exist",tableName));
+        System.err.println(String.format("table with name %s is does not exist", tableName));
 
         return false;
     }

@@ -1,16 +1,7 @@
 package common;
 
-import catalog.ACatalog;
-import catalog.Catalog;
-import common.Attribute;
-import common.ITable;
-import storagemanager.AStorageManager;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Random;
-import java.util.Scanner;
 public class TestPage {
 
 
@@ -57,6 +48,9 @@ public class TestPage {
         System.out.println("--------TEST SPLITTING PAGE "+p.getPageName()+"----------");
 
         Page splitPage = p.split();
+        System.out.println(p.currentSize);
+        System.out.println(splitPage.currentSize);
+
 
         System.out.println("--------page "+p.getPageName()+" points to "+p.getPtrToNextPage()+"----------");
 
@@ -99,6 +93,7 @@ public class TestPage {
         for(Object record:splitPage3.getPageRecords()){
             System.out.println(record);
         }
+
 
     }
 }

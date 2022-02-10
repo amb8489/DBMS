@@ -6,8 +6,6 @@ import java.util.ArrayList;
 
 /*
   Implementation of the ITable interface.  The interface
-
-
   @author Kyle Ferguson (krf6081@rit.edu)
   @author Aaron Berghash (amb8489@rit.edu)
 
@@ -21,6 +19,7 @@ public class Table implements ITable{
     private Attribute PrimaryKey;
     private ArrayList<Attribute> Attributes;
     private ArrayList<ForeignKey> ForeignKeys;
+
     // ADD INDEX LIST HERE - FOURTH PHASE
 
     public Table(String name,ArrayList<Attribute> Attributes,Attribute PrimaryKey ){

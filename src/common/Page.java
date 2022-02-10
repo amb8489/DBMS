@@ -38,11 +38,6 @@ public class Page {
     public ITable IBelongTo = null;
 
 
-
-
-
-
-
     // makes the first new page
     public Page(ITable iBelongTo) {
         numPages++;
@@ -55,25 +50,21 @@ public class Page {
     }
 
     // used when splitting a page
-    public Page(List<ArrayList<Object>> records,ITable iBelongTo,int sizeInBytes) {
+    public Page(List<ArrayList<Object>> records, ITable iBelongTo, int sizeInBytes) {
 
         numPages++;
         this.pageName = String.valueOf(numPages);
-        this.pageRecords =  records;
+        this.pageRecords = records;
         this.IBelongTo = iBelongTo;
         this.currentSize = sizeInBytes;
     }
-
-
-
-
 
 
     public int getPtrToNextPage() {
         return ptrToNextPage;
     }
 
-    public List<ArrayList<Object>>  getPageRecords() {
+    public List<ArrayList<Object>> getPageRecords() {
         return pageRecords;
     }
 
@@ -129,10 +120,10 @@ public class Page {
             // first thing thats stored in a page is the num of records stored and its ptr to the next page in linked list
             int numRecs = dataInputStr.readInt();
             //update size 4 bytes
-            currentSize+=4;
+            currentSize += 4;
 
             this.ptrToNextPage = dataInputStr.readInt();
-            currentSize+=4;
+            currentSize += 4;
 
 
             //for each row in the page
@@ -149,16 +140,16 @@ public class Page {
                     switch (schema.get(idx)) {
                         case "Integer":
                             rec.add(dataInputStr.readInt());
-                            currentSize+=4;
+                            currentSize += 4;
                             break;
                         case "Double":
                             rec.add(dataInputStr.readDouble());
-                            currentSize+=8;
+                            currentSize += 8;
 
                             break;
                         case "Boolean":
                             rec.add(dataInputStr.readBoolean());
-                            currentSize+=1;
+                            currentSize += 1;
 
                             break;
                         default:
@@ -166,7 +157,7 @@ public class Page {
                             // we get a char(#)
                             if (schema.get(idx).startsWith("Char(")) {
                                 rec.add(new String(dataInputStr.readNBytes(charlen), StandardCharsets.UTF_8));
-                                currentSize+= (charlen);
+                                currentSize += (charlen);
 
                             } else {
                                 // var char should have an int before it telling how long the var char is
@@ -175,7 +166,7 @@ public class Page {
 
                                 // then read in that many bytes
                                 rec.add(new String(dataInputStr.readNBytes(VarCharsize), StandardCharsets.UTF_8));
-                                currentSize+= (VarCharsize) + 4;// 4 for the int we need to save for the varcahr
+                                currentSize += (VarCharsize) + 4;// 4 for the int we need to save for the varcahr
 
 
                             }
@@ -285,12 +276,12 @@ public class Page {
     }
 
     // splits this page into two and returns the a new page with the bottom half of the the data
-    public Page split(){
+    public Page split() {
 
         this.wasChanged = true;
 
         // find half way point
-        int half = (int) Math.floor(pageRecords.size()/2.0);
+        int half = (int) Math.floor(pageRecords.size() / 2.0);
 
         // split the records in two
         List<ArrayList<Object>> rightHalf = pageRecords.subList(half, pageRecords.size());
@@ -298,7 +289,7 @@ public class Page {
         this.pageRecords = pageRecords.subList(0, half);
 
 
-        int newPageSizeLeft = calcSizeOfRecords(this.pageRecords,this.IBelongTo);
+        int newPageSizeLeft = calcSizeOfRecords(this.pageRecords, this.IBelongTo);
         int newPageSizeRight = this.currentSize - newPageSizeLeft;
 
         //set new size for left
@@ -306,14 +297,13 @@ public class Page {
 
 
         // make new page
-        Page SplitPage = new Page(rightHalf,this.IBelongTo,newPageSizeRight);
+        Page SplitPage = new Page(rightHalf, this.IBelongTo, newPageSizeRight);
 
 
         //Set new page to point to whateber this page points to and then set this to point to new page
         // like adding a node in a linked list
         SplitPage.ptrToNextPage = this.ptrToNextPage;
         this.ptrToNextPage = Integer.parseInt(SplitPage.pageName);
-
 
 
         //TODO add new page to catalog
@@ -342,23 +332,23 @@ public class Page {
             for (int idx = 0; idx < record.size(); idx++) {
                 switch (schema.get(idx)) {
                     case "Integer":
-                        newSize+=4;
+                        newSize += 4;
                         break;
                     case "Double":
-                        newSize+=8;
+                        newSize += 8;
                         break;
                     case "Boolean":
-                        newSize+=1;
+                        newSize += 1;
                         break;
                     default:
 
                         // char(#)
                         if (schema.get(idx).startsWith("Char(")) {
-                            newSize+=1;
+                            newSize += 1;
                         } else {
                             // add the len of var char before we write var char
                             int VarCharlen = ((String) record.get(idx)).length();
-                            newSize+= (4+VarCharlen);
+                            newSize += (4 + VarCharlen);
                         }
                 }
             }

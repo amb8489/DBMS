@@ -3,10 +3,8 @@
 Aaron Berghash
 */
 
-
 package pagebuffer;
 
-import catalog.Catalog;
 import common.ITable;
 import common.Page;
 import common.Table;
@@ -25,35 +23,27 @@ public class PageBuffer {
 
     // in order from least recently used to what was last used at the end
     // order enforced in loadNewPage()
-    private static ArrayList<Page>pageBuffer = new ArrayList<>();
-
-
+    private static ArrayList<Page> pageBuffer = new ArrayList<>();
 
 
     ////////////////////////constructor///////////////////////////////////////
-    public PageBuffer(int pageBufferSize){
+    public PageBuffer(int pageBufferSize) {
         this.maxBufferSize = pageBufferSize;
     }
 
 
-
-
-
-
-
-
     ///////////////////////methods////////////////////////////////////////////
 
-    public Page getPageFromBuffer(String name,ITable table){
+    public Page getPageFromBuffer(String name, ITable table) {
         int idx = 0;
 
         // loooking to see if page we want is already loaded in the buffer
-        for (Page p:pageBuffer){
-            if (p.getPageName().equals(name)){
+        for (Page p : pageBuffer) {
+            if (p.getPageName().equals(name)) {
                 // to update LRU order
                 pageBuffer.add(pageBuffer.remove(idx));
                 //gets the last element in list
-                return pageBuffer.get(pageBuffer.size()-1);
+                return pageBuffer.get(pageBuffer.size() - 1);
             }
             idx++;
         }
@@ -61,14 +51,14 @@ public class PageBuffer {
         // if not found we need to load it in
         // loadNewPageToBuffer will place it in the buffer for us and auto make space and will place new page
         // where it should be in the array to keep LRU in order
-        return loadNewPageToBuffer(name,table);
+        return loadNewPageToBuffer(name, table);
     }
 
     //write all pages in the buffer to disk and empty th e buffer
-    public boolean PurgeBuffer(){
+    public boolean PurgeBuffer() {
 
         //write all pages in buffer to disk
-        for(Page page: pageBuffer){
+        for (Page page : pageBuffer) {
 
             if (page.isChanged()) {
                 // check for successful page write
@@ -84,16 +74,15 @@ public class PageBuffer {
     }
 
 
-
-    public Page loadNewPageToBuffer(String name, ITable table){
+    public Page loadNewPageToBuffer(String name, ITable table) {
 
         // if buffer is full
-        if (pageBuffer.size() == maxBufferSize){
+        if (pageBuffer.size() == maxBufferSize) {
 
             // write LRU page to disk / check for successful page write
             Page p = pageBuffer.get(0);
 
-            if(! p.writeToDisk(p.getPageName(),p.IBelongTo)){
+            if (!p.writeToDisk(p.getPageName(), p.IBelongTo)) {
                 System.err.println("error loading new page to buffer [LRU write to disk failed]");
                 return null;
             }
@@ -107,15 +96,11 @@ public class PageBuffer {
         return newPage;
     }
 
-    public Page getPageFromDisk(String name, Table table){
+    public Page getPageFromDisk(String name, Table table) {
         Page newPage = new Page(table);
-        newPage.LoadFromDisk(name,table);
+        newPage.LoadFromDisk(name, table);
         return newPage;
     }
-
-
-
-
 
 
 }
