@@ -11,6 +11,9 @@ public class Page {
     // number of pages in DB and also used as the name of the page
     private static int numPages = 0;
 
+    // WAS THE RECORDS CHANGED AT ALL FROM INSERT DELETE SPLIT ECT?
+    private boolean wasChanged = false;
+
     //like a linked list
     // ptr to the next page as an int: negitive number means the page points to null
     // name of the page that this page points to would be toString(this.ptrToNextPage)
@@ -52,7 +55,7 @@ public class Page {
         return ptrToNextPage;
     }
 
-    public List<ArrayList<Object>> getPageRecords() {
+    public List<ArrayList<Object>>  getPageRecords() {
         return pageRecords;
     }
 
@@ -60,6 +63,13 @@ public class Page {
         return pageName;
     }
 
+    public void setWasChanged(boolean wasChanged) {
+        this.wasChanged = wasChanged;
+    }
+
+    public boolean isChanged() {
+        return wasChanged;
+    }
 
     // loads into a page all the records and page info from disk
     // given the location of the page on disk and the table that the page belongs to;
@@ -234,6 +244,8 @@ public class Page {
 
     // splits this page into two and returns the a new page with the bottom half of the the data
     public Page split(){
+
+        this.wasChanged = true;
 
         // find half way point
         int half = (int) Math.floor(pageRecords.size()/2.0);
