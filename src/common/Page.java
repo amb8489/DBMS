@@ -35,7 +35,7 @@ public class Page {
     // list of records
     private List<ArrayList<Object>> pageRecords = new ArrayList<>();
 
-    private ITable IBelongTo = null;
+    public ITable IBelongTo = null;
 
 
 
@@ -298,7 +298,6 @@ public class Page {
         this.pageRecords = pageRecords.subList(0, half);
 
 
-        // calc and update page sizes !!!!!!!!!!! !!!!!!!!!! !!!!!!!!! !!!!!!!this wont work till Catalog.GetTableFromPage(this.pageName) works
         int newPageSizeLeft = calcSizeOfRecords(this.pageRecords,this.IBelongTo);
         int newPageSizeRight = this.currentSize - newPageSizeLeft;
 

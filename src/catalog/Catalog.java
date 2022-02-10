@@ -34,10 +34,7 @@ public class Catalog extends ACatalog{
 
     }
 
-    //TODO
-    public static Table GetTableFromPage(String name) {
-        return null;
-    }
+
 
     @Override
     public String getDbLocation() {

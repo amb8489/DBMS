@@ -7,6 +7,7 @@ Aaron Berghash
 package pagebuffer;
 
 import catalog.Catalog;
+import common.ITable;
 import common.Page;
 import common.Table;
 
@@ -43,7 +44,7 @@ public class PageBuffer {
 
     ///////////////////////methods////////////////////////////////////////////
 
-    public Page getPageFromBuffer(String name){
+    public Page getPageFromBuffer(String name,ITable table){
         int idx = 0;
 
         // loooking to see if page we want is already loaded in the buffer
@@ -60,7 +61,7 @@ public class PageBuffer {
         // if not found we need to load it in
         // loadNewPageToBuffer will place it in the buffer for us and auto make space and will place new page
         // where it should be in the array to keep LRU in order
-        return loadNewPageToBuffer(name);
+        return loadNewPageToBuffer(name,table);
     }
 
     //write all pages in the buffer to disk and empty th e buffer
@@ -71,7 +72,7 @@ public class PageBuffer {
 
             if (page.isChanged()) {
                 // check for successful page write
-                if (!page.writeToDisk(page.getPageName(), Catalog.GetTableFromPage(page.getPageName()))) {
+                if (!page.writeToDisk(page.getPageName(), page.IBelongTo)) {
                     System.err.println("error purging buffer [write to disk failed]");
                     return false;
                 }
@@ -84,7 +85,7 @@ public class PageBuffer {
 
 
 
-    public Page loadNewPageToBuffer(String name){
+    public Page loadNewPageToBuffer(String name, ITable table){
 
         // if buffer is full
         if (pageBuffer.size() == maxBufferSize){
@@ -92,8 +93,7 @@ public class PageBuffer {
             // write LRU page to disk / check for successful page write
             Page p = pageBuffer.get(0);
 
-            Table table = Catalog.GetTableFromPage(p.getPageName());
-            if(! p.writeToDisk(p.getPageName(),table)){
+            if(! p.writeToDisk(p.getPageName(),p.IBelongTo)){
                 System.err.println("error loading new page to buffer [LRU write to disk failed]");
                 return null;
             }
@@ -101,8 +101,7 @@ public class PageBuffer {
             pageBuffer.remove(0);
         }
 
-        Table table = Catalog.GetTableFromPage(name);
-        Page newPage = getPageFromDisk(name,table);
+        Page newPage = getPageFromDisk(name, (Table) table);
         pageBuffer.add(newPage);
 
         return newPage;
