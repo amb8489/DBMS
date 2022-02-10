@@ -24,11 +24,13 @@ public class Page {
     // name of the page aka string of what # page this is
     private String pageName;
 
-    // max size a page can be (still unsure about this)
+    //TODO
+    // max size a page can be byte
     private int MaxSize;
 
-    // current size of page in number of records stored (i think this may need to be bytes but easy fix)
-    private int currentSize;
+    //TODO
+    // current size of page in number of bytes needs to be updated on inset / delete
+    public int currentSize;
 
     // list of records
     private List<ArrayList<Object>> pageRecords = new ArrayList<>();
@@ -45,12 +47,17 @@ public class Page {
     }
 
     // used when splitting a page
-    public Page(List<ArrayList<Object>> records) {
+    public Page(List<ArrayList<Object>> records,String iBelongTo) {
 
         numPages++;
+
+        //TODO v not correct need to be in bytes
         this.currentSize = records.size();
+
+
         this.pageName = String.valueOf(numPages);
         this.pageRecords =  records;
+        this.IBelongTo = iBelongTo;
     }
 
 
@@ -113,7 +120,12 @@ public class Page {
 
             // first thing thats stored in a page is the num of records stored and its ptr to the next page in linked list
             int numRecs = dataInputStr.readInt();
+            //update size 4 bytes
+            currentSize+=4;
+
             this.ptrToNextPage = dataInputStr.readInt();
+            currentSize+=4;
+
 
             //for each row in the page
             for (int rn = 0; rn < numRecs; rn++) {
@@ -129,19 +141,25 @@ public class Page {
                     switch (schema.get(idx)) {
                         case "Integer":
                             rec.add(dataInputStr.readInt());
+                            currentSize+=4;
                             break;
                         case "Double":
                             rec.add(dataInputStr.readDouble());
+                            currentSize+=8;
+
                             break;
                         case "Boolean":
                             rec.add(dataInputStr.readBoolean());
+                            currentSize+=1;
+
                             break;
                         default:
 
                             // we get a char(#)
                             if (schema.get(idx).startsWith("Char(")) {
-
                                 rec.add(new String(dataInputStr.readNBytes(charlen), StandardCharsets.UTF_8));
+                                currentSize+= (charlen);
+
                             } else {
                                 // var char should have an int before it telling how long the var char is
                                 // and how many bytes to read in
@@ -149,6 +167,8 @@ public class Page {
 
                                 // then read in that many bytes
                                 rec.add(new String(dataInputStr.readNBytes(VarCharsize), StandardCharsets.UTF_8));
+                                currentSize+= (VarCharsize) + 4;// 4 for the int we need to save for the varcahr
+
 
                             }
                     }
@@ -157,6 +177,8 @@ public class Page {
                 // append row to pageRecords
                 pageRecords.add(rec);
             }
+            System.out.println(currentSize);
+
             return true;
 
             // failure to find page or read fail
@@ -168,6 +190,7 @@ public class Page {
     // this will write the page to disk at location given the table the the page belongs to
     public boolean writeToDisk(String location, ITable table) {
         try {
+
             // get schema from table that we need in order to know what type we are reading in
             // if record has a Char(#) type we need to know how long that char is so we know how many bytes to read in
             ArrayList<String> schema = new ArrayList<>();
@@ -240,6 +263,11 @@ public class Page {
             // write out byte array to file
             out.write(record_out);
             out.close();
+
+            // clear records
+            pageRecords.clear();
+            // update page size
+            currentSize = 0;
             return true;
         } catch (IOException e) {
             System.err.println("COULD NOT FILE PAGE");
@@ -257,20 +285,78 @@ public class Page {
 
         // split the records in two
         List<ArrayList<Object>> rightHalf = pageRecords.subList(half, pageRecords.size());
-        // update this pages records
+        // update this pages records by splitting
         this.pageRecords = pageRecords.subList(0, half);
+
+
+        // calc and update page sizes !!!!!!!!!!! !!!!!!!!!! !!!!!!!!! !!!!!!!this wont work till Catalog.GetTableFromPage(this.pageName) works
+        int newPageSizeleft = calcSizeOfRecords(this.pageRecords,Catalog.GetTableFromPage(this.pageName));
+        int newPageSizeright = this.currentSize - newPageSizeleft;
+        this.currentSize = newPageSizeleft;
+
+
+        // make new page
+        Page SplitPage = new Page(rightHalf,this.IBelongTo);
+
+        //update page size
+        SplitPage.currentSize = newPageSizeright;
 
         //Set new page to point to whateber this page points to and then set this to point to new page
         // like adding a node in a linked list
-
-        Page SplitPage = new Page(rightHalf);
         SplitPage.ptrToNextPage = this.ptrToNextPage;
         this.ptrToNextPage = Integer.parseInt(SplitPage.pageName);
 
-        //TODO add page to catalog
+
+
+        //TODO add new page to catalog
 
 
         return SplitPage;
 
+    }
+
+    private int calcSizeOfRecords(List<ArrayList<Object>> rightHalf, Table table) {
+        // get schema from table that we need in order to know what type we are reading in
+        // if record has a Char(#) type we need to know how long that char is so we know how many bytes to read in
+        ArrayList<String> schema = new ArrayList<>();
+        for (Attribute att : table.getAttributes()) {
+            schema.add(att.getAttributeType());
+        }
+        int newSize = 0;
+        for (int i = 0; i < this.pageRecords.size(); i++) {
+
+            //for each attrib in row store to byte array
+            ArrayList<Object> record = this.pageRecords.get(i);
+
+            // make byte array from record
+            // look though reach attribute and check the schema for its type and convert it to its bytes
+            // and add it to outputStream btye array
+            for (int idx = 0; idx < record.size(); idx++) {
+                switch (schema.get(idx)) {
+                    case "Integer":
+                        newSize+=4;
+                        break;
+                    case "Double":
+                        newSize+=8;
+                        break;
+                    case "Boolean":
+                        newSize+=1;
+                        break;
+                    default:
+
+                        // char(#)
+                        if (schema.get(idx).startsWith("Char(")) {
+                            newSize+=1;
+                        } else {
+                            // add the len of var char before we write var char
+                            int VarCharlen = ((String) record.get(idx)).length();
+                            newSize+= (4+VarCharlen);
+                        }
+                }
+            }
+        }
+
+
+        return newSize;
     }
 }
