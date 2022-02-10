@@ -34,16 +34,24 @@ public class Page {
 
     // list of records
     private List<ArrayList<Object>> pageRecords = new ArrayList<>();
+
     private String IBelongTo = null;
 
+
+
+
+
+
+
     // makes the first new page
-    public Page() {
+    public Page(String iBelongTo) {
         numPages++;
         this.currentSize = 0;
         this.pageName = String.valueOf(numPages);
         // first page points to nothing
         this.ptrToNextPage = -1;
 
+        this.IBelongTo = iBelongTo;
     }
 
     // used when splitting a page
@@ -55,6 +63,10 @@ public class Page {
         this.IBelongTo = iBelongTo;
         this.currentSize = sizeInBytes;
     }
+
+
+
+
 
 
     public int getPtrToNextPage() {
@@ -181,6 +193,7 @@ public class Page {
         } catch (IOException e) {
             return false;
         }
+
     }
 
     // this will write the page to disk at location given the table the the page belongs to
