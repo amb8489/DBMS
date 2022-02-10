@@ -35,7 +35,7 @@ public class Page {
     // list of records
     private List<ArrayList<Object>> pageRecords = new ArrayList<>();
 
-    private String IBelongTo = null;
+    private ITable IBelongTo = null;
 
 
 
@@ -44,7 +44,7 @@ public class Page {
 
 
     // makes the first new page
-    public Page(String iBelongTo) {
+    public Page(ITable iBelongTo) {
         numPages++;
         this.currentSize = 0;
         this.pageName = String.valueOf(numPages);
@@ -55,7 +55,7 @@ public class Page {
     }
 
     // used when splitting a page
-    public Page(List<ArrayList<Object>> records,String iBelongTo,int sizeInBytes) {
+    public Page(List<ArrayList<Object>> records,ITable iBelongTo,int sizeInBytes) {
 
         numPages++;
         this.pageName = String.valueOf(numPages);
@@ -97,7 +97,7 @@ public class Page {
             // clear out recods just in case
             pageRecords.clear();
 
-            this.IBelongTo = table.getTableName();
+            this.IBelongTo = table;
 
             // get schema from table that we need in order to know what type we are reading in
 
@@ -299,7 +299,7 @@ public class Page {
 
 
         // calc and update page sizes !!!!!!!!!!! !!!!!!!!!! !!!!!!!!! !!!!!!!this wont work till Catalog.GetTableFromPage(this.pageName) works
-        int newPageSizeLeft = calcSizeOfRecords(this.pageRecords,Catalog.GetTableFromPage(this.pageName));
+        int newPageSizeLeft = calcSizeOfRecords(this.pageRecords,this.IBelongTo);
         int newPageSizeRight = this.currentSize - newPageSizeLeft;
 
         //set new size for left
@@ -324,7 +324,7 @@ public class Page {
 
     }
 
-    private int calcSizeOfRecords(List<ArrayList<Object>> recs, Table table) {
+    private int calcSizeOfRecords(List<ArrayList<Object>> recs, ITable table) {
         // get schema from table that we need in order to know what type we are reading in
         // if record has a Char(#) type we need to know how long that char is so we know how many bytes to read in
         ArrayList<String> schema = new ArrayList<>();

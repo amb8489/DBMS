@@ -109,7 +109,7 @@ public class PageBuffer {
     }
 
     public Page getPageFromDisk(String name, Table table){
-        Page newPage = new Page(table.getTableName());
+        Page newPage = new Page(table);
         newPage.LoadFromDisk(name,table);
         return newPage;
     }

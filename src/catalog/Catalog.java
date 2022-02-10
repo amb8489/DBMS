@@ -27,8 +27,6 @@ public class Catalog extends ACatalog{
     private HashMap<String,ITable> CurrentTablesInBD;
 
 
-    // tablename to the name of the pages that belong to that table
-    private HashMap<String,ArrayList<String>> tableToPages;
 
     public Catalog(String location, int pageSize, int pageBufferSize) {
 

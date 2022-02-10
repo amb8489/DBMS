@@ -32,7 +32,7 @@ public class TestPage {
         ITable table1 = new Table(name4,attrs4,pk);
 
         // make page
-        Page p = new Page(table1.getTableName());
+        Page p = new Page(table1);
 
         // read data from page
             p.LoadFromDisk("src/pagebuffer/page1.txt",table1);
