@@ -14,12 +14,12 @@ import common.Table;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.text.Format;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Catalog extends ACatalog {
+
+
 
     // db location
     private String location;
@@ -28,24 +28,32 @@ public class Catalog extends ACatalog {
     // string table name    the table
     private HashMap<String, ITable> CurrentTablesInBD;
 
+    //TODO store what pages belong to what tables.... should the table keep track of this
+
+
 
     public Catalog(String location, int pageSize, int pageBufferSize) {
 
-        System.out.println("attempting to find catalog in src/DB/catalog");
+        System.out.println("attempting to find catalog in: "+location);
 
         // atempt to read catalog file from DB if its there
         try {
-            System.out.println("found catalog .. restoring");
             // read in streams
             FileInputStream inputStream;
             inputStream = new FileInputStream(location);
             DataInputStream dataInputStr = new DataInputStream(inputStream);
 
+            System.out.println("found catalog .. restoring");
+
+            // we know this is the location b/c its given
+            this.location = location;
+
+
             // TODO read in data and make new catalog
 
             // failure to find page or read fail
         } catch (IOException e) {
-            System.out.println("NO catalog from disk.. making new catalog");
+            System.out.println("NO catalog in disk.. making new catalog");
             this.location = location;
             this.pageSize = pageSize;
             this.pageBufferSize = pageBufferSize;
@@ -136,7 +144,17 @@ public class Catalog extends ACatalog {
     }
 
 
-    // ~/Desktop/DB/catalog/table
+
+    /*
+    TODO store what pages belong to what tables
+
+    structure is
+
+    [int: pageSize | int: pageBufferSize | int: number of tables | table1 | table2 .. ect]
+
+     */
+
+
     @Override
     public boolean saveToDisk() {
         //TODO
