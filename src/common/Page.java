@@ -47,17 +47,13 @@ public class Page {
     }
 
     // used when splitting a page
-    public Page(List<ArrayList<Object>> records,String iBelongTo) {
+    public Page(List<ArrayList<Object>> records,String iBelongTo,int sizeInBytes) {
 
         numPages++;
-
-        //TODO v not correct need to be in bytes
-        this.currentSize = records.size();
-
-
         this.pageName = String.valueOf(numPages);
         this.pageRecords =  records;
         this.IBelongTo = iBelongTo;
+        this.currentSize = sizeInBytes;
     }
 
 
@@ -290,16 +286,16 @@ public class Page {
 
 
         // calc and update page sizes !!!!!!!!!!! !!!!!!!!!! !!!!!!!!! !!!!!!!this wont work till Catalog.GetTableFromPage(this.pageName) works
-        int newPageSizeleft = calcSizeOfRecords(this.pageRecords,Catalog.GetTableFromPage(this.pageName));
-        int newPageSizeright = this.currentSize - newPageSizeleft;
-        this.currentSize = newPageSizeleft;
+        int newPageSizeLeft = calcSizeOfRecords(this.pageRecords,Catalog.GetTableFromPage(this.pageName));
+        int newPageSizeRight = this.currentSize - newPageSizeLeft;
+
+        //set new size for left
+        this.currentSize = newPageSizeLeft;
 
 
         // make new page
-        Page SplitPage = new Page(rightHalf,this.IBelongTo);
+        Page SplitPage = new Page(rightHalf,this.IBelongTo,newPageSizeRight);
 
-        //update page size
-        SplitPage.currentSize = newPageSizeright;
 
         //Set new page to point to whateber this page points to and then set this to point to new page
         // like adding a node in a linked list
@@ -315,7 +311,7 @@ public class Page {
 
     }
 
-    private int calcSizeOfRecords(List<ArrayList<Object>> rightHalf, Table table) {
+    private int calcSizeOfRecords(List<ArrayList<Object>> recs, Table table) {
         // get schema from table that we need in order to know what type we are reading in
         // if record has a Char(#) type we need to know how long that char is so we know how many bytes to read in
         ArrayList<String> schema = new ArrayList<>();
@@ -323,10 +319,10 @@ public class Page {
             schema.add(att.getAttributeType());
         }
         int newSize = 0;
-        for (int i = 0; i < this.pageRecords.size(); i++) {
+        for (int i = 0; i < recs.size(); i++) {
 
             //for each attrib in row store to byte array
-            ArrayList<Object> record = this.pageRecords.get(i);
+            ArrayList<Object> record = recs.get(i);
 
             // make byte array from record
             // look though reach attribute and check the schema for its type and convert it to its bytes
