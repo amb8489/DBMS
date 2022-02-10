@@ -23,34 +23,32 @@ public class Catalog extends ACatalog {
 
     // db location
     private String location;
-
     private int pageSize;
     private int pageBufferSize;
-
     // string table name    the table
     private HashMap<String, ITable> CurrentTablesInBD;
 
 
     public Catalog(String location, int pageSize, int pageBufferSize) {
 
-        // atempt to read catalog file from DB if its there
         System.out.println("attempting to find catalog in src/DB/catalog");
 
-
+        // atempt to read catalog file from DB if its there
         try {
             System.out.println("found catalog .. restoring");
-
-
-
             // read in streams
             FileInputStream inputStream;
             inputStream = new FileInputStream(location);
             DataInputStream dataInputStr = new DataInputStream(inputStream);
 
+            // TODO read in data and make new catalog
+
             // failure to find page or read fail
         } catch (IOException e) {
-            System.out.println("could not restore from disk.. making new catalog");
-
+            System.out.println("NO catalog from disk.. making new catalog");
+            this.location = location;
+            this.pageSize = pageSize;
+            this.pageBufferSize = pageBufferSize;
         }
     }
 
