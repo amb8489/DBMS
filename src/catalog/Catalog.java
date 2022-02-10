@@ -27,6 +27,8 @@ public class Catalog extends ACatalog {
     private int pageBufferSize;
     // string table name    the table
     private HashMap<String, ITable> CurrentTablesInBD;
+
+    //TODO
     private HashMap<Integer, String> PageToTable;
 
 
@@ -161,6 +163,8 @@ public class Catalog extends ACatalog {
 
     @Override
     public boolean saveToDisk() {
+
+
         //TODO
         return false;
 

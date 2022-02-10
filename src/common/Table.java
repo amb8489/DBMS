@@ -19,6 +19,7 @@ public class Table implements ITable{
     private Attribute PrimaryKey;
     private ArrayList<Attribute> Attributes;
     private ArrayList<ForeignKey> ForeignKeys;
+    private ArrayList<Integer>PagesThatBelongToMe;
 
     // ADD INDEX LIST HERE - FOURTH PHASE
 
@@ -119,13 +120,24 @@ public class Table implements ITable{
         return true;
     }
 
+    private boolean addPageAffiliations(int pageName){
+            this.PagesThatBelongToMe.add(pageName);
+            return true;
+    }
+
     @Override
     public boolean addIndex(String attributeName) {
         return false;
     }
 
-    // TODO
-    // ~/Deskt op/DB/catalog/tables
+    /*
+
+
+    structure [int:numTotaltables, int:tableNameLength, String: tableName, int:tableID
+              int:#ofAtributes,    int:attributeLen,    Strings: AttributeDatas..... ,
+              int:PkLen,           String: PkAttribute, int: #of Fk's ,    int: lenFk,
+              String Fk,           int: #ofPageNames,   ints:pagenames .....         ]
+     */
     public boolean saveToDisk(String location) {
 
         try {
@@ -136,24 +148,67 @@ public class Table implements ITable{
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
             // WRITE table details
-
-            //TODO write these out to disk
-//            private Attribute PrimaryKey;
-//            private ArrayList<Attribute> Attributes;
 //            private ArrayList<ForeignKey> ForeignKeys;
 
             outputStream.write(ByteBuffer.allocate(4).putInt(Table.numTables).array());
+            outputStream.write(ByteBuffer.allocate(4).putInt(this.TableName.length()).array());
             outputStream.write(this.TableName.getBytes());
             outputStream.write(ByteBuffer.allocate(4).putInt(this.ID).array());
 
-            out.write(outputStream.toByteArray());
+            // number of attributes we need to read in
+            int numOfAttributes = this.Attributes.size();
+            outputStream.write(ByteBuffer.allocate(4).putInt(numOfAttributes).array());
 
+            // for each attribute write it out
+            for (Attribute attrib:  this.Attributes) {
+                String StringAtt = attrib.toString();
+                int StringAttLen =  StringAtt.length();
+                // write how log the attribute is
+                outputStream.write(ByteBuffer.allocate(4).putInt(StringAttLen).array());
+                // write attribute str
+                outputStream.write(StringAtt.getBytes());
+            }
+
+
+            // write primary key (atribute)
+            String pkString = this.PrimaryKey.toString();
+            int pkStringLen =  pkString.length();
+            outputStream.write(ByteBuffer.allocate(4).putInt(pkStringLen).array());
+            outputStream.write(pkString.getBytes());
+
+
+            // write forigen key
+            // number of attributes we need to read in
+            int numOfFks = this.ForeignKeys.size();
+            outputStream.write(ByteBuffer.allocate(4).putInt(numOfFks).array());
+
+            // for each fk write it out
+            for (ForeignKey FK:  this.ForeignKeys) {
+                String StringFK = FK.toString();
+                int StringFkLen =  StringFK.length();
+                // write how log the fk is
+                outputStream.write(ByteBuffer.allocate(4).putInt(StringFkLen).array());
+                // write attribute str
+                outputStream.write(StringFK.getBytes());
+            }
+            // write pages that belong to this table
+
+            // write pages that belong to me
+            // number of page names we need to write in
+            int numOfpageNames = this.PagesThatBelongToMe.size();
+            outputStream.write(ByteBuffer.allocate(4).putInt(numOfpageNames).array());
+
+            // for each fk write it out
+            for (int pageName:  this.PagesThatBelongToMe) {
+                // write page name
+                outputStream.write(ByteBuffer.allocate(4).putInt(pageName).array());
+            }
+
+            // writee to page
+            out.write(outputStream.toByteArray());
 
             return true;
 
-        }catch (FileNotFoundException e) {
-            System.err.println("LOCATion NOT FOUND");
-            return false;
         } catch (IOException e) {
             e.printStackTrace();
             return false;
