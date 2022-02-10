@@ -112,7 +112,6 @@ public class PageBuffer {
         Page newPage = new Page();
         newPage.LoadFromDisk(name,table);
         return newPage;
-
     }
 
 

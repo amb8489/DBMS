@@ -1,5 +1,7 @@
 package common;
 
+import catalog.Catalog;
+
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -30,6 +32,7 @@ public class Page {
 
     // list of records
     private List<ArrayList<Object>> pageRecords = new ArrayList<>();
+    private String IBelongTo = null;
 
     // makes the first new page
     public Page() {
@@ -78,6 +81,8 @@ public class Page {
         try {
             // clear out recods just in case
             pageRecords.clear();
+
+            this.IBelongTo = table.getTableName();
 
             // get schema from table that we need in order to know what type we are reading in
 
@@ -261,6 +266,10 @@ public class Page {
         Page SplitPage = new Page(rightHalf);
         SplitPage.ptrToNextPage = this.ptrToNextPage;
         this.ptrToNextPage = Integer.parseInt(SplitPage.pageName);
+
+        //TODO add page to catalog
+
+
         return SplitPage;
 
     }
