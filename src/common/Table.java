@@ -1,9 +1,7 @@
 package common;
-import javax.imageio.IIOException;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 /*
   Implementation of the ITable interface.  The interface
@@ -289,7 +287,7 @@ public class Table implements ITable{
                         int lenFk = dataInputStr.readInt();
                         String Fk = new String(dataInputStr.readNBytes(PKattributeLen));
 
-                        System.out.println(Fk);
+                        System.out.println("hello, this still needs to be finished :) -table");
                         // TODO mk fk
 
                         // TODO add fk to ForeignKeys
@@ -303,7 +301,6 @@ public class Table implements ITable{
 
                     for (int an = 0; an < numPagesThatBelongToMe; an++) {
                         int pageName = dataInputStr.readInt();
-                        System.out.println(pageName);
                         BelongToMe.add(pageName);
                     }
                 }
@@ -323,7 +320,7 @@ public class Table implements ITable{
             return tables;
 
         }catch (IOException e){
-            System.err.println("Error reading");
+            System.err.println("IO Error reading table from disk");
             return null;
         }
     }

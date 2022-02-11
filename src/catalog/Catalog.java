@@ -11,9 +11,8 @@ import common.Attribute;
 import common.ITable;
 import common.Table;
 
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -27,9 +26,6 @@ public class Catalog extends ACatalog {
     private int pageBufferSize;
     // string table name    the table
     private HashMap<String, ITable> CurrentTablesInBD;
-
-    //TODO
-    private HashMap<Integer, String> PageToTable;
 
 
 
@@ -52,16 +48,17 @@ public class Catalog extends ACatalog {
             // read in page size
             this.pageSize = dataInputStr.readInt();
 
+            // read in pageBufferSize
             this.pageBufferSize = dataInputStr.readInt();
-
-
-            int numTables = dataInputStr.readInt();
 
             // read in tables.txt
             ArrayList<ITable> tabs = Table.ReadAllTablesFromDisk();
 
-            // TODO DO THINGS WITH THE TABLE DATA
-
+            // restoring tale data
+            for(ITable table: tabs){
+                CurrentTablesInBD.put(table.getTableName(),table);
+            }
+            System.out.println("restore successful! ");
 
         } catch (IOException e) {
             // failure to find page or read fail
@@ -172,10 +169,39 @@ public class Catalog extends ACatalog {
     @Override
     public boolean saveToDisk() {
 
+        try {
+
+            DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream("src/DB/catalog/catalog.txt")));
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
 
-        //TODO
-        return false;
+            // write in page size
+            outputStream.write(ByteBuffer.allocate(4).putInt(this.pageSize).array());
 
+            // write in page buffer size
+            outputStream.write(ByteBuffer.allocate(4).putInt(this.pageBufferSize).array());
+
+            out.write(outputStream.toByteArray());
+            out.close();
+
+
+            /////// write all tables out to "src/DB/catalog/tables.txt"
+            out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream("src/DB/catalog/tables.txt")));
+            outputStream = new ByteArrayOutputStream();
+
+
+            for (String tableName : CurrentTablesInBD.keySet()) {
+                Table t = (Table) CurrentTablesInBD.get(tableName);
+                outputStream.write(t.toBytes());
+            }
+
+            out.write(outputStream.toByteArray());
+            out.close();
+
+            return true;
+        }catch (IOException i){
+            System.err.println("ERROR Saving catalog to disk");
+            return false;
+        }
     }
 }
