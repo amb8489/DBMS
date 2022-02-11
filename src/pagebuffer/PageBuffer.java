@@ -92,7 +92,8 @@ public class PageBuffer {
             Page p = pageBuffer.get(0);
             System.out.println("BUFFER FULL wring page ["+p.getPageName()+"] to disk");
 
-            if (!p.writeToDisk(p.getPageName(), p.IBelongTo)) {
+            //TODO ????/ "src/DB/pages/"+p.getPageName() hmmm
+            if (!p.writeToDisk("src/DB/pages/"+p.getPageName(), p.IBelongTo)) {
                 System.err.println("error loading new page to buffer [LRU write to disk failed]");
                 return null;
             }
