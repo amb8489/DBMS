@@ -91,6 +91,26 @@ public class Table implements ITable{
         return true;
     }
 
+    public void setForeignKeys(ArrayList<ForeignKey> foreignKeys) {
+        ForeignKeys = foreignKeys;
+    }
+
+    public void setID(int ID) {
+        this.ID = ID;
+    }
+
+    public void setAttributes(ArrayList<Attribute> attributes) {
+        Attributes = attributes;
+    }
+
+    public void setPagesThatBelongToMe(ArrayList<Integer> pagesThatBelongToMe) {
+        PagesThatBelongToMe = pagesThatBelongToMe;
+    }
+
+    public void setPrimaryKey(Attribute primaryKey) {
+        PrimaryKey = primaryKey;
+    }
+
     @Override
     public boolean dropAttribute(String name) {
 
@@ -237,9 +257,6 @@ public class Table implements ITable{
 
             ArrayList<ITable> tables = new ArrayList<>();
             for (int tn = 0; tn < numTables; tn++) {
-                System.out.println("---------------");
-
-
                 int tableNameLength = dataInputStr.readInt();
                 String tableName = new String(dataInputStr.readNBytes(tableNameLength));
                 int tableID = dataInputStr.readInt();
@@ -291,11 +308,15 @@ public class Table implements ITable{
                     }
                 }
 
-                //TODO make table and add it to tables.txt
+                //make table and add it to tables
 
+                Table DiskTable = new Table(tableName,tableAttributes,PK);
+                DiskTable.PagesThatBelongToMe =  BelongToMe;
+                DiskTable.setForeignKeys(ForeignKeys);
+                DiskTable.setID(tableID);
+                tables.add(DiskTable);
 
-
-                // not needed but have to di it to read correct bytes
+                // not needed but have to do it to read correct bytes
                 if(tn < numTables-1) { dataInputStr.readInt();}
 
             }
