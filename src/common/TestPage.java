@@ -16,7 +16,6 @@ public class TestPage {
         attrs4.add(new Attribute("attr2", "Double"));
         attrs4.add(new Attribute("attr3", "Boolean"));
         attrs4.add(new Attribute("attr4", "Char(5)"));
-        attrs4.add(new Attribute("attr5", "Varchar(10)"));
         Attribute pk = attrs4.get(0);
 
         
