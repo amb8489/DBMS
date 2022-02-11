@@ -66,6 +66,7 @@ public class TESTbuffer {
 
         // !!!! when we load a new page page 4 should be written out
         page4.getPageRecords().clear();
+        page4.wasChanged = true;
 
         // loading new page will cause page 4 to be written to disk
         Page page5 = pb.getPageFromBuffer("src/DB/pages/5",t1);

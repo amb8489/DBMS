@@ -49,7 +49,7 @@ public class PageBuffer {
                 // to update LRU order
                 pageBuffer.add(pageBuffer.remove(idx));
                 //gets the last element in list
-                System.out.println("found page in buffer");
+                System.out.println("found page ["+p.getPageName()+"] in buffer");
                 return pageBuffer.get(pageBuffer.size() - 1);
             }
             idx++;
@@ -63,11 +63,14 @@ public class PageBuffer {
 
     //write all pages in the buffer to disk and empty th e buffer
     public boolean PurgeBuffer() {
+        System.out.println("[purging buffer]");
 
         //write all pages in buffer to disk
         for (Page page : pageBuffer) {
 
             if (page.isChanged()) {
+                System.out.println(" writing page ["+page.getPageName()+"] to disk");
+
                 // check for successful page write
                 if (!page.writeToDisk(page.getPageName(), page.IBelongTo)) {
                     System.err.println("error purging buffer [write to disk failed]");
@@ -90,7 +93,7 @@ public class PageBuffer {
 
             // write LRU page to disk / check for successful page write
             Page p = pageBuffer.get(0);
-            System.out.println("BUFFER FULL wring page ["+p.getPageName()+"] to disk");
+            System.out.println("BUFFER FULL writing page ["+p.getPageName()+"] to disk");
 
             //TODO ????/ "src/DB/pages/"+p.getPageName() hmmm
             if (!p.writeToDisk("src/DB/pages/"+p.getPageName(), p.IBelongTo)) {

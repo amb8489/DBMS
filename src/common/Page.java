@@ -14,7 +14,7 @@ public class Page {
     private static int numPages = 0;
 
     // WAS THE RECORDS CHANGED AT ALL FROM INSERT DELETE SPLIT ECT?
-    private boolean wasChanged = false;
+    public boolean wasChanged = false;
 
     //like a linked list
     // ptr to the next page as an int: negitive number means the page points to null
