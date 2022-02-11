@@ -1,7 +1,10 @@
 package common;
 
+import javax.imageio.IIOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 
 public class TestTable {
 
@@ -13,6 +16,78 @@ public class TestTable {
 
 
     public static void main(String[] args) {
+
+
+// output streams
+        try {
+            DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream("src/DB/tabs/tables.txt")));
+
+            // byte array that we will store at the end(all the records stored as bytes at once to reduce the amount of
+            // I/O operations)
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+            ArrayList<Attribute> attrs = new ArrayList<>();
+            attrs.add(new Attribute("attr1", "Integer"));
+            attrs.add(new Attribute("attr2", "Double"));
+            attrs.add(new Attribute("attr3", "Boolean"));
+            attrs.add(new Attribute("attr4", "Char(5)"));
+            attrs.add(new Attribute("attr5", "Varchar(10)"));
+            Random rnd = new Random();
+
+
+            for (int i = 0;i < 10 ;i++) {
+
+                // make table
+                String name4 = "table "+i;
+
+                // mk random table
+
+                ArrayList<Attribute> Tattrs = new ArrayList<>();
+
+                for (int b = 0;b < rnd.nextInt(1,10) ;b++) {
+
+                    Tattrs.add(attrs.get(rnd.nextInt(4)));
+                }
+                Attribute pk = Tattrs.get(0);
+
+
+                Table table1 = new Table(name4, Tattrs, pk);
+                Page p = new Page(table1);
+
+                table1.addPageAffiliations(Integer.parseInt(p.getPageName()));
+                table1.addPageAffiliations(Integer.parseInt(p.getPageName()) + 1);
+                table1.addPageAffiliations(Integer.parseInt(p.getPageName()) + 2);
+                table1.addPageAffiliations(Integer.parseInt(p.getPageName()) + 3);
+                table1.addPageAffiliations(Integer.parseInt(p.getPageName()) + 4);
+
+                outputStream.write(table1.toBytes());
+
+            }
+
+            out.write(outputStream.toByteArray());
+            out.close();
+
+
+            Table.ReadAllTablesFromDisk();
+
+            System.exit(1);
+        }catch (IOException e){
+            System.out.println("ERROR");
+            System.exit(1);
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         // testing atrributes
@@ -65,6 +140,10 @@ public class TestTable {
         System.out.println(tab0.getAttrByName("name").toString());
         // DNE
         System.out.println(tab0.getAttrByName("yerrr"));
+
+
+
+
 
     }
 }
