@@ -57,7 +57,7 @@ public class Catalog extends ACatalog {
 
             int numTables = dataInputStr.readInt();
 
-            // read in tables
+            // read in tables.txt
             ArrayList<ITable> tabs = Table.ReadAllTablesFromDisk();
 
             // TODO DO THINGS WITH THE TABLE DATA
@@ -159,18 +159,19 @@ public class Catalog extends ACatalog {
 
 
     /*
-    TODO store what pages belong to what tables
 
     structure is
 
-    [int: pageSize | int: pageBufferSize | int: number of tables]
-    saves tables to tables page
+    1)int: pageSize | int: pageBufferSize | int: number of tables.txt]
+
+    2)saves tables.txt to tables.txt page in DB
 
      */
 
 
     @Override
     public boolean saveToDisk() {
+
 
 
         //TODO

@@ -3,6 +3,7 @@ import javax.imageio.IIOException;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /*
   Implementation of the ITable interface.  The interface
@@ -13,7 +14,7 @@ import java.util.ArrayList;
 
 public class Table implements ITable{
 
-    private static int numTables = 0; // tracks how many tables have been created; used to establish table ID
+    private static int numTables = 0; // tracks how many tables.txt have been created; used to establish table ID
     private String TableName;
     private int ID;
     private Attribute PrimaryKey;
@@ -121,7 +122,7 @@ public class Table implements ITable{
         return true;
     }
 
-    private boolean addPageAffiliations(int pageName){
+    public boolean addPageAffiliations(int pageName){
         return this.PagesThatBelongToMe.add(pageName);
     }
 
@@ -148,9 +149,9 @@ public class Table implements ITable{
 
             // WRITE table details
 
-            // total number of tables
+            // total number of tables.txt
             outputStream.write(ByteBuffer.allocate(4).putInt(Table.numTables).array());
-            // tables name len
+            // tables.txt name len
             outputStream.write(ByteBuffer.allocate(4).putInt(this.TableName.length()).array());
             // table name
             outputStream.write(this.TableName.getBytes());
@@ -205,7 +206,7 @@ public class Table implements ITable{
                 // write page name
                 outputStream.write(ByteBuffer.allocate(4).putInt(pageName).array());
             }
-
+//            System.out.println(outputStream.toByteArray().length);
             return outputStream.toByteArray();
 
         } catch (IOException e) {
@@ -218,9 +219,8 @@ public class Table implements ITable{
     public static ArrayList<ITable> ReadAllTablesFromDisk() {
 
         try {
-            //TODO
             String location = "src/DB/tabs/tables.txt";
-            System.out.println("reading tables from disk");
+            System.out.println("reading tables.txt from disk");
 
 
             // read in streams
@@ -229,72 +229,81 @@ public class Table implements ITable{
             DataInputStream dataInputStr = new DataInputStream(inputStream);
 
 
-            // reading all the tables from page from disk
+            // reading all the tables.txt from page from disk
 
-            // first thing thats stored in a page is the num of tables
+            // first thing thats stored in a page is the num of tables.txt
             int numTables = dataInputStr.readInt();
             Table.numTables = numTables;
 
             ArrayList<ITable> tables = new ArrayList<>();
             for (int tn = 0; tn < numTables; tn++) {
+                System.out.println("---------------");
 
 
                 int tableNameLength = dataInputStr.readInt();
                 String tableName = new String(dataInputStr.readNBytes(tableNameLength));
                 int tableID = dataInputStr.readInt();
 
-                int NumOfAtributes = dataInputStr.readInt();
 
+                // get attributes
+                int NumOfAtributes = dataInputStr.readInt();
                 ArrayList<Attribute> tableAttributes = new ArrayList<>();
                 for (int an = 0; an < NumOfAtributes; an++) {
                     int attributeLen = dataInputStr.readInt();
                     String attribute = new String(dataInputStr.readNBytes(attributeLen));
+                    String[] attribVals = attribute.split(" ");
 
-                    //TODO mk attribute
-
-                    //TODO add attibute to tableAttributes
+                    tableAttributes.add(new Attribute(attribVals[0],attribVals[1]));
                 }
 
+
+                // mk Pkeys
                 int PKattributeLen = dataInputStr.readInt();
                 String PKattribute = new String(dataInputStr.readNBytes(PKattributeLen));
-                //TODO mk pk
+                String[] PKVals = PKattribute.split(" ");
+                Attribute PK = new Attribute(PKVals[0],PKVals[1]);
 
 
+                // mk fkeys
                 ArrayList<ForeignKey> ForeignKeys= new ArrayList<>();
                 int numOfFk = dataInputStr.readInt();
-                for (int fn = 0; fn < numOfFk; fn++) {
-                    int lenFk = dataInputStr.readInt();
-                    String Fk = new String(dataInputStr.readNBytes(PKattributeLen));
-                    // TODO mk fk
+                if(numOfFk>0) {
+                    for (int fn = 0; fn < numOfFk; fn++) {
+                        int lenFk = dataInputStr.readInt();
+                        String Fk = new String(dataInputStr.readNBytes(PKattributeLen));
 
-                    // TODO add fk to ForeignKeys
+                        System.out.println(Fk);
+                        // TODO mk fk
+
+                        // TODO add fk to ForeignKeys
+                    }
                 }
 
-
+                // get pages
                 int numPagesThatBelongToMe = dataInputStr.readInt();
-
                 ArrayList<Integer> BelongToMe = new ArrayList<>();
+                if(numPagesThatBelongToMe>0) {
 
-                for (int an = 0; an < numPagesThatBelongToMe; an++) {
-                    int pageName = dataInputStr.readInt();
-                    BelongToMe.add(pageName);
+                    for (int an = 0; an < numPagesThatBelongToMe; an++) {
+                        int pageName = dataInputStr.readInt();
+                        System.out.println(pageName);
+                        BelongToMe.add(pageName);
+                    }
                 }
 
-                //TODO make table and add it to tables
+                //TODO make table and add it to tables.txt
+
 
 
                 // not needed but have to di it to read correct bytes
-                dataInputStr.readInt();
+                if(tn < numTables-1) { dataInputStr.readInt();}
 
-
-                }
+            }
             return tables;
 
-
         }catch (IOException e){
+            System.err.println("Error reading");
             return null;
         }
     }
-
-
 }
