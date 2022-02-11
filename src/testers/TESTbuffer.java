@@ -1,12 +1,12 @@
-package pagebuffer;
+package testers;
 
 import common.Attribute;
 import common.Page;
 import common.Table;
+import pagebuffer.PageBuffer;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 public class TESTbuffer {
 

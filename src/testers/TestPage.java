@@ -1,5 +1,10 @@
-package common;
+package testers;
 
+
+import common.Attribute;
+import common.ITable;
+import common.Page;
+import common.Table;
 
 import java.util.ArrayList;
 public class TestPage {
@@ -70,6 +75,7 @@ public class TestPage {
 
         Page splitPage2 = splitPage.split();
 
+
         System.out.println("--------page "+splitPage.getPageName()+" points to "+splitPage.getPtrToNextPage()+"----------");
 
         for(Object record:splitPage.getPageRecords()){
@@ -96,7 +102,6 @@ public class TestPage {
         for(Object record:splitPage3.getPageRecords()){
             System.out.println(record);
         }
-
 
     }
 }

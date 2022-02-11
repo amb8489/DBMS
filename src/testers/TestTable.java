@@ -1,4 +1,8 @@
-package common;
+package testers;
+
+import common.Attribute;
+import common.Page;
+import common.Table;
 
 import javax.imageio.IIOException;
 import java.io.*;
@@ -45,11 +49,9 @@ public class TestTable {
                 ArrayList<Attribute> Tattrs = new ArrayList<>();
 
                 for (int b = 0;b < rnd.nextInt(1,10) ;b++) {
-
                     Tattrs.add(attrs.get(rnd.nextInt(4)));
                 }
                 Attribute pk = Tattrs.get(0);
-
 
                 Table table1 = new Table(name4, Tattrs, pk);
                 Page p = new Page(table1);

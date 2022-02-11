@@ -1,5 +1,7 @@
-package catalog;
+package testers;
 
+import catalog.ACatalog;
+import catalog.Catalog;
 import common.Attribute;
 import common.Page;
 import common.Table;
