@@ -29,7 +29,7 @@ public class TestPage {
         Page p = new Page(table1);
 
         // read data from page
-            p.LoadFromDisk("src/DB/pages/1.txt",table1);
+            p.LoadFromDisk("src/DB/pages/1",table1);
 
 
 
@@ -38,9 +38,9 @@ public class TestPage {
 //            System.out.println(record);
 //        }
 
-        p.writeToDisk("src/pagebuffer/page1.txt",table1);
+        p.writeToDisk("src/DB/pages/1",table1);
 
-        p.LoadFromDisk("src/pagebuffer/page1.txt",table1);
+        p.LoadFromDisk("src/DB/pages/1",table1);
 
 //         print out page records that we just wrote in
                 for(Object record:p.getPageRecords()){

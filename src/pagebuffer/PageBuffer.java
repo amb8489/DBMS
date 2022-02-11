@@ -34,15 +34,22 @@ public class PageBuffer {
 
     ///////////////////////methods////////////////////////////////////////////
 
+    public static int getPageBufferSize() {
+        return pageBuffer.size();
+    }
+
     public Page getPageFromBuffer(String name, ITable table) {
         int idx = 0;
 
         // loooking to see if page we want is already loaded in the buffer
         for (Page p : pageBuffer) {
-            if (p.getPageName().equals(name)) {
+            if (name.endsWith(p.getPageName())) {
+
+
                 // to update LRU order
                 pageBuffer.add(pageBuffer.remove(idx));
                 //gets the last element in list
+                System.out.println("found page in buffer");
                 return pageBuffer.get(pageBuffer.size() - 1);
             }
             idx++;
@@ -75,12 +82,15 @@ public class PageBuffer {
 
 
     public Page loadNewPageToBuffer(String name, ITable table) {
+        System.out.println("buffer loading new page from disk");
+
 
         // if buffer is full
         if (pageBuffer.size() == maxBufferSize) {
 
             // write LRU page to disk / check for successful page write
             Page p = pageBuffer.get(0);
+            System.out.println("BUFFER FULL wring page ["+p.getPageName()+"] to disk");
 
             if (!p.writeToDisk(p.getPageName(), p.IBelongTo)) {
                 System.err.println("error loading new page to buffer [LRU write to disk failed]");

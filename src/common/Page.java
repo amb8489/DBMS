@@ -187,6 +187,10 @@ public class Page {
 
     }
 
+    public void setPageRecords(List<ArrayList<Object>> pageRecords) {
+        this.pageRecords = pageRecords;
+    }
+
     // this will write the page to disk at location given the table the the page belongs to
     public boolean writeToDisk(String location, ITable table) {
         try {
