@@ -39,6 +39,10 @@ public class TEST_read_and_write {
 
     public static void main(String[] args) throws IOException {
 
+        test();
+}
+
+    public static void test() throws IOException {
         int np= 11;
         for(int numPages = 1;numPages < np;numPages++) {
             System.out.println("making new page: "+ "src/DB/pages/" + numPages);
@@ -109,7 +113,7 @@ public class TEST_read_and_write {
             out.write(record_out);
             out.close();
         }
-        System.exit(0);
+        return;
         ////////////////////////// reading file given table schema
 //        System.out.println("reading record from page");
 //
@@ -142,4 +146,6 @@ public class TEST_read_and_write {
 //
 //        }
     }
-}
+
+    }
+
