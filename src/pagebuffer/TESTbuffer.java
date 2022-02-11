@@ -68,18 +68,20 @@ public class TESTbuffer {
         page4.getPageRecords().clear();
         page4.wasChanged = true;
 
-        // loading new page will cause page 4 to be written to disk
-        Page page5 = pb.getPageFromBuffer("src/DB/pages/5",t1);
+
+        // purging only page 4 write
+        pb.PurgeBuffer();
         System.out.println(pb.getPageBufferSize());
-
-
-
 
 
         // !!!! loading pagee 4 in to see if changes got saved to disk
 
          page4 = pb.getPageFromBuffer("src/DB/pages/4",t1);
-        System.out.println(page4.currentSize);
+         System.out.println(":"+page4.currentSize);
+
+
+
+
 
 
 

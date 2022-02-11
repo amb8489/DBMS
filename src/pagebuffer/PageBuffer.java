@@ -71,8 +71,10 @@ public class PageBuffer {
             if (page.isChanged()) {
                 System.out.println(" writing page ["+page.getPageName()+"] to disk");
 
+                //TODO ????/ "src/DB/pages/"+p.getPageName() hmmm
+
                 // check for successful page write
-                if (!page.writeToDisk(page.getPageName(), page.IBelongTo)) {
+                if (!page.writeToDisk("src/DB/pages/"+page.getPageName(), page.IBelongTo)) {
                     System.err.println("error purging buffer [write to disk failed]");
                     return false;
                 }
