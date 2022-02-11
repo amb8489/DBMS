@@ -18,8 +18,8 @@ public class Table implements ITable{
     private int ID;
     private Attribute PrimaryKey;
     private ArrayList<Attribute> Attributes;
-    private ArrayList<ForeignKey> ForeignKeys;
-    private ArrayList<Integer>PagesThatBelongToMe;
+    private ArrayList<ForeignKey> ForeignKeys= new ArrayList<>();
+    private ArrayList<Integer>PagesThatBelongToMe = new ArrayList<>();
 
     // ADD INDEX LIST HERE - FOURTH PHASE
 
@@ -30,6 +30,7 @@ public class Table implements ITable{
         this.TableName = name;
         this.PrimaryKey = PrimaryKey;
     }
+
 
 
 
@@ -121,8 +122,7 @@ public class Table implements ITable{
     }
 
     private boolean addPageAffiliations(int pageName){
-            this.PagesThatBelongToMe.add(pageName);
-            return true;
+        return this.PagesThatBelongToMe.add(pageName);
     }
 
     @Override
@@ -138,21 +138,23 @@ public class Table implements ITable{
               int:PkLen,           String: PkAttribute, int: #of Fk's ,    int: lenFk,
               String Fk,           int: #ofPageNames,   ints:pagenames .....         ]
      */
-    public boolean saveToDisk(String location) {
+    public byte[] toBytes() {
 
         try {
 
 
-            DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(location)));
             // byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
             // WRITE table details
-//            private ArrayList<ForeignKey> ForeignKeys;
 
+            // total number of tables
             outputStream.write(ByteBuffer.allocate(4).putInt(Table.numTables).array());
+            // tables name len
             outputStream.write(ByteBuffer.allocate(4).putInt(this.TableName.length()).array());
+            // table name
             outputStream.write(this.TableName.getBytes());
+            // table id
             outputStream.write(ByteBuffer.allocate(4).putInt(this.ID).array());
 
             // number of attributes we need to read in
@@ -204,15 +206,95 @@ public class Table implements ITable{
                 outputStream.write(ByteBuffer.allocate(4).putInt(pageName).array());
             }
 
-            // writee to page
-            out.write(outputStream.toByteArray());
-
-            return true;
+            return outputStream.toByteArray();
 
         } catch (IOException e) {
             e.printStackTrace();
-            return false;
+            return null;
 
         }
     }
+
+    public static ArrayList<ITable> ReadAllTablesFromDisk() {
+
+        try {
+            //TODO
+            String location = "src/DB/tabs/tables.txt";
+            System.out.println("reading tables from disk");
+
+
+            // read in streams
+            FileInputStream inputStream;
+            inputStream = new FileInputStream(location);
+            DataInputStream dataInputStr = new DataInputStream(inputStream);
+
+
+            // reading all the tables from page from disk
+
+            // first thing thats stored in a page is the num of tables
+            int numTables = dataInputStr.readInt();
+            Table.numTables = numTables;
+
+            ArrayList<ITable> tables = new ArrayList<>();
+            for (int tn = 0; tn < numTables; tn++) {
+
+
+                int tableNameLength = dataInputStr.readInt();
+                String tableName = new String(dataInputStr.readNBytes(tableNameLength));
+                int tableID = dataInputStr.readInt();
+
+                int NumOfAtributes = dataInputStr.readInt();
+
+                ArrayList<Attribute> tableAttributes = new ArrayList<>();
+                for (int an = 0; an < NumOfAtributes; an++) {
+                    int attributeLen = dataInputStr.readInt();
+                    String attribute = new String(dataInputStr.readNBytes(attributeLen));
+
+                    //TODO mk attribute
+
+                    //TODO add attibute to tableAttributes
+                }
+
+                int PKattributeLen = dataInputStr.readInt();
+                String PKattribute = new String(dataInputStr.readNBytes(PKattributeLen));
+                //TODO mk pk
+
+
+                ArrayList<ForeignKey> ForeignKeys= new ArrayList<>();
+                int numOfFk = dataInputStr.readInt();
+                for (int fn = 0; fn < numOfFk; fn++) {
+                    int lenFk = dataInputStr.readInt();
+                    String Fk = new String(dataInputStr.readNBytes(PKattributeLen));
+                    // TODO mk fk
+
+                    // TODO add fk to ForeignKeys
+                }
+
+
+                int numPagesThatBelongToMe = dataInputStr.readInt();
+
+                ArrayList<Integer> BelongToMe = new ArrayList<>();
+
+                for (int an = 0; an < numPagesThatBelongToMe; an++) {
+                    int pageName = dataInputStr.readInt();
+                    BelongToMe.add(pageName);
+                }
+
+                //TODO make table and add it to tables
+
+
+                // not needed but have to di it to read correct bytes
+                dataInputStr.readInt();
+
+
+                }
+            return tables;
+
+
+        }catch (IOException e){
+            return null;
+        }
+    }
+
+
 }

@@ -32,9 +32,6 @@ public class Catalog extends ACatalog {
     private HashMap<Integer, String> PageToTable;
 
 
-    //TODO store what pages belong to what tables.... should the table keep track of this
-
-
 
     public Catalog(String location, int pageSize, int pageBufferSize) {
 
@@ -52,8 +49,18 @@ public class Catalog extends ACatalog {
             // we know this is the location b/c its given
             this.location = location;
 
-            // TODO read in data and make new catalog
+            // read in page size
+            this.pageSize = dataInputStr.readInt();
 
+            this.pageBufferSize = dataInputStr.readInt();
+
+
+            int numTables = dataInputStr.readInt();
+
+            // read in tables
+            ArrayList<ITable> tabs = Table.ReadAllTablesFromDisk();
+
+            // TODO DO THINGS WITH THE TABLE DATA
 
 
         } catch (IOException e) {
@@ -156,7 +163,8 @@ public class Catalog extends ACatalog {
 
     structure is
 
-    [int: pageSize | int: pageBufferSize | int: number of tables | table1 | table2 .. ect]
+    [int: pageSize | int: pageBufferSize | int: number of tables]
+    saves tables to tables page
 
      */
 
