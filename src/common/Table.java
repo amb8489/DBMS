@@ -250,7 +250,14 @@ public class Table implements ITable{
             // reading all the tables.txt from page from disk
 
             // first thing thats stored in a page is the num of tables.txt
-            int numTables = dataInputStr.readInt();
+            int numTables = 0;
+            try {
+                numTables = dataInputStr.readInt();
+
+            }catch (IOException i){
+                System.out.println("no tables found stored in DB");
+                return null;
+            }
             Table.numTables = numTables;
 
             ArrayList<ITable> tables = new ArrayList<>();

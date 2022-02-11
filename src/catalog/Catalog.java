@@ -25,7 +25,7 @@ public class Catalog extends ACatalog {
     private int pageSize;
     private int pageBufferSize;
     // string table name    the table
-    private HashMap<String, ITable> CurrentTablesInBD;
+    private HashMap<String, ITable> CurrentTablesInBD = new HashMap<>();
 
 
 
@@ -54,9 +54,11 @@ public class Catalog extends ACatalog {
             // read in tables.txt
             ArrayList<ITable> tabs = Table.ReadAllTablesFromDisk();
 
-            // restoring tale data
-            for(ITable table: tabs){
-                CurrentTablesInBD.put(table.getTableName(),table);
+            if( tabs!=null && tabs.size() >0) {
+                // restoring tale data
+                for (ITable table : tabs) {
+                    CurrentTablesInBD.put(table.getTableName(), table);
+                }
             }
             System.out.println("restore successful! ");
 
@@ -186,17 +188,20 @@ public class Catalog extends ACatalog {
 
 
             /////// write all tables out to "src/DB/catalog/tables.txt"
-            out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream("src/DB/catalog/tables.txt")));
+            if(CurrentTablesInBD!= null && CurrentTablesInBD.size() >0 ) {
+
+                out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream("src/DB/tabs/tables.txt")));
             outputStream = new ByteArrayOutputStream();
 
-
-            for (String tableName : CurrentTablesInBD.keySet()) {
-                Table t = (Table) CurrentTablesInBD.get(tableName);
-                outputStream.write(t.toBytes());
-            }
+                for (String tableName : CurrentTablesInBD.keySet()) {
+                    Table t = (Table) CurrentTablesInBD.get(tableName);
+                    outputStream.write(t.toBytes());
+                }
 
             out.write(outputStream.toByteArray());
             out.close();
+            }
+
 
             return true;
         }catch (IOException i){
