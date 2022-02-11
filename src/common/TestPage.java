@@ -16,7 +16,7 @@ public class TestPage {
         attrs4.add(new Attribute("attr2", "Double"));
         attrs4.add(new Attribute("attr3", "Boolean"));
         attrs4.add(new Attribute("attr4", "Char(5)"));
-        attrs4.add(new Attribute("attr4", "varchar(10)"));
+        attrs4.add(new Attribute("attr4", "varchar(5)"));
 
         Attribute pk = attrs4.get(0);
 
@@ -29,7 +29,7 @@ public class TestPage {
         Page p = new Page(table1);
 
         // read data from page
-            p.LoadFromDisk("src/pagebuffer/page1.txt",table1);
+            p.LoadFromDisk("src/DB/pages/1.txt",table1);
 
 
 

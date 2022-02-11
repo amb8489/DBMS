@@ -41,7 +41,7 @@ public class TEST_read_and_write {
 
 
         String[] schema = "Integer Double Boolean Char(5) varchar(10)".split(" ");
-        String fileName = "src/pagebuffer/page1.txt";
+        String fileName = "src/DB/pages/1.txt";
 
         // outstreams
         DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fileName)));
