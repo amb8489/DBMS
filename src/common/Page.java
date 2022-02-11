@@ -53,6 +53,7 @@ public class Page {
     public Page(List<ArrayList<Object>> records, ITable iBelongTo, int sizeInBytes) {
 
         numPages++;
+        this.wasChanged = true;
         this.pageName = String.valueOf(numPages);
         this.pageRecords = records;
         this.IBelongTo = iBelongTo;
