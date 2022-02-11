@@ -12,6 +12,9 @@ public class TESTcatalog {
     public static void main(String[] args) throws IOException {
 
 
+
+
+
         // ignore part for testing below all this vv
         DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream("src/DB/tabs/tables.txt")));
         String name4 = "table4";
@@ -27,9 +30,9 @@ public class TESTcatalog {
         Table table2 = new Table("name5",attrs4,pk);
         Page p = new Page(table1);
         table1.addPageAffiliations(Integer.parseInt(p.getPageName()));
-        table1.addPageAffiliations(Integer.parseInt(p.getPageName())+1);
-        table1.addPageAffiliations(Integer.parseInt(p.getPageName())+2);
-        table1.addPageAffiliations(Integer.parseInt(p.getPageName())+3);
+        table1.addPageAffiliations(2);
+        table1.addPageAffiliations(3);
+        table1.addPageAffiliations(4);
         table1.addPageAffiliations(Integer.parseInt(p.getPageName())+4);
         Page p2 = new Page(table1);
         table2.addPageAffiliations(55);
@@ -48,6 +51,13 @@ public class TESTcatalog {
 
         System.out.println(c.containsTable(table1.getTableName()));
         System.out.println(c.containsTable(table2.getTableName()));
+
+        System.out.println(c.getPageSize());
+        System.out.println(c.getPageBufferSize());
+
+
+
+//        System.out.println(c.getTable(table1.getTableName()).tableToString());
         c.saveToDisk();
 
 
