@@ -31,31 +31,31 @@ public class TESTbuffer {
         Table t1 = new Table("t1",attrs,attrs.get(0));
 
         // testing for loading new page
-        Page newpage = pb.getPageFromBuffer("src/DB/pages/1",t1);
+        Page newpage = pb.getPageFromBuffer("1",t1);
         System.out.println(newpage.getPageName());
 
         System.out.println(pb.getPageBufferSize());
 
         // testing for loading from cache
-        Page samepage = pb.getPageFromBuffer("src/DB/pages/1",t1);
+        Page samepage = pb.getPageFromBuffer("1",t1);
         System.out.println(pb.getPageBufferSize());
 
         //filling buffer
-        Page page2 = pb.getPageFromBuffer("src/DB/pages/2",t1);
+        Page page2 = pb.getPageFromBuffer("2",t1);
         System.out.println(pb.getPageBufferSize());
-        Page page2same = pb.getPageFromBuffer("src/DB/pages/2",t1);
+        Page page2same = pb.getPageFromBuffer("2",t1);
         System.out.println(pb.getPageBufferSize());
 
 
         //testing LRU wrting should be page 1
 
-        Page page3 = pb.getPageFromBuffer("src/DB/pages/3",t1);
+        Page page3 = pb.getPageFromBuffer("3",t1);
         System.out.println("page 3 name:"+page3.getPageName());
         System.out.println(pb.getPageBufferSize());
 
         //testing LRU wrting should be page 2
 
-        Page page4 = pb.getPageFromBuffer("src/DB/pages/4",t1);
+        Page page4 = pb.getPageFromBuffer("4",t1);
         System.out.println(pb.getPageBufferSize());
         System.out.println("page 4 name:"+page4.getPageName());
 
@@ -63,7 +63,7 @@ public class TESTbuffer {
         // testing ordering in LRU array
         System.out.println("-----------");
 
-        page3 = pb.getPageFromBuffer("src/DB/pages/3",t1);
+        page3 = pb.getPageFromBuffer("3",t1);
         System.out.println(pb.getPageBufferSize());
         System.out.println("page3 name:"+page3.getPageName());
 
@@ -81,13 +81,24 @@ public class TESTbuffer {
 
         // !!!! loading pagee 4 in to see if changes got saved to disk
 
-         page4 = pb.getPageFromBuffer("src/DB/pages/4",t1);
+         page4 = pb.getPageFromBuffer("4",t1);
 
 
         System.out.println("page4 name:"+page4.getPageName());
 
         System.out.println(":"+page4.currentSize);
 
+//        int next = 0;
+//        PageBuffer pb = new PageBuffer(2);
+//        Page head = pb.getPageFromBuffer("" + ((Table) table1).getPagesThatBelongToMe().get(0), table1);
+//        System.out.println("head -> " + head.getPageName());
+//
+//        while (next != -1) {
+//
+//            next = head.getPtrToNextPage();
+//            System.out.println(next);
+//
+//        }
 
 
 

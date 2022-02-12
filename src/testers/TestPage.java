@@ -106,14 +106,6 @@ public class TestPage {
 
         System.out.println(((Table) table1).getPagesThatBelongToMe());
 
-        int next = 0;
-        PageBuffer pb = new PageBuffer(2);
-        System.out.println("name -> " + ((Table) table1).getPagesThatBelongToMe().get(0));
-        Page head = pb.getPageFromBuffer("" + ((Table) table1).getPagesThatBelongToMe().get(0), table1);
-        System.out.println(head.getPageName());
-//        while (next != -1) {
-//
-//        }
 
 
     }
