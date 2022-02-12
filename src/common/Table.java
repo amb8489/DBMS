@@ -1,4 +1,6 @@
 package common;
+import catalog.Catalog;
+
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -28,6 +30,10 @@ public class Table implements ITable{
         this.Attributes = Attributes;
         this.TableName = name;
         this.PrimaryKey = PrimaryKey;
+
+        Page firstPAgeForTable = new Page(this);
+        firstPAgeForTable.writeToDisk(Catalog.getCatalog().getDbLocation(),this);
+
     }
 
 

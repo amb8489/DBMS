@@ -26,7 +26,7 @@ public class TEST_read_and_write {
 
     }
     // makes a random record with the schema  " Integer Double Boolean Char(5) varchar(10)"
-    private static ArrayList<Object> mkRandomRec() {
+    public static ArrayList<Object> mkRandomRec() {
         ArrayList<Object> row = new ArrayList<>();
         row.add(69);
         Random r = new Random();

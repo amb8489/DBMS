@@ -11,7 +11,7 @@ import java.util.List;
 public class Page {
 
     // number of pages in DB and also used as the name of the page
-    private static int numPages = 0;
+    public static int numPages = 0;
 
     // WAS THE RECORDS CHANGED AT ALL FROM INSERT DELETE SPLIT ECT?
     public boolean wasChanged = false;
@@ -39,7 +39,7 @@ public class Page {
     public ITable IBelongTo = null;
 
 
-    // makes the first new page
+    // makes the first new page head of linked list
     public Page(ITable iBelongTo) {
         numPages++;
         this.currentSize = 0;
@@ -48,6 +48,7 @@ public class Page {
         this.ptrToNextPage = -1;
         this.IBelongTo = iBelongTo;
         ((Table)this.IBelongTo).addPageAffiliations(numPages);
+
     }
 
     // used when splitting a page
@@ -124,10 +125,10 @@ public class Page {
 
             System.out.println("reading records from page "+location);
 
-
+            String PathToPages = Catalog.getCatalog().getDbLocation()+"/pages/"+location;
             // read in streams
             FileInputStream inputStream;
-            inputStream = new FileInputStream(location);
+            inputStream = new FileInputStream(PathToPages);
             DataInputStream dataInputStr = new DataInputStream(inputStream);
 
             int currentSize = 0;
@@ -215,6 +216,7 @@ public class Page {
     // this will write the page to disk at location given the table the the page belongs to
     public boolean writeToDisk(String location, ITable table) {
         try {
+            location = Catalog.getCatalog().getDbLocation()+"/pages/"+this.pageName;
 
             // get schema from table that we need in order to know what type we are reading in
             // if record has a Char(#) type we need to know how long that char is so we know how many bytes to read in
@@ -223,6 +225,7 @@ public class Page {
                 schema.add(att.getAttributeType());
             }
             // output streams
+            System.out.println(location);
             DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(location)));
 
             // byte array that we will store at the end(all the records stored as bytes at once to reduce the amount of
@@ -295,9 +298,10 @@ public class Page {
             pageRecords.clear();
             // update page size
             currentSize = 0;
+            System.out.println("Store complete");
             return true;
         } catch (IOException e) {
-            System.err.println("COULD NOT FILE PAGE");
+            System.err.println("COULD NOT Write FILE PAGE "+location);
             return false;
         }
     }
@@ -331,6 +335,8 @@ public class Page {
         // like adding a node in a linked list
         SplitPage.ptrToNextPage = this.ptrToNextPage;
         this.ptrToNextPage = Integer.parseInt(SplitPage.pageName);
+
+
 
         return SplitPage;
 

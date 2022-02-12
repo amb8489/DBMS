@@ -31,13 +31,15 @@ public class Catalog extends ACatalog {
 
     public Catalog(String location, int pageSize, int pageBufferSize) {
 
-        System.out.println("attempting to find catalog in: "+location);
+        System.out.println("attempting to find catalog in: "+location+"/catalog/catalog.txt");
 
         // atempt to read catalog file from DB if its there
+
+
         try {
             // read in streams
             FileInputStream inputStream;
-            inputStream = new FileInputStream(location);
+            inputStream = new FileInputStream(location+"/catalog/catalog.txt");
             DataInputStream dataInputStr = new DataInputStream(inputStream);
 
             System.out.println("found catalog .. restoring");
@@ -52,6 +54,7 @@ public class Catalog extends ACatalog {
             this.pageBufferSize = dataInputStr.readInt();
 
             // read in tables.txt
+            //TODO ADD LOCATION TO THIS
             ArrayList<ITable> tabs = Table.ReadAllTablesFromDisk();
 
             if( tabs!=null && tabs.size() >0) {
