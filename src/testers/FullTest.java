@@ -14,7 +14,7 @@ public class FullTest {
 
     public static void main(String[] args) {
         // mk catalog
-        ACatalog cat = Catalog.createCatalog("src/DB",1000,2);
+        ACatalog cat = Catalog.createCatalog("src/DB",256,2);
 
         // make pb this should be made by sm ?
         PageBuffer pb = new PageBuffer(2);
@@ -79,8 +79,6 @@ public class FullTest {
         }
 
         pb.PurgeBuffer();
-
-        pb.
 
         // save
 //        cat.saveToDisk();
