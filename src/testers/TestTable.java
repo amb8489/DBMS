@@ -1,6 +1,7 @@
 package testers;
 
 import common.Attribute;
+import common.ITable;
 import common.Page;
 import common.Table;
 
@@ -39,6 +40,7 @@ public class TestTable {
             Random rnd = new Random();
 
 
+            ArrayList<Table>all_tables = new ArrayList<>();
 
             for (int i = 0;i < 10 ;i++) {
 
@@ -48,7 +50,6 @@ public class TestTable {
                 // mk random table
 
                 ArrayList<Attribute> Tattrs = new ArrayList<>();
-
                 for (int b = 0;b < rnd.nextInt(1,10) ;b++) {
                     Tattrs.add(attrs.get(rnd.nextInt(4)));
                 }
@@ -56,22 +57,27 @@ public class TestTable {
 
                 Table table1 = new Table(name4, Tattrs, pk);
                 Page p = new Page(table1);
-
-                table1.addPageAffiliations(Integer.parseInt(p.getPageName()));
                 table1.addPageAffiliations(Integer.parseInt(p.getPageName()) + 1);
                 table1.addPageAffiliations(Integer.parseInt(p.getPageName()) + 2);
                 table1.addPageAffiliations(Integer.parseInt(p.getPageName()) + 3);
                 table1.addPageAffiliations(Integer.parseInt(p.getPageName()) + 4);
+                all_tables.add(table1);
 
-                outputStream.write(table1.toBytes());
-
+            }
+            for(Table t:all_tables){
+                outputStream.write(t.toBytes());
             }
 
             out.write(outputStream.toByteArray());
             out.close();
 
 
-            Table.ReadAllTablesFromDisk();
+            ArrayList<ITable> tbs = Table.ReadAllTablesFromDisk();
+            System.out.println(tbs.size());
+
+            for(ITable t: tbs){
+                System.out.println(((Table)t).getPagesThatBelongToMe());
+            }
 
 
 

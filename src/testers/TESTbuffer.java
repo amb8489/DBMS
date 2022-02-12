@@ -1,6 +1,7 @@
 package testers;
 
 import common.Attribute;
+import common.ITable;
 import common.Page;
 import common.Table;
 import pagebuffer.PageBuffer;
@@ -31,6 +32,8 @@ public class TESTbuffer {
 
         // testing for loading new page
         Page newpage = pb.getPageFromBuffer("src/DB/pages/1",t1);
+        System.out.println(newpage.getPageName());
+
         System.out.println(pb.getPageBufferSize());
 
         // testing for loading from cache
@@ -47,12 +50,14 @@ public class TESTbuffer {
         //testing LRU wrting should be page 1
 
         Page page3 = pb.getPageFromBuffer("src/DB/pages/3",t1);
+        System.out.println("page 3 name:"+page3.getPageName());
         System.out.println(pb.getPageBufferSize());
 
         //testing LRU wrting should be page 2
 
         Page page4 = pb.getPageFromBuffer("src/DB/pages/4",t1);
         System.out.println(pb.getPageBufferSize());
+        System.out.println("page 4 name:"+page4.getPageName());
 
 
         // testing ordering in LRU array
@@ -60,6 +65,7 @@ public class TESTbuffer {
 
         page3 = pb.getPageFromBuffer("src/DB/pages/3",t1);
         System.out.println(pb.getPageBufferSize());
+        System.out.println("page3 name:"+page3.getPageName());
 
 
         // !!!!   EXAMPLE change in page doing an update to page before it gets written out
@@ -67,7 +73,6 @@ public class TESTbuffer {
         // !!!! when we load a new page page 4 should be written out
         page4.getPageRecords().clear();
         page4.wasChanged = true;
-
 
         // purging only page 4 write
         pb.PurgeBuffer();
@@ -77,7 +82,13 @@ public class TESTbuffer {
         // !!!! loading pagee 4 in to see if changes got saved to disk
 
          page4 = pb.getPageFromBuffer("src/DB/pages/4",t1);
-         System.out.println(":"+page4.currentSize);
+
+
+        System.out.println("page4 name:"+page4.getPageName());
+
+        System.out.println(":"+page4.currentSize);
+
+
 
 
 

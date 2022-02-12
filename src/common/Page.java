@@ -24,6 +24,7 @@ public class Page {
     // name of the page aka string of what # page this is
     private String pageName;
 
+
     //TODO
     // max size a page can be byte
     private int MaxSize;
@@ -45,13 +46,12 @@ public class Page {
         this.pageName = String.valueOf(numPages);
         // first page points to nothing
         this.ptrToNextPage = -1;
-
         this.IBelongTo = iBelongTo;
         ((Table)this.IBelongTo).addPageAffiliations(numPages);
     }
 
     // used when splitting a page
-    public Page(List<ArrayList<Object>> records, ITable iBelongTo, int sizeInBytes) {
+    public Page(List<ArrayList<Object>> records, ITable iBelongTo, int sizeInBytes ) {
 
         numPages++;
         this.wasChanged = true;
@@ -62,6 +62,15 @@ public class Page {
         this.currentSize = sizeInBytes;
         ((Table)this.IBelongTo).addPageAffiliations(numPages);
 
+    }
+
+    // USED WHEN LOADING A PAGE IN FROM MEM
+    public Page(int pageName, int ptrToNextPage, int currentSize, List<ArrayList<Object>> pageRecords,ITable iBelongTo) {
+        this.pageName = String.valueOf(pageName);
+        this.pageRecords = pageRecords;
+        this.IBelongTo = iBelongTo;
+        this.currentSize = currentSize;
+        this.ptrToNextPage = ptrToNextPage;
     }
 
 
@@ -87,13 +96,11 @@ public class Page {
 
     // loads into a page all the records and page info from disk
     // given the location of the page on disk and the table that the page belongs to;
-    public boolean LoadFromDisk(String location, ITable table) {
+    public static Page LoadFromDisk(String location, ITable table) {
 
         try {
-            // clear out recods just in case
-            pageRecords.clear();
 
-            this.IBelongTo = table;
+
 
             // get schema from table that we need in order to know what type we are reading in
 
@@ -119,17 +126,21 @@ public class Page {
             inputStream = new FileInputStream(location);
             DataInputStream dataInputStr = new DataInputStream(inputStream);
 
-
+            int currentSize = 0;
             // reading all the records from page from disk
+            int pageName = dataInputStr.readInt();
 
-            // first thing thats stored in a page is the num of records stored and its ptr to the next page in linked list
+            currentSize += 4;
+
+            // the num of records stored and its ptr to the next page in linked list
             int numRecs = dataInputStr.readInt();
             //update size 4 bytes
             currentSize += 4;
 
-            this.ptrToNextPage = dataInputStr.readInt();
+            int ptrToNextPage = dataInputStr.readInt();
             currentSize += 4;
 
+            List<ArrayList<Object>> pageRecords = new ArrayList<>();
 
             //for each row in the page
             for (int rn = 0; rn < numRecs; rn++) {
@@ -181,13 +192,14 @@ public class Page {
                 // append row to pageRecords
                 pageRecords.add(rec);
             }
-            System.out.println(currentSize);
+            System.out.println(pageName+" curr size "+currentSize);
 
-            return true;
+            return new Page(pageName,ptrToNextPage,currentSize,pageRecords,table);
 
             // failure to find page or read fail
         } catch (IOException e) {
-            return false;
+            System.err.println("COULD NOT READ IN PAGE");
+            return null;
         }
 
     }
@@ -214,7 +226,9 @@ public class Page {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
 
-            // WRITE num records to page and name of next page (nullptr to next = -1)
+            // WRITE name ,num records to page, and name of next page (nullptr to next = -1)
+            outputStream.write(ByteBuffer.allocate(4).putInt(Integer.parseInt(this.getPageName())).array());
+
             outputStream.write(ByteBuffer.allocate(4).putInt(this.pageRecords.size()).array());
             outputStream.write(ByteBuffer.allocate(4).putInt(this.ptrToNextPage).array());
 
@@ -313,7 +327,6 @@ public class Page {
         // like adding a node in a linked list
         SplitPage.ptrToNextPage = this.ptrToNextPage;
         this.ptrToNextPage = Integer.parseInt(SplitPage.pageName);
-
 
         return SplitPage;
 

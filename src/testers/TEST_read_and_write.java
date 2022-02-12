@@ -58,6 +58,8 @@ public class TEST_read_and_write {
             int numrecs = 10;
 
             //writng num records and ptr to next (null because first page)
+            outputStream.write(ByteBuffer.allocate(4).putInt(numPages).array());
+
             outputStream.write(ByteBuffer.allocate(4).putInt(numrecs).array());
             outputStream.write(ByteBuffer.allocate(4).putInt(-1).array());
 

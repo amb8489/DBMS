@@ -53,6 +53,7 @@ public class TESTcatalog {
 
         System.out.println(c.containsTable(table1.getTableName()));
         System.out.println(c.containsTable(table2.getTableName()));
+        
 
         System.out.println(c.getPageSize());
         System.out.println(c.getPageBufferSize());

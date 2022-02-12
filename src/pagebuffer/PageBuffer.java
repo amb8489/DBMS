@@ -87,7 +87,7 @@ public class PageBuffer {
 
 
     public Page loadNewPageToBuffer(String name, ITable table) {
-        System.out.println("buffer loading new page from disk");
+        System.out.println("buffer loading page "+name+" from disk");
 
 
         // if buffer is full
@@ -113,9 +113,8 @@ public class PageBuffer {
     }
 
     public Page getPageFromDisk(String name, Table table) {
-        Page newPage = new Page(table);
-        newPage.LoadFromDisk(name, table);
-        return newPage;
+
+        return Page.LoadFromDisk(name, table);
     }
 
 

@@ -5,6 +5,7 @@ import common.Attribute;
 import common.ITable;
 import common.Page;
 import common.Table;
+import pagebuffer.PageBuffer;
 
 import java.util.ArrayList;
 public class TestPage {
@@ -104,8 +105,9 @@ public class TestPage {
             System.out.println(record);
         }
 
-
         System.out.println(((Table)table1).getPagesThatBelongToMe());
+
+
 
     }
 }

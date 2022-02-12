@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 public class Table implements ITable{
 
-    private static int numTables = 0; // tracks how many tables.txt have been created; used to establish table ID
+    public static int numTables = 0; // tracks how many tables.txt have been created; used to establish table ID
     private String TableName;
     private int ID;
     private Attribute PrimaryKey;
@@ -142,8 +142,8 @@ public class Table implements ITable{
         return true;
     }
 
-    public boolean addPageAffiliations(int pageName){
-        return this.PagesThatBelongToMe.add(pageName);
+    public void addPageAffiliations(int pageName){
+        this.PagesThatBelongToMe.add(pageName);
     }
 
     @Override
@@ -171,6 +171,8 @@ public class Table implements ITable{
 
             // total number of tables.txt
             outputStream.write(ByteBuffer.allocate(4).putInt(Table.numTables).array());
+            System.out.println(numTables);
+
             // tables.txt name len
             outputStream.write(ByteBuffer.allocate(4).putInt(this.TableName.length()).array());
             // table name
