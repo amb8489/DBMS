@@ -69,11 +69,11 @@ public class FullTest {
 
         p.writeToDisk("1",tab1);
 
-        p = Page.LoadFromDisk("1",tab1);
+        p =pb.getPageFromBuffer("1",tab1);
 
         System.out.println("init page size:"+(p.calcSizeOfRecords(p.getPageRecords(),tab1 )+12));
 
-        p = Page.LoadFromDisk("1",tab1);
+        p = pb.getPageFromBuffer("1",tab1);
         p.wasChanged = true;
 
 
@@ -85,12 +85,12 @@ public class FullTest {
         System.out.println(tab1.getPagesThatBelongToMe());
 
         for(int pname:tab1.getPagesThatBelongToMe()){
-            p = Page.LoadFromDisk(""+pname,tab1);
+            p = pb.getPageFromBuffer(""+pname,tab1);
             System.out.println(p.getPtrToNextPage());
 
         }
 
-        p = Page.LoadFromDisk("3",tab1);
+        p = pb.getPageFromBuffer("3",tab1);
 
         p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
         p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
@@ -103,7 +103,7 @@ public class FullTest {
 
 
         for(int pname:tab1.getPagesThatBelongToMe()){
-            p = Page.LoadFromDisk(""+pname,tab1);
+            p = pb.getPageFromBuffer(""+pname,tab1);
             System.out.println(pname +"-->"+p.getPtrToNextPage());
 
         }
