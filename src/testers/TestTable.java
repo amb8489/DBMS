@@ -39,6 +39,7 @@ public class TestTable {
             Random rnd = new Random();
 
 
+
             for (int i = 0;i < 10 ;i++) {
 
                 // make table
@@ -72,7 +73,13 @@ public class TestTable {
 
             Table.ReadAllTablesFromDisk();
 
-            System.exit(1);
+
+
+
+
+
+
+            return;
         }catch (IOException e){
             System.out.println("ERROR");
             System.exit(1);

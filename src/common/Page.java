@@ -47,6 +47,7 @@ public class Page {
         this.ptrToNextPage = -1;
 
         this.IBelongTo = iBelongTo;
+        ((Table)this.IBelongTo).addPageAffiliations(numPages);
     }
 
     // used when splitting a page
@@ -55,9 +56,12 @@ public class Page {
         numPages++;
         this.wasChanged = true;
         this.pageName = String.valueOf(numPages);
+
         this.pageRecords = records;
         this.IBelongTo = iBelongTo;
         this.currentSize = sizeInBytes;
+        ((Table)this.IBelongTo).addPageAffiliations(numPages);
+
     }
 
 
@@ -309,9 +313,6 @@ public class Page {
         // like adding a node in a linked list
         SplitPage.ptrToNextPage = this.ptrToNextPage;
         this.ptrToNextPage = Integer.parseInt(SplitPage.pageName);
-
-
-        //TODO add new page to catalog
 
 
         return SplitPage;

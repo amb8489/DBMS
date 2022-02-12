@@ -29,6 +29,7 @@ public class TestPage {
         ITable table1 = new Table(name4,attrs4,pk);
 
 
+        System.out.println(((Table)table1).getPagesThatBelongToMe());
 
         // make page
         Page p = new Page(table1);
@@ -102,6 +103,9 @@ public class TestPage {
         for(Object record:splitPage3.getPageRecords()){
             System.out.println(record);
         }
+
+
+        System.out.println(((Table)table1).getPagesThatBelongToMe());
 
     }
 }

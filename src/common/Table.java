@@ -31,7 +31,9 @@ public class Table implements ITable{
     }
 
 
-
+    public ArrayList<Integer> getPagesThatBelongToMe() {
+        return PagesThatBelongToMe;
+    }
 
     @Override
     public String getTableName() {
