@@ -36,6 +36,7 @@ public class FullTest {
 
         //see init page made for this table
 
+
         System.out.println(tab1.getPagesThatBelongToMe());
 
         // insert into table
@@ -114,7 +115,7 @@ public class FullTest {
 
 
         // save
-//        cat.saveToDisk();
+        cat.saveToDisk();
 
 
 

@@ -46,7 +46,6 @@ public class Catalog extends ACatalog {
 
             // we know this is the location b/c its given
             this.location = location;
-
             // read in page size
             this.pageSize = dataInputStr.readInt();
 
@@ -55,7 +54,7 @@ public class Catalog extends ACatalog {
 
             // read in tables.txt
             //TODO ADD LOCATION TO THIS
-            ArrayList<ITable> tabs = Table.ReadAllTablesFromDisk();
+            ArrayList<ITable> tabs = Table.ReadAllTablesFromDisk(location);
 
             if( tabs!=null && tabs.size() >0) {
                 // restoring tale data

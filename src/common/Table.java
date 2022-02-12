@@ -1,4 +1,5 @@
 package common;
+import catalog.ACatalog;
 import catalog.Catalog;
 
 import java.io.*;
@@ -32,8 +33,18 @@ public class Table implements ITable{
         this.PrimaryKey = PrimaryKey;
 
         Page firstPAgeForTable = new Page(this);
-        firstPAgeForTable.writeToDisk(Catalog.getCatalog().getDbLocation(),this);
+        firstPAgeForTable.writeToDisk(ACatalog.getCatalog().getDbLocation(), this);
 
+    }
+
+    public Table(String tableName, ArrayList<Attribute> tableAttributes, Attribute pk, ArrayList<Integer> belongToMe) {
+
+        ID = numTables;
+        numTables++;
+        this.Attributes = tableAttributes;
+        this.TableName = tableName;
+        this.PrimaryKey = pk;
+        this.PagesThatBelongToMe = belongToMe;
     }
 
 
@@ -244,10 +255,10 @@ public class Table implements ITable{
         }
     }
 
-    public static ArrayList<ITable> ReadAllTablesFromDisk() {
+    public static ArrayList<ITable> ReadAllTablesFromDisk(String DBlocation) {
 
         try {
-            String location = "src/DB/tabs/tables.txt";
+            String location = DBlocation+"/tabs/tables.txt";
             System.out.println("reading tables.txt from disk");
 
 
@@ -324,8 +335,7 @@ public class Table implements ITable{
 
                 //make table and add it to tables
 
-                Table DiskTable = new Table(tableName,tableAttributes,PK);
-                DiskTable.PagesThatBelongToMe =  BelongToMe;
+                Table DiskTable = new Table(tableName,tableAttributes,PK,BelongToMe);
                 DiskTable.setForeignKeys(ForeignKeys);
                 DiskTable.setID(tableID);
                 tables.add(DiskTable);

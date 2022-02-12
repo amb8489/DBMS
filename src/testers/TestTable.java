@@ -1,5 +1,6 @@
 package testers;
 
+import catalog.Catalog;
 import common.Attribute;
 import common.ITable;
 import common.Page;
@@ -72,7 +73,7 @@ public class TestTable {
             out.close();
 
 
-            ArrayList<ITable> tbs = Table.ReadAllTablesFromDisk();
+            ArrayList<ITable> tbs = Table.ReadAllTablesFromDisk(Catalog.getCatalog().getDbLocation());
             System.out.println(tbs.size());
 
             for(ITable t: tbs){
