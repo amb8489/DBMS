@@ -22,7 +22,7 @@ public class Catalog extends ACatalog {
 
     // db location
     private String location;
-    private int pageSize;
+    public int pageSize;
     private int pageBufferSize;
     // string table name    the table
     private HashMap<String, ITable> CurrentTablesInBD = new HashMap<>();

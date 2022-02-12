@@ -15,7 +15,7 @@ public class FullTest {
 
     public static void main(String[] args) {
         // mk catalog
-        ACatalog cat = Catalog.createCatalog("src/DB",512,2);
+        ACatalog cat = Catalog.createCatalog("src/DB",256,2);
 
         // make pb this should be made by sm ?
         PageBuffer pb = new PageBuffer(2);
@@ -57,8 +57,23 @@ public class FullTest {
         p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
         p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
         p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
+        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
+        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
+        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
+        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
+        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
+        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
+        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
+        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
+        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
 
+        p.writeToDisk("1",tab1);
 
+        p = Page.LoadFromDisk("1",tab1);
+
+        System.out.println("init page size:"+(p.calcSizeOfRecords(p.getPageRecords(),tab1 )+12));
+
+        p = Page.LoadFromDisk("1",tab1);
         p.wasChanged = true;
 
 
@@ -69,6 +84,29 @@ public class FullTest {
         // checking on what we now have for pages in table
         System.out.println(tab1.getPagesThatBelongToMe());
 
+        for(int pname:tab1.getPagesThatBelongToMe()){
+            p = Page.LoadFromDisk(""+pname,tab1);
+            System.out.println(p.getPtrToNextPage());
+
+        }
+
+        p = Page.LoadFromDisk("3",tab1);
+
+        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
+        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
+        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
+        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
+        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
+        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
+        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
+        p.writeToDisk("3",tab1);
+
+
+        for(int pname:tab1.getPagesThatBelongToMe()){
+            p = Page.LoadFromDisk(""+pname,tab1);
+            System.out.println(pname +"-->"+p.getPtrToNextPage());
+
+        }
 
 
 
