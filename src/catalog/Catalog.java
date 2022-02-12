@@ -22,7 +22,7 @@ public class Catalog extends ACatalog {
 
     // db location
     private String location;
-    public int pageSize;
+    private int pageSize;
     private int pageBufferSize;
     // string table name    the table
     private HashMap<String, ITable> CurrentTablesInBD = new HashMap<>();
@@ -128,7 +128,6 @@ public class Catalog extends ACatalog {
         // table already exist or not
         if (containsTable(tableName)) {
             this.CurrentTablesInBD.remove(tableName);
-            // TODO  remove all pages and information stored about the table.
 
             return true;
         }
@@ -192,7 +191,7 @@ public class Catalog extends ACatalog {
             /////// write all tables out to "src/DB/catalog/tables.txt"
             if(CurrentTablesInBD!= null && CurrentTablesInBD.size() >0 ) {
 
-                out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream("src/DB/tabs/tables.txt")));
+                out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(Catalog.getCatalog().getDbLocation()+"/tabs/tables.txt")));
             outputStream = new ByteArrayOutputStream();
 
                 for (String tableName : CurrentTablesInBD.keySet()) {

@@ -3,7 +3,6 @@ package testers;
 import catalog.ACatalog;
 import catalog.Catalog;
 import common.Attribute;
-import common.ITable;
 import common.Page;
 import common.Table;
 import pagebuffer.PageBuffer;
@@ -15,7 +14,7 @@ public class FullTest {
 
     public static void main(String[] args) {
         // mk catalog
-        ACatalog cat = Catalog.createCatalog("src/DB",256,2);
+        ACatalog cat = Catalog.createCatalog("src/DB",1000,2);
 
         // make pb this should be made by sm ?
         PageBuffer pb = new PageBuffer(2);
@@ -67,55 +66,24 @@ public class FullTest {
         p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
         p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
         p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-
-        p.writeToDisk("1",tab1);
-
-        p =pb.getPageFromBuffer("1",tab1);
-
-        System.out.println("init page size:"+(p.calcSizeOfRecords(p.getPageRecords(),tab1 )+12));
-
-        p = pb.getPageFromBuffer("1",tab1);
         p.wasChanged = true;
-
-
-
-
-
-
-        // checking on what we now have for pages in table
-        System.out.println(tab1.getPagesThatBelongToMe());
-
-        for(int pname:tab1.getPagesThatBelongToMe()){
-            p = pb.getPageFromBuffer(""+pname,tab1);
-            System.out.println(p.getPtrToNextPage());
-
-        }
-
-        p = pb.getPageFromBuffer("3",tab1);
-
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.writeToDisk("3",tab1);
-
 
         for(int pname:tab1.getPagesThatBelongToMe()){
             p = pb.getPageFromBuffer(""+pname,tab1);
             System.out.println(pname +"-->"+p.getPtrToNextPage());
 
+            for(ArrayList<Object> r: p.getPageRecords()){
+                System.out.println(r);
+            }
+
         }
 
+        pb.PurgeBuffer();
 
-
-
-
+        pb.
 
         // save
-        cat.saveToDisk();
+//        cat.saveToDisk();
 
 
 

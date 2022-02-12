@@ -52,7 +52,7 @@ public class Page {
     }
 
     // used when splitting a page
-    public Page(List<ArrayList<Object>> records, ITable iBelongTo, int sizeInBytes,int PtrToNext) {
+    public Page(List<ArrayList<Object>> records, ITable iBelongTo, int sizeInBytes, int PtrToNext) {
 
         numPages++;
         this.wasChanged = true;
@@ -218,8 +218,6 @@ public class Page {
     }
 
 
-    //TODO SPLIT PAGE
-    // this will write the page to disk at location given the table the the page belongs to
     public boolean writeToDisk(String location, ITable table) {
         try {
             location = Catalog.getCatalog().getDbLocation() + "/pages/" + this.pageName;
@@ -323,14 +321,11 @@ public class Page {
 
                 //time to split up
                 System.out.println(CumSum);
-                int pnum = 0;
                 int start = 0;
                 int adj = 0;
                 int SplitPoint = 0;
 
                 Page WillSplit = this;
-
-                ArrayList<Page> pages = new ArrayList<>();
 
                 List<ArrayList<Object>> RECORDS = this.pageRecords.subList(0, pageRecords.size());
 
@@ -343,13 +338,12 @@ public class Page {
 
                         List<ArrayList<Object>> left = RECORDS.subList(start, start + SplitPoint + 1);
                         start = start + SplitPoint + 1;
-                        pnum++;
-                        System.out.println( RECORDS.size());
+                        System.out.println(RECORDS.size());
 
 
                         // split making new page
                         WillSplit.pageRecords = left;
-                        System.out.println( RECORDS.size());
+                        System.out.println(RECORDS.size());
 
 
                         // new page will need attribs
@@ -365,8 +359,6 @@ public class Page {
                         WillSplit = nextPage;
 
 
-
-
                     }
                 }
 
@@ -377,13 +369,13 @@ public class Page {
 
                 WillSplit.writeToDisk(WillSplit.getPageName(), table);
 
+                return true;
 
             }
         } catch (IOException e) {
             System.err.println("COULD NOT Write FILE PAGE " + location);
             return false;
         }
-        return false;
     }
 
 
@@ -440,64 +432,15 @@ public class Page {
                 }
             }
             CumSum.add(newSize + CumSum.get(CumSum.size() - 1));
-
         }
-
         return CumSum;
 
     }
 
+
     public int calcSizeOfRecords(List<ArrayList<Object>> recs, ITable table) {
-        // get schema from table that we need in order to know what type we are reading in
-        // if record has a Char(#) type we need to know how long that char is so we know how many bytes to read in
-        int charlen = 0;
-        ArrayList<String> schema = new ArrayList<>();
+        ArrayList<Integer> sizeBytes = calcSizeOfRecordsCumSum(recs, table);
+        return sizeBytes.get(sizeBytes.size() - 1);
 
-        // looping though table attribs to get their types
-        for (Attribute att : table.getAttributes()) {
-            schema.add(att.getAttributeType());
-
-            // found a char(#) paring for the number
-            if (att.getAttributeType().startsWith("Char(")) {
-                charlen = Integer.parseInt(att.getAttributeType().substring(5, att.getAttributeType().length() - 1));
-            }
-        }
-        System.out.println(recs.size());
-        int newSize = 0;
-        for (int i = 0; i < recs.size(); i++) {
-
-            //for each attrib in row store to byte array
-            ArrayList<Object> record = recs.get(i);
-
-            // make byte array from record
-            // look though reach attribute and check the schema for its type and convert it to its bytes
-            // and add it to outputStream btye array
-            for (int idx = 0; idx < record.size(); idx++) {
-                switch (schema.get(idx)) {
-                    case "Integer":
-                        newSize += 4;
-                        break;
-                    case "Double":
-                        newSize += 8;
-                        break;
-                    case "Boolean":
-                        newSize += 1;
-                        break;
-                    default:
-
-                        // char(#)
-                        if (schema.get(idx).startsWith("Char(")) {
-                            newSize += charlen;
-                        } else {
-                            // add the len of var char before we write var char
-                            int VarCharlen = ((String) record.get(idx)).length();
-                            newSize += (4 + VarCharlen);
-                        }
-                }
-            }
-        }
-
-
-        return newSize;
     }
 }

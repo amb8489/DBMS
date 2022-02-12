@@ -50,7 +50,7 @@ public class PageBuffer {
                 // to update LRU order
                 pageBuffer.add(pageBuffer.remove(idx));
                 //gets the last element in list
-                System.out.println("found page ["+p.getPageName()+"] in buffer");
+                System.out.println("found page [" + p.getPageName() + "] in buffer");
                 return pageBuffer.get(pageBuffer.size() - 1);
             }
             idx++;
@@ -71,7 +71,7 @@ public class PageBuffer {
         for (Page page : pageBuffer) {
 
             if (page.isChanged()) {
-                System.out.println(" writing page ["+page.getPageName()+"] to disk");
+                System.out.println(" writing page [" + page.getPageName() + "] to disk");
 
                 // check for successful page write
                 if (!page.writeToDisk(page.getPageName(), page.IBelongTo)) {
@@ -85,31 +85,9 @@ public class PageBuffer {
         return true;
     }
 
-    public boolean addPageToBuffer(Page p){
-
-
-        // if buffer is full
-        if (pageBuffer.size() == maxBufferSize) {
-
-            // write LRU page to disk / check for successful page write
-            Page LRU = pageBuffer.get(0);
-            System.out.println("BUFFER FULL writing page ["+LRU.getPageName()+"] to disk");
-
-            if (!LRU.writeToDisk(LRU.getPageName(), LRU.IBelongTo)) {
-                System.err.println("error loading new page to buffer [LRU write to disk failed]");
-                return false;
-            }
-            // remove page from buffer
-            pageBuffer.remove(0);
-        }
-        pageBuffer.add(p);
-        return true;
-    }
-
 
     private Page loadNewPageToBuffer(String name, ITable table) {
-        System.out.println("buffer loading page "+name+" from disk");
-
+        System.out.println("buffer loading page " + name + " from disk");
 
 
         // if buffer is full
@@ -117,7 +95,7 @@ public class PageBuffer {
 
             // write LRU page to disk / check for successful page write
             Page p = pageBuffer.get(0);
-            System.out.println("BUFFER FULL writing page ["+p.getPageName()+"] to disk");
+            System.out.println("BUFFER FULL writing page [" + p.getPageName() + "] to disk");
 
             if (!p.writeToDisk(p.getPageName(), p.IBelongTo)) {
                 System.err.println("error loading new page to buffer [LRU write to disk failed]");
@@ -134,10 +112,8 @@ public class PageBuffer {
     }
 
     private Page getPageFromDisk(String name, Table table) {
-        Page loadedPage = Page.LoadFromDisk(name, table);
 
-
-        return loadedPage;
+        return Page.LoadFromDisk(name, table);
     }
 
 
