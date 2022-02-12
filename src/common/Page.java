@@ -66,6 +66,10 @@ public class Page {
 
     // USED WHEN LOADING A PAGE IN FROM MEM
     public Page(int pageName, int ptrToNextPage, int currentSize, List<ArrayList<Object>> pageRecords,ITable iBelongTo) {
+        if ( !((Table)iBelongTo).getPagesThatBelongToMe().contains(pageName) ){
+            numPages++;
+        }
+
         this.pageName = String.valueOf(pageName);
         this.pageRecords = pageRecords;
         this.IBelongTo = iBelongTo;
@@ -118,7 +122,7 @@ public class Page {
                 }
             }
 
-            System.out.println("reading records from page");
+            System.out.println("reading records from page "+location);
 
 
             // read in streams
@@ -198,7 +202,7 @@ public class Page {
 
             // failure to find page or read fail
         } catch (IOException e) {
-            System.err.println("COULD NOT READ IN PAGE");
+            System.err.println("COULD NOT READ IN PAGE "+location);
             return null;
         }
 

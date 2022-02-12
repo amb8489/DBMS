@@ -106,7 +106,7 @@ public class PageBuffer {
             pageBuffer.remove(0);
         }
 
-        Page newPage = getPageFromDisk(name, (Table) table);
+        Page newPage = getPageFromDisk("src/DB/pages/"+name, (Table) table);
         pageBuffer.add(newPage);
 
         return newPage;
