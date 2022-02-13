@@ -83,7 +83,6 @@ public class Page {
 
     }
 
-
     public int getPtrToNextPage() {
         return ptrToNextPage;
     }

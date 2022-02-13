@@ -23,7 +23,10 @@ public class Table implements ITable{
     private ArrayList<ForeignKey> ForeignKeys= new ArrayList<>();
     private ArrayList<Integer>PagesThatBelongToMe = new ArrayList<>();
 
+
     // ADD INDEX LIST HERE - FOURTH PHASE
+
+
 
     public Table(String name,ArrayList<Attribute> Attributes,Attribute PrimaryKey ){
         ID = numTables;
@@ -35,6 +38,17 @@ public class Table implements ITable{
         Page firstPAgeForTable = new Page(this);
         firstPAgeForTable.writeToDisk(ACatalog.getCatalog().getDbLocation(), this);
 
+    }
+
+    public int pkIdx(){
+        int idx = 0;
+        for(Attribute Attrib:Attributes){
+            if (Attrib.equals(this.PrimaryKey)){
+                return idx;
+            }
+            idx++;
+        }
+        return -1;
     }
 
     public Table(String tableName, ArrayList<Attribute> tableAttributes, Attribute pk, ArrayList<Integer> belongToMe) {
