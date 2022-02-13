@@ -96,7 +96,13 @@ public class FullTest {
         attrs.add(new Attribute("attr4", "Char(5)"));
         attrs.add(new Attribute("attr5", "Varchar(10)"));
         Attribute pk = attrs.get(0);
-        Table tab1 = (Table) cat.addTable("table1", attrs, pk);
+        Table tab1= null;
+//
+             tab1 = (Table) cat.addTable("table1", attrs, pk);
+            if (tab1 == null){
+                System.out.println("YOU ARE RESTORING TABLE");
+                 tab1 = (Table) cat.getTable("table1");
+              }
 
 
         //see init page made for this table
@@ -149,8 +155,8 @@ public class FullTest {
 
 
 
-        // save
-//        cat.saveToDisk();
+//         save
+        cat.saveToDisk();
 
 
     }

@@ -25,7 +25,7 @@ public class Catalog extends ACatalog {
     private int pageSize;
     private int pageBufferSize;
     // string table name    the table
-    private HashMap<String, ITable> CurrentTablesInBD = new HashMap<>();
+    public HashMap<String, ITable> CurrentTablesInBD = new HashMap<>();
 
 
 

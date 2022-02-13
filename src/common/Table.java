@@ -54,7 +54,7 @@ public class Table implements ITable{
     public Table(String tableName, ArrayList<Attribute> tableAttributes, Attribute pk, ArrayList<Integer> belongToMe) {
 
         ID = numTables;
-        numTables++;
+//        numTables++;
         this.Attributes = tableAttributes;
         this.TableName = tableName;
         this.PrimaryKey = pk;
@@ -270,9 +270,9 @@ public class Table implements ITable{
     }
 
     public static ArrayList<ITable> ReadAllTablesFromDisk(String DBlocation) {
+        String location = DBlocation+"/tabs/tables.txt";
 
         try {
-            String location = DBlocation+"/tabs/tables.txt";
             System.out.println("reading tables.txt from disk");
 
 
@@ -288,12 +288,14 @@ public class Table implements ITable{
             int numTables = 0;
             try {
                 numTables = dataInputStr.readInt();
+                System.out.println("-------------["+numTables+"]--------------");
 
             }catch (IOException i){
                 System.out.println("no tables found stored in DB");
                 return null;
             }
             Table.numTables = numTables;
+//            System.exit(1);
 
             ArrayList<ITable> tables = new ArrayList<>();
             for (int tn = 0; tn < numTables; tn++) {
@@ -355,13 +357,17 @@ public class Table implements ITable{
                 tables.add(DiskTable);
 
                 // not needed but have to do it to read correct bytes
-                if(tn < numTables-1) { dataInputStr.readInt();}
+
+                if(tn < numTables-1) {
+                    dataInputStr.readInt();}
 
             }
             return tables;
 
         }catch (IOException e){
-            System.err.println("IO Error reading table from disk");
+            e.printStackTrace();
+
+            System.err.println("IO Error reading table from disk AT "+location);
             return null;
         }
     }

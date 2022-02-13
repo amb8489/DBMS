@@ -28,7 +28,6 @@ public class StorageManager extends AStorageManager {
     }
 
 
-    //TODO
     @Override
     public boolean clearTableData(ITable table) {
         if (table instanceof Table workingTable) {  //cool piece of code IntelliJ made for me.
