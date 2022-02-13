@@ -6,6 +6,7 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -227,6 +228,7 @@ public class Page {
             return null;
         }
 
+
     }
 
     public void setPageRecords(List<ArrayList<Object>> pageRecords) {
@@ -253,6 +255,7 @@ public class Page {
             // byte array that we will store at the end(all the records stored as bytes at once to reduce the amount of
             // I/O operations)
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
 
 
             ArrayList<Integer> CumSum = calcSizeOfRecordsCumSum(this.pageRecords, this.IBelongTo);
@@ -442,8 +445,11 @@ public class Page {
             // look though reach attribute and check the schema for its type and convert it to its bytes
             // and add it to outputStream btye array
             int newSize = 0;
-//            newSize += 4;
-//            newSize += 4;
+            newSize += 4;
+
+            if (r.contains(null)){
+                newSize+=2;
+            }
             for (int idx = 0; idx < r.size(); idx++) {
 
                 if (r.get(idx)!= null){
