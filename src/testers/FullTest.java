@@ -84,7 +84,7 @@ public class FullTest {
 
     public static void main(String[] args) {
         // mk catalog
-        ACatalog cat = Catalog.createCatalog("src/DB", 256, 2);
+        ACatalog cat = Catalog.createCatalog("src/DB", 4048, 10);
 
         AStorageManager sm = AStorageManager.createStorageManager();
 
@@ -131,9 +131,11 @@ public class FullTest {
 
 
 
-        for (int i = 200; i < 300; i++) {
-            ArrayList<Object> rec = mkRandomRec(tab1);
-            sm.insertRecord(tab1,rec);
+        for (int i = 0; i < 1000; i++) {
+            sm.insertRecord(tab1,mkRandomRec(tab1));
+            sm.insertRecord(tab2,mkRandomRec(tab2));
+            sm.insertRecord(tab3,mkRandomRec(tab3));
+
         }
         System.out.println("!! :)");
 

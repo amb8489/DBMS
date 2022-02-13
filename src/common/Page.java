@@ -27,13 +27,6 @@ public class Page {
     // name of the page aka string of what # page this is
     private String pageName;
 
-
-    //TODO
-    // max size a page can be byte
-    private int MaxSize;
-
-    //TODO
-    // current size of page in number of bytes needs to be updated on inset / delete
     public int currentSize;
 
     // list of records

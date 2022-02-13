@@ -143,7 +143,7 @@ public class StorageManager extends AStorageManager {
 //                System.out.println("here 2: "+headPtr+ " with "+record);
 
 
-                //SUSS find better way in futuer
+                //SUSS find better way in future
                 int pkid = ((Table) table).pkIdx();
                 String pk_type = table.getAttributes().get(pkid).getAttributeType();
 
