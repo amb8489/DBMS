@@ -39,6 +39,7 @@ public class FullTest {
 
 
         System.out.println(tab1.getPagesThatBelongToMe());
+
         // insert into table
 
         //1) if table has no pages we neeed to make its first page :)
@@ -54,9 +55,11 @@ public class FullTest {
             p = pb.getPageFromBuffer(""+pname,tab1);
             System.out.println(pname +"-->"+p.getPtrToNextPage());
 
-            for(ArrayList<Object> r: p.getPageRecords()){
-                System.out.println(r);
-            }
+//            for(ArrayList<Object> r: p.getPageRecords()){
+//                for (Object obj:r){
+//                    System.out.println((obj.toString()));
+//                }
+//            }
 
         }
 
@@ -64,6 +67,10 @@ public class FullTest {
         System.out.println(sm.clearTableData(tab1));
         System.out.println(tab1.getPagesThatBelongToMe());
         System.out.println(cat.getTable(tab1.getTableName()));  // should say table DNE
+
+        System.out.println("2.001".compareTo("2.000"));
+
+
         // save
 //        cat.saveToDisk();
 

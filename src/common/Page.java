@@ -317,7 +317,6 @@ public class Page {
                 return true;
             } else {
 
-
                 //time to split up
                 System.out.println(CumSum);
                 int start = 0;
@@ -336,6 +335,8 @@ public class Page {
                         adj += CumSum.get(SplitPoint);
 
                         List<ArrayList<Object>> left = RECORDS.subList(start, start + SplitPoint + 1);
+                        System.out.println("SPLITTING PAGE");
+
                         start = start + SplitPoint + 1;
                         System.out.println(RECORDS.size());
 
