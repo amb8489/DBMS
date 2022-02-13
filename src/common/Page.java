@@ -356,7 +356,6 @@ public class Page {
             } else {
 
                 //time to split up
-                System.out.println(CumSum);
                 int start = 0;
                 int adj = 0;
                 int SplitPoint = 0;

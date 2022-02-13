@@ -44,7 +44,7 @@ public class PageBuffer {
 
         // loooking to see if page we want is already loaded in the buffer
         for (Page p : pageBuffer) {
-            if (name.endsWith(p.getPageName())) {
+            if (name.equals(p.getPageName())) {
 
 
                 // to update LRU order
