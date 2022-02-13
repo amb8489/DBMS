@@ -140,12 +140,13 @@ public class FullTest {
 
 
         ArrayList<Object> newRecord = mkRandomRec(tab1);
-        newRecord.set(tab1.pkIdx(),MyRec2.get(tab1.pkIdx()));
-
         System.out.println("updating"+MyRec2 +"TO :"+newRecord);
+        System.out.println("update:"+sm.updateRecord( tab1, MyRec2, newRecord));
 
-        System.out.println(sm.updateRecord( tab1, MyRec2, newRecord));
-        System.out.println(sm.getRecord(tab1,MyRec2.get(tab1.pkIdx())));
+        System.out.println(sm.getRecord(tab1,newRecord.get(tab1.pkIdx())));
+
+
+
 
 
         // save

@@ -180,7 +180,7 @@ public class StorageManager extends AStorageManager {
         headPage.wasChanged = true;
 
 
-        return false;
+        return true;
     }
 
 
@@ -240,6 +240,7 @@ public class StorageManager extends AStorageManager {
         int pkidx = ((Table) table).pkIdx();
 
         // loop though all the tables pages in order
+
         while (headPtr != -1) {
 
             Page headPage = pb.getPageFromBuffer("" + headPtr, table);
