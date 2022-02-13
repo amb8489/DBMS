@@ -6,21 +6,23 @@ import common.Attribute;
 import common.Page;
 import common.Table;
 import pagebuffer.PageBuffer;
+import storagemanager.AStorageManager;
+import storagemanager.StorageManager;
 
 import java.util.ArrayList;
+import java.util.SortedMap;
 
 public class FullTest {
 
 
     public static void main(String[] args) {
         // mk catalog
-        ACatalog cat = Catalog.createCatalog("src/DB",256,2);
+        ACatalog cat = Catalog.createCatalog("DB",256,2);
 
         // make pb this should be made by sm ?
         PageBuffer pb = new PageBuffer(2);
 
-
-
+        AStorageManager sm = AStorageManager.createStorageManager();
 
         // mk table
         ArrayList<Attribute> attrs = new ArrayList<>();
@@ -37,35 +39,15 @@ public class FullTest {
 
 
         System.out.println(tab1.getPagesThatBelongToMe());
-
         // insert into table
 
         //1) if table has no pages we neeed to make its first page :)
         Page p = pb.getPageFromBuffer("1", tab1);
 
         // add not in any sorted order a new row given the schemea
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
-        p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
+        for(int i = 0; i < 30; i++) {
+            p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
+        }
         p.wasChanged = true;
 
         for(int pname:tab1.getPagesThatBelongToMe()){
@@ -79,7 +61,9 @@ public class FullTest {
         }
 
         pb.PurgeBuffer();
-
+        System.out.println(sm.clearTableData(tab1));
+        System.out.println(tab1.getPagesThatBelongToMe());
+        System.out.println(cat.getTable(tab1.getTableName()));  // should say table DNE
         // save
 //        cat.saveToDisk();
 
