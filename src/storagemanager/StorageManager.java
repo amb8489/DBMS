@@ -80,6 +80,7 @@ public class StorageManager extends AStorageManager{
             if (headPage.getPageRecords().size()==0){
 
 
+//                headPage.wasChanged = true;
 
             }
 
@@ -90,6 +91,8 @@ public class StorageManager extends AStorageManager{
 
 //                if (record.get(pkidx) < row.get(pkidx)){
 //                    headPage.getPageRecords().add(idx-1,row);
+//                    headPage.wasChanged = true;
+
 //                    return true;
 //                }
 
@@ -120,6 +123,7 @@ public class StorageManager extends AStorageManager{
             for(ArrayList<Object> row: headPage.getPageRecords()){
                 if (row.get(pkidx).equals(primaryKey)){
                     headPage.getPageRecords().remove(idx);
+                    headPage.wasChanged = true;
                     return true;
                 }
                 idx++;
@@ -134,6 +138,9 @@ public class StorageManager extends AStorageManager{
     //TODO
     @Override
     public boolean updateRecord(ITable table, ArrayList<Object> oldRecord, ArrayList<Object> newRecord) {
+
+//        headPage.wasChanged = true;
+
         return false;
     }
 
