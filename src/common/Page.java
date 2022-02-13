@@ -6,7 +6,9 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
+import java.util.stream.IntStream;
 
 public class Page {
 
@@ -154,46 +156,61 @@ public class Page {
             for (int rn = 0; rn < numRecs; rn++) {
 
 
+                // read in int for bitarry size (in bytes)
+                int bitMaskSize = dataInputStr.readInt();
+                currentSize+=4;
+
+                // read in bitmask
+                BitSet bitMask = BitSet.valueOf(dataInputStr.readNBytes(bitMaskSize));
+                currentSize+= bitMaskSize;
+
                 ArrayList<Object> rec = new ArrayList<>();
 
                 //for each attribute in the row we use the schema to know how many bytes to read in
                 // then store that in rec to make the row
+
+
                 for (int idx = 0; idx < table.getAttributes().size(); idx++) {
 
-                    // read in what the schema says is next
-                    switch (schema.get(idx)) {
-                        case "Integer":
-                            rec.add(dataInputStr.readInt());
-                            currentSize += 4;
-                            break;
-                        case "Double":
-                            rec.add(dataInputStr.readDouble());
-                            currentSize += 8;
+                    if (!bitMask.get(idx)) {
 
-                            break;
-                        case "Boolean":
-                            rec.add(dataInputStr.readBoolean());
-                            currentSize += 1;
+                        // read in what the schema says is next
+                        switch (schema.get(idx)) {
+                            case "Integer":
+                                rec.add(dataInputStr.readInt());
+                                currentSize += 4;
+                                break;
+                            case "Double":
+                                rec.add(dataInputStr.readDouble());
+                                currentSize += 8;
 
-                            break;
-                        default:
+                                break;
+                            case "Boolean":
+                                rec.add(dataInputStr.readBoolean());
+                                currentSize += 1;
 
-                            // we get a char(#)
-                            if (schema.get(idx).startsWith("Char(")) {
-                                rec.add(new String(dataInputStr.readNBytes(charlen), StandardCharsets.UTF_8));
-                                currentSize += (charlen);
+                                break;
+                            default:
 
-                            } else {
-                                // var char should have an int before it telling how long the var char is
-                                // and how many bytes to read in
-                                int VarCharsize = dataInputStr.readInt();
+                                // we get a char(#)
+                                if (schema.get(idx).startsWith("Char(")) {
+                                    rec.add(new String(dataInputStr.readNBytes(charlen), StandardCharsets.UTF_8));
+                                    currentSize += (charlen);
 
-                                // then read in that many bytes
-                                rec.add(new String(dataInputStr.readNBytes(VarCharsize), StandardCharsets.UTF_8));
-                                currentSize += (VarCharsize) + 4;// 4 for the int we need to save for the varcahr
+                                } else {
+                                    // var char should have an int before it telling how long the var char is
+                                    // and how many bytes to read in
+                                    int VarCharsize = dataInputStr.readInt();
+
+                                    // then read in that many bytes
+                                    rec.add(new String(dataInputStr.readNBytes(VarCharsize), StandardCharsets.UTF_8));
+                                    currentSize += (VarCharsize) + 4;// 4 for the int we need to save for the varcahr
 
 
-                            }
+                                }
+                        }
+                    } else {
+                        rec.add(null);
                     }
                 }
 
@@ -251,7 +268,6 @@ public class Page {
 
                 // WRITE name ,num records to page, and name of next page (nullptr to next = -1)
                 outputStream.write(ByteBuffer.allocate(4).putInt(Integer.parseInt(this.getPageName())).array());
-
                 outputStream.write(ByteBuffer.allocate(4).putInt(this.pageRecords.size()).array());
                 outputStream.write(ByteBuffer.allocate(4).putInt(this.ptrToNextPage).array());
 
@@ -264,40 +280,59 @@ public class Page {
                     //for each attrib in row store to byte array
                     ArrayList<Object> record = this.pageRecords.get(i);
 
+
+                    //FIRST LETS TAKE CARE OF NULL VALS :)
+
+                    // LITTLE ENDIEN OR BIG ???
+
+                    int[] nullIndexes = IntStream.range(0, record.size()).filter(N -> record.get(N) == null).toArray();
+                    BitSet bitSet = new BitSet(record.size());
+                    for (int idx : nullIndexes) {bitSet.set(idx);}
+
+                    byte[] nullMask = bitSet.toByteArray();
+
+                    // write out bitmask size int
+                    outputStream.write(ByteBuffer.allocate(4).putInt(nullMask.length).array());
+                    // write out mask
+                    outputStream.write(nullMask);
+
+
                     // make byte array from record
                     // look though reach attribute and check the schema for its type and convert it to its bytes
                     // and add it to outputStream btye array
                     for (int idx = 0; idx < record.size(); idx++) {
-                        switch (schema.get(idx)) {
-                            case "Integer":
-                                //add it to outputStream btye array
-                                outputStream.write(ByteBuffer.allocate(4).putInt((Integer) record.get(idx)).array());
-                                break;
-                            case "Double":
-                                //add it to outputStream btye array
+                        if (record.get(idx) != null){
+                            switch (schema.get(idx)) {
+                                case "Integer":
+                                    //add it to outputStream btye array
+                                    outputStream.write(ByteBuffer.allocate(4).putInt((Integer) record.get(idx)).array());
+                                    break;
+                                case "Double":
+                                    //add it to outputStream btye array
 
-                                outputStream.write(ByteBuffer.allocate(8).putDouble((Double) record.get(idx)).array());
-                                break;
-                            case "Boolean":
-                                //add it to outputStream btye array
-                                outputStream.write(ByteBuffer.allocate(1).put(new byte[]{(byte) ((Boolean) record.get(idx) ? 1 : 0)}).array());
-                                break;
-                            default:
-                                //add it to outputStream btye array
+                                    outputStream.write(ByteBuffer.allocate(8).putDouble((Double) record.get(idx)).array());
+                                    break;
+                                case "Boolean":
+                                    //add it to outputStream btye array
+                                    outputStream.write(ByteBuffer.allocate(1).put(new byte[]{(byte) ((Boolean) record.get(idx) ? 1 : 0)}).array());
+                                    break;
+                                default:
+                                    //add it to outputStream btye array
 
-                                // char vs varchar
+                                    // char vs varchar
 
-                                // char(#)
-                                if (schema.get(idx).startsWith("Char(")) {
-                                    outputStream.write(((String) record.get(idx)).getBytes());
-                                } else {
-                                    // add the len of var char before we write var char
-                                    int VarCharlen = ((String) record.get(idx)).length();
-                                    // write var char len (we need this to know how many bytes to write in when we read disk)
-                                    outputStream.write(ByteBuffer.allocate(4).putInt(VarCharlen).array());
-                                    // write var char
-                                    outputStream.write(((String) record.get(idx)).getBytes());
-                                }
+                                    // char(#)
+                                    if (schema.get(idx).startsWith("Char(")) {
+                                        outputStream.write(((String) record.get(idx)).getBytes());
+                                    } else {
+                                        // add the len of var char before we write var char
+                                        int VarCharlen = ((String) record.get(idx)).length();
+                                        // write var char len (we need this to know how many bytes to write in when we read disk)
+                                        outputStream.write(ByteBuffer.allocate(4).putInt(VarCharlen).array());
+                                        // write var char
+                                        outputStream.write(((String) record.get(idx)).getBytes());
+                                    }
+                            }
                         }
                     }
                 }
@@ -407,28 +442,32 @@ public class Page {
             // look though reach attribute and check the schema for its type and convert it to its bytes
             // and add it to outputStream btye array
             int newSize = 0;
-
+//            newSize += 4;
+//            newSize += 4;
             for (int idx = 0; idx < r.size(); idx++) {
-                switch (schema.get(idx)) {
-                    case "Integer":
-                        newSize += 4;
-                        break;
-                    case "Double":
-                        newSize += 8;
-                        break;
-                    case "Boolean":
-                        newSize += 1;
-                        break;
-                    default:
 
-                        // char(#)
-                        if (schema.get(idx).startsWith("Char(")) {
-                            newSize += charlen;
-                        } else {
-                            // add the len of var char before we write var char
-                            int VarCharlen = ((String) r.get(idx)).length();
-                            newSize += (4 + VarCharlen);
-                        }
+                if (r.get(idx)!= null){
+                    switch (schema.get(idx)) {
+                        case "Integer":
+                            newSize += 4;
+                            break;
+                        case "Double":
+                            newSize += 8;
+                            break;
+                        case "Boolean":
+                            newSize += 1;
+                            break;
+                        default:
+
+                            // char(#)
+                            if (schema.get(idx).startsWith("Char(")) {
+                                newSize += charlen;
+                            } else {
+                                // add the len of var char before we write var char
+                                int VarCharlen = ((String) r.get(idx)).length();
+                                newSize += (4 + VarCharlen);
+                            }
+                    }
                 }
             }
             CumSum.add(newSize + CumSum.get(CumSum.size() - 1));
