@@ -72,13 +72,18 @@ public class FullTest {
             p = pb.getPageFromBuffer(""+pname,tab1);
             System.out.println(pname +"-->"+p.getPtrToNextPage());
 
-            for(ArrayList<Object> r: p.getPageRecords()){
-                System.out.println(r);
-            }
+//            for(ArrayList<Object> r: p.getPageRecords()){
+//                for (Object obj:r){
+//                    System.out.println((obj.toString()));
+//                }
+//            }
 
         }
 
         pb.PurgeBuffer();
+
+        System.out.println("2.001".compareTo("2.000"));
+
 
         // save
 //        cat.saveToDisk();
