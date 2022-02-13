@@ -15,6 +15,7 @@ import java.io.File;
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import filesystem.FileSystem;
 import java.util.List;
 
 public class StorageManager extends AStorageManager {
@@ -34,21 +35,7 @@ public class StorageManager extends AStorageManager {
             // workingTable is a "patter var" https://openjdk.java.net/jeps/394
             ArrayList<Integer> tablePages = workingTable.getPagesThatBelongToMe();
             for(int page: tablePages){
-                String filename = String.format("DB\\pages\\%d", page);
-                File tableFile = new File(filename);
-                try{
-                    if(tableFile.delete()){
-                        System.out.printf("Deleted %s\n", filename);
-                    }
-                    else {
-                        System.out.printf("Did not delete %s\n", filename);
-                    }
-                }
-                catch(Exception e){
-                    System.err.printf("Failed to delete %s\n", filename);
-                    System.err.println(e);
-                    return false;
-                }
+                FileSystem.deletePageFile(page);
             }
 
             Catalog.getCatalog().dropTable(table.getTableName());  // drop schema from catalog

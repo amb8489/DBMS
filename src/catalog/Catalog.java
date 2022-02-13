@@ -10,6 +10,7 @@ package catalog;
 import common.Attribute;
 import common.ITable;
 import common.Table;
+import filesystem.FileSystem;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -72,6 +73,10 @@ public class Catalog extends ACatalog {
             this.pageSize = pageSize;
             this.pageBufferSize = pageBufferSize;
         }
+        // built robustly, so file system is established whether or not one existed before
+        // will not overwrite, but will replace any parts that are missing (i.e. if there's a pages
+        //  but not a catalog directory, will make the catalog directory
+        FileSystem.establishFileSystem(location);  // CATALOG ESTABLISHES FILE SYSTEM
     }
 
 

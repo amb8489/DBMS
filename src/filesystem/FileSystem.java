@@ -1,4 +1,5 @@
 package filesystem;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 
@@ -9,6 +10,8 @@ import java.nio.file.*;
  * Methods in this class are hard coded to adhere to the file system, which is why they are so
  * rigidly named (deletePageFile(page#) as opposed to deleteFile(file) - we need to know exactly where the file is,
  * and this reduces the chance of deleting files we don't own).
+ *
+ * FILE SYSTEM IS ESTABLISHED IN CATALOG.  We always base our file system on the db location the cat stores
  *
  * Authors: Kyle Ferguson (krf6081@rit.edu)
  */
@@ -26,7 +29,7 @@ public class FileSystem {
      * TODO - decide if this should be private or public.  Private for now because only FileSystem should use it
      * @return the database location
      */
-    private static boolean setDBLocation(String dbLoc){
+    public static boolean setDBLocation(String dbLoc){
         if(hasLocation()){
             ERROR("Attempted to set database location when location already established.");
             return false;
@@ -110,13 +113,32 @@ public class FileSystem {
 
 
     // ---------------------------- PAGE MANAGEMENT -------------------------------------------
+    // makes large use of  java.nio.file.Files: http://tutorials.jenkov.com/java-nio/files.html
+    // would reccomend reading the docs
     /**
      * Deletes a page file using the established page path in
-     * @return
+     * @return true - page file deleted / didn't exist anyway, false - page file not deleted (multiple reasons)
      */
     public static boolean deletePageFile(int num){
-        if(!hasLocation()) return false;
+        if(!hasLocation()){
+            ERROR("Cannot delete file, FileSystem not attached to location");
+            return false;  // we don't even have a location!  we're not deleting anything D:<
+        }
 
+        String pageRelPath = String.format("\\%d", num);  // page's path relative to the pages directory
+        Path pagePath = Paths.get(location+FilePath.PAGES.rel_loc+pageRelPath);
+
+        try {
+            Files.deleteIfExists(pagePath);
+        }
+        catch (IOException e){
+            ERROR(String.format("Problem deleting page file: %d\n", num));
+            ERROR(e.getMessage());
+        }
+        return true;
+    }
+
+    public static boolean writePageFile(){
         return false;
     }
 
