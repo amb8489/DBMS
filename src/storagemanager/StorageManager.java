@@ -184,8 +184,7 @@ public class StorageManager extends AStorageManager{
             for (ArrayList<Object> currRec : pageArray) {
                 if (oldRecord.get(pkidx) == currRec.get(pkidx)) {
                     pageArray.remove(oldRecord);
-                    insertRecord(table,newRecord);
-                    return true;
+                    return insertRecord(table,newRecord);
                 }
             }
             // next page
