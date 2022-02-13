@@ -260,15 +260,16 @@ public class Page {
 
             ArrayList<Integer> CumSum = calcSizeOfRecordsCumSum(this.pageRecords, this.IBelongTo);
 
+            System.out.println("here");
 
             double pSize = CumSum.get(CumSum.size() - 1);
 
             Double number_of_extra_split_Pages = Math.floor(pSize / Catalog.getCatalog().getPageSize());
-
+            System.out.println(number_of_extra_split_Pages);
             if (number_of_extra_split_Pages == 0) {
                 System.out.println("NO SPLIT NEEDED");
 
-
+//TODO only write if chamged
                 // WRITE name ,num records to page, and name of next page (nullptr to next = -1)
                 outputStream.write(ByteBuffer.allocate(4).putInt(Integer.parseInt(this.getPageName())).array());
                 outputStream.write(ByteBuffer.allocate(4).putInt(this.pageRecords.size()).array());
@@ -365,8 +366,9 @@ public class Page {
                 List<ArrayList<Object>> RECORDS = this.pageRecords.subList(0, pageRecords.size());
 
                 CumSum.remove(0);
+                System.out.println(CumSum);
                 for (int i = 0; i < CumSum.size(); i++) {
-                    if (CumSum.get(i) - adj > Catalog.getCatalog().getPageSize()) {
+                    if (CumSum.get(i) - adj >= Catalog.getCatalog().getPageSize()) {
                         int numberOfRecordsForpage = (i - start);
                         SplitPoint = numberOfRecordsForpage / 2;
                         adj += CumSum.get(SplitPoint);

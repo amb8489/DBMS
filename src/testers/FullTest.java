@@ -29,7 +29,7 @@ public class FullTest {
         return salt.toString();
 
     }
-    public static int tot = 0;
+    public static int tot = 342;
     // makes a random record with the schema  " Integer Double Boolean Char(5) varchar(10)"
     public static ArrayList<Object> mkRandomRec(Table table) {
         tot++;
@@ -131,45 +131,47 @@ public class FullTest {
 
 
 
-        for (int i = 0; i < 20; i++) {
+        for (int i = 200; i < 300; i++) {
             ArrayList<Object> rec = mkRandomRec(tab1);
             sm.insertRecord(tab1,rec);
         }
         System.out.println("!! :)");
-//
-//        ArrayList<Object> MyRec2 = mkRandomRec(tab1);
-//        sm.insertRecord(tab1,MyRec2);
+
+        ArrayList<Object> MyRec2 = mkRandomRec(tab1);
+        MyRec2.set(0,9001);
+        sm.insertRecord(tab1,MyRec2);
 //
 //
 //
         sm.purgePageBuffer();
 //
-//        for (ArrayList<Object> r : sm.getRecords(tab1)) {
-//            System.out.println(r);
-//        }
+        for (ArrayList<Object> r : sm.getRecords(tab1)) {
+            System.out.println(r);
+        }
 //
-//        System.out.println("GETTING"+MyRec1);
-//        System.out.println(sm.getRecord(tab1,MyRec1.get(tab1.pkIdx())));
+        System.out.println("GETTING"+MyRec1);
+        System.out.println(sm.getRecord(tab1,MyRec1.get(tab1.pkIdx())));
 //
-//        System.out.println("GETTING"+MyRec2);
-//        System.out.println(sm.getRecord(tab1,MyRec2.get(tab1.pkIdx())));
-//
-//
-//
-//        System.out.println("REMOVING"+MyRec1);
-//        System.out.println(sm.deleteRecord(tab1,MyRec1.get(tab1.pkIdx())));
-//        System.out.println("REMOVING DNE val"+MyRec1);
-//        System.out.println(sm.deleteRecord(tab1,null));
+        System.out.println("GETTING"+MyRec2);
+        System.out.println(sm.getRecord(tab1,MyRec2.get(tab1.pkIdx())));
 //
 //
-//        ArrayList<Object> newRecord = mkRandomRec(tab1);
-//        System.out.println("updating"+MyRec2 +"TO :"+newRecord);
-//        System.out.println("update:"+sm.updateRecord( tab1, MyRec2, newRecord));
 //
-//        System.out.println(sm.getRecord(tab1,newRecord.get(tab1.pkIdx())));
+        System.out.println("REMOVING"+MyRec1);
+        System.out.println(sm.deleteRecord(tab1,MyRec1.get(tab1.pkIdx())));
 
 
-//         save
+        System.out.println("REMOVING DNE val"+MyRec1);
+        System.out.println(sm.deleteRecord(tab1,null));
+
+
+        ArrayList<Object> newRecord = mkRandomRec(tab1);
+        System.out.println("updating"+MyRec2 +"TO :"+newRecord);
+        System.out.println("update:"+sm.updateRecord( tab1, MyRec2, newRecord));
+
+        System.out.println(sm.getRecord(tab1,newRecord.get(tab1.pkIdx())));
+
+////         save
         cat.saveToDisk();
 
 

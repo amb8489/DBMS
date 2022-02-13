@@ -109,42 +109,38 @@ public class StorageManager extends AStorageManager {
 
         // page name for head is always at idx zero
         int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
-        System.out.println("head page: "+headPtr);
+//        System.out.println("head page: "+headPtr);
         // where in a row the pk is
         int pkidx = ((Table) table).pkIdx();
 
         // loop though all the tables pages in order
         Page headPage = null;
 
-        int attempts = 0;
         while (headPtr != -1) {
 
-            attempts++;
-            if(attempts> 12){
-                System.exit(1);
-            }
-            System.out.println("inside: "+headPtr);
-            System.out.println(((Table) table).getPagesThatBelongToMe());
+
+//            System.out.println("inside: "+headPtr);
+//            System.out.println(((Table) table).getPagesThatBelongToMe());
 
             headPage = pb.getPageFromBuffer("" + headPtr, table);
             // look though all record for that page
-            System.out.println("got: "+headPtr);
-            System.out.println(headPage.getPageRecords());
+//            System.out.println("got: "+headPtr);
+//            System.out.println(headPage.getPageRecords());
 
 
             int idx = 0;
 
             if (headPage.getPageRecords().size() == 0) {
-                System.out.println("head page size 0: "+headPtr);
+//                System.out.println("head page size 0: "+headPtr);
 
                 headPage.getPageRecords().add(record);
                 headPage.wasChanged = true;
                 return true;
             }
-            System.out.println("here 1: "+headPtr);
+//            System.out.println("here 1: "+headPtr);
 
             for (ArrayList<Object> row : headPage.getPageRecords()) {
-                System.out.println("here 2: "+headPtr+ " with "+record);
+//                System.out.println("here 2: "+headPtr+ " with "+record);
 
 
                 //SUSS find better way in futuer
@@ -155,7 +151,6 @@ public class StorageManager extends AStorageManager {
                     case 'I':
 
                         if (((Integer)record.get(pkidx)).compareTo((Integer)row.get(pkidx)) < 0) {
-                            System.out.println("ADDED TO: "+headPtr+ " with "+record);
 
                             headPage.getPageRecords().add(idx, record);
                             headPage.wasChanged = true;
@@ -163,7 +158,6 @@ public class StorageManager extends AStorageManager {
                         }
                         break;
                     case 'D':
-                        System.out.println("d: "+headPtr);
 
                         if (((Double)record.get(pkidx)).compareTo((Double)row.get(pkidx)) < 0) {
                             headPage.getPageRecords().add(idx, record);
@@ -173,7 +167,6 @@ public class StorageManager extends AStorageManager {
                         break;
 
                     case 'B':
-                        System.out.println("b: "+headPtr);
 
                         if (((Boolean)record.get(pkidx)).compareTo((Boolean)row.get(pkidx)) < 0) {
                             headPage.getPageRecords().add(idx, record);
@@ -183,7 +176,6 @@ public class StorageManager extends AStorageManager {
                         break;
 
                     default:
-                        System.out.println("v: "+headPtr);
 
                         if ((record.get(pkidx).toString()).compareTo(row.get(pkidx).toString()) < 0) {
                             headPage.getPageRecords().add(idx, record);
@@ -196,7 +188,6 @@ public class StorageManager extends AStorageManager {
                 idx++;
             }
             // next page
-            System.out.println("DID NOT INSET INTO head page: "+headPtr +"going to "+ headPage.getPtrToNextPage());
 
             headPtr = headPage.getPtrToNextPage();
 
