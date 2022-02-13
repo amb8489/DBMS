@@ -49,7 +49,7 @@ public class FullTest {
 //        for(int i = 0; i < 30; i++) {
 //            p.getPageRecords().add(TEST_read_and_write.mkRandomRec());
 //        }
-        for(int i = 0; i < 3000; i++) {
+        for(int i = 0; i < 30; i++) {
             ArrayList<Object> row = TEST_read_and_write.mkRandomRec();
             row.set(0, null);
             row.set(4, null);
@@ -59,10 +59,10 @@ public class FullTest {
 //
 //
 //
-//            for(ArrayList<Object> r: p.getPageRecords()){
-//                    System.out.println(r);
-//
-//            }
+            for(ArrayList<Object> r: p.getPageRecords()){
+                    System.out.println(r);
+
+            }
 
 
         pb.PurgeBuffer();
