@@ -127,6 +127,7 @@ public class FullTest {
         ArrayList<Object> MyRec1 = mkRandomRec(tab1);
         sm.insertRecord(tab1,MyRec1);
 
+
         System.out.println("------------");
 
 
