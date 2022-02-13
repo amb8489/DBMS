@@ -1,3 +1,7 @@
+/*
+Kyle Ferguson, Aaron Berghash
+ */
+
 package storagemanager;
 
 import catalog.Catalog;
@@ -6,6 +10,7 @@ import common.ITable;
 import common.Page;
 import common.Table;
 import pagebuffer.PageBuffer;
+import java.io.File;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
@@ -25,9 +30,36 @@ public class StorageManager extends AStorageManager {
     //TODO
     @Override
     public boolean clearTableData(ITable table) {
+        if(table instanceof Table workingTable){  //cool piece of code IntelliJ made for me.
+            // workingTable is a "patter var" https://openjdk.java.net/jeps/394
+            ArrayList<Integer> tablePages = workingTable.getPagesThatBelongToMe();
+            for(int page: tablePages){
+                String filename = String.format("DB\\pages\\%d", page);
+                File tableFile = new File(filename);
+                try{
+                    if(tableFile.delete()){
+                        System.out.printf("Deleted %s\n", filename);
+                    }
+                    else {
+                        System.out.printf("Did not delete %s\n", filename);
+                    }
+                }
+                catch(Exception e){
+                    System.err.printf("Failed to delete %s\n", filename);
+                    System.err.println(e);
+                    return false;
+                }
+            }
+
+            Catalog.getCatalog().dropTable(table.getTableName());  // drop schema from catalog
+            pb.dropFromBuffer(table);
+            return true;
+        }
+
         return false;
     }
 
+    //TODO
     @Override
     public ArrayList<Object> getRecord(ITable table, Object pkValue) {
 

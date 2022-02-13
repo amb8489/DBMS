@@ -1,6 +1,6 @@
 /*
 
-Aaron Berghash
+Aaron Berghash, Kyle Ferguson
 */
 
 package pagebuffer;
@@ -109,6 +109,16 @@ public class PageBuffer {
         pageBuffer.add(newPage);
 
         return newPage;
+    }
+
+    /**
+     * Deletes pages from the page buffer if they belong to the given table
+     * @param table the table whose pages we should forget about
+     */
+    public void dropFromBuffer(ITable table){
+        pageBuffer.removeIf(page -> page.IBelongTo == table);  // more code from the generous IntelliJ.  Does the work
+                                                                // of a for-loop.
+                                                    // https://www.geeksforgeeks.org/arraylist-removeif-method-in-java/
     }
 
     private Page getPageFromDisk(String name, Table table) {
