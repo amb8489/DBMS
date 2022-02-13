@@ -288,7 +288,7 @@ public class Phase1Tester {
         inserted = sm.insertRecord(table1, row1);
 
         if(inserted) {
-            System.err.println("Test failed: insertRecord failed");
+            System.err.println("Test failed: insertRecord failed---------");
             System.err.println("inserting a duplicate record");
             System.err.println("Expected: false");
             System.err.println("Got: true");
@@ -757,5 +757,6 @@ public class Phase1Tester {
             return;
 
         System.out.println("Testing complete");
+
     }
 }

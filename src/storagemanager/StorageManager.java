@@ -5,11 +5,9 @@ Kyle Ferguson, Aaron Berghash
 package storagemanager;
 
 import catalog.Catalog;
-import common.Attribute;
-import common.ITable;
-import common.Page;
-import common.Table;
+import common.*;
 import pagebuffer.PageBuffer;
+
 import java.io.File;
 
 import java.lang.reflect.Array;
@@ -31,7 +29,7 @@ public class StorageManager extends AStorageManager {
     //TODO
     @Override
     public boolean clearTableData(ITable table) {
-        if(table instanceof Table workingTable){  //cool piece of code IntelliJ made for me.
+        if (table instanceof Table workingTable) {  //cool piece of code IntelliJ made for me.
             // workingTable is a "patter var" https://openjdk.java.net/jeps/394
             ArrayList<Integer> tablePages = workingTable.getPagesThatBelongToMe();
             for(int page: tablePages){
@@ -86,6 +84,7 @@ public class StorageManager extends AStorageManager {
 
             Page headPage = pb.getPageFromBuffer("" + headPtr, table);
             // add all recs
+
             RECORDS.addAll(headPage.getPageRecords());
             // next page
             headPtr = headPage.getPtrToNextPage();
@@ -98,40 +97,112 @@ public class StorageManager extends AStorageManager {
 
         // page name for head is always at idx zero
         int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
-
+//        VerbosePrint.print("head page: "+headPtr);
         // where in a row the pk is
         int pkidx = ((Table) table).pkIdx();
 
         // loop though all the tables pages in order
+        Page headPage = null;
+
         while (headPtr != -1) {
 
-            Page headPage = pb.getPageFromBuffer("" + headPtr, table);
+
+//            VerbosePrint.print("inside: "+headPtr);
+//            VerbosePrint.print(((Table) table).getPagesThatBelongToMe());
+
+            headPage = pb.getPageFromBuffer("" + headPtr, table);
             // look though all record for that page
+//            VerbosePrint.print("got: "+headPtr);
+//            VerbosePrint.print(headPage.getPageRecords());
+
 
             int idx = 0;
 
-
             if (headPage.getPageRecords().size() == 0) {
+//                VerbosePrint.print("head page size 0: "+headPtr);
+
                 headPage.getPageRecords().add(record);
                 headPage.wasChanged = true;
                 return true;
             }
+//            VerbosePrint.print("here 1: "+headPtr);
 
             for (ArrayList<Object> row : headPage.getPageRecords()) {
+//                VerbosePrint.print("here 2: "+headPtr+ " with "+record);
 
-                //SUSS
-                if ( (record.get(pkidx).toString()).compareTo(row.get(pkidx).toString()) < 0){
-                    headPage.getPageRecords().add(idx-1,row);
-                    headPage.wasChanged = true;
 
-                    return true;
+                //SUSS find better way in future
+                int pkid = ((Table) table).pkIdx();
+                String pk_type = table.getAttributes().get(pkid).getAttributeType();
+
+                switch (pk_type.charAt(0)) {
+                    case 'I':
+                        int resI= ((Integer)record.get(pkidx)).compareTo((Integer)row.get(pkidx));
+                        if( resI == 0){
+                            return false;
+                        }
+
+                        if ( resI< 0) {
+
+                            headPage.getPageRecords().add(idx, record);
+                            headPage.wasChanged = true;
+                            return true;
+                        }
+                        break;
+                    case 'D':
+
+                        int resD= ((Double)record.get(pkidx)).compareTo((Double)row.get(pkidx));
+                        if( resD == 0){
+                            return false;
+                        }
+
+                        if ( resD< 0) {
+                            headPage.getPageRecords().add(idx, record);
+                            headPage.wasChanged = true;
+                            return true;
+                        }
+                        break;
+
+                    case 'B':
+
+                        int resB= ((Boolean)record.get(pkidx)).compareTo((Boolean)row.get(pkidx));
+                        if( resB == 0){
+                            return false;
+                        }
+
+                        if ( resB< 0) {
+                            headPage.getPageRecords().add(idx, record);
+                            headPage.wasChanged = true;
+                            return true;
+                        }
+                        break;
+
+                    default:
+                        int resS= ((record.get(pkidx).toString()).compareTo(row.get(pkidx).toString()));
+                        if( resS == 0){
+                            return false;
+                        }
+                        if (resS < 0) {
+                            headPage.getPageRecords().add(idx, record);
+                            headPage.wasChanged = true;
+                            return true;
+                        }
+                        break;
                 }
+
                 idx++;
             }
             // next page
+
             headPtr = headPage.getPtrToNextPage();
+
         }
-        return false;
+        // add to last spot in page in table
+        headPage.getPageRecords().add(record);
+        headPage.wasChanged = true;
+
+
+        return true;
     }
 
 
@@ -151,8 +222,12 @@ public class StorageManager extends AStorageManager {
             // look though all record for that page
             int idx = 0;
             for (ArrayList<Object> row : headPage.getPageRecords()) {
+
                 if (row.get(pkidx).equals(primaryKey)) {
+                    VerbosePrint.print("REMOVING"+row);
+
                     headPage.getPageRecords().remove(idx);
+
                     headPage.wasChanged = true;
                     return true;
                 }
@@ -171,6 +246,7 @@ public class StorageManager extends AStorageManager {
      * • the  primary  key  changes
      * • the  size  increases  causing  a  page  split.  This  can  also  cause  other  records  to  move  as
      * well.
+     *
      * @param table     the table to update the record in
      * @param oldRecord the old record data
      * @param newRecord the new record data
@@ -180,13 +256,14 @@ public class StorageManager extends AStorageManager {
     public boolean updateRecord(ITable table, ArrayList<Object> oldRecord, ArrayList<Object> newRecord) {
 
         // page name for head is always at idx zero
-        int headPtr = ((Table)table).getPagesThatBelongToMe().get(0);
+        int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
 
         // where in a row the pk is
         int pkidx = ((Table) table).pkIdx();
 
         // loop though all the tables pages in order
-        while(headPtr != -1) {
+
+        while (headPtr != -1) {
 
             Page headPage = pb.getPageFromBuffer("" + headPtr, table);
             // look through all record for that page
@@ -194,7 +271,7 @@ public class StorageManager extends AStorageManager {
                 if (oldRecord.get(pkidx) == currRec.get(pkidx)) {
                     headPage.getPageRecords().remove(oldRecord);
                     headPage.wasChanged = true;
-                    return insertRecord(table,newRecord);
+                    return insertRecord(table, newRecord);
                 }
             }
             // next page

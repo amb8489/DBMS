@@ -11,6 +11,7 @@ import common.Attribute;
 import common.ITable;
 import common.Table;
 import filesystem.FileSystem;
+import common.VerbosePrint;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -26,13 +27,13 @@ public class Catalog extends ACatalog {
     private int pageSize;
     private int pageBufferSize;
     // string table name    the table
-    private HashMap<String, ITable> CurrentTablesInBD = new HashMap<>();
+    public HashMap<String, ITable> CurrentTablesInBD = new HashMap<>();
 
 
 
     public Catalog(String location, int pageSize, int pageBufferSize) {
 
-        System.out.println("attempting to find catalog in: "+location+"/catalog/catalog.txt");
+        VerbosePrint.print("attempting to find catalog in: "+location+"/catalog/catalog.txt");
 
         // atempt to read catalog file from DB if its there
 
@@ -43,7 +44,7 @@ public class Catalog extends ACatalog {
             inputStream = new FileInputStream(location+"/catalog/catalog.txt");
             DataInputStream dataInputStr = new DataInputStream(inputStream);
 
-            System.out.println("found catalog .. restoring");
+            VerbosePrint.print("found catalog .. restoring");
 
             // we know this is the location b/c its given
             this.location = location;
@@ -63,12 +64,12 @@ public class Catalog extends ACatalog {
                     CurrentTablesInBD.put(table.getTableName(), table);
                 }
             }
-            System.out.println("restore successful! ");
+            VerbosePrint.print("restore successful! ");
 
         } catch (IOException e) {
             // failure to find page or read fail
 
-            System.out.println("NO catalog in disk.. making new catalog");
+            VerbosePrint.print("NO catalog in disk.. making new catalog");
             this.location = location;
             this.pageSize = pageSize;
             this.pageBufferSize = pageBufferSize;

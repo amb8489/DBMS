@@ -9,6 +9,7 @@ import catalog.Catalog;
 import common.ITable;
 import common.Page;
 import common.Table;
+import common.VerbosePrint;
 
 import java.util.ArrayList;
 
@@ -44,13 +45,13 @@ public class PageBuffer {
 
         // loooking to see if page we want is already loaded in the buffer
         for (Page p : pageBuffer) {
-            if (name.endsWith(p.getPageName())) {
+            if (name.equals(p.getPageName())) {
 
 
                 // to update LRU order
                 pageBuffer.add(pageBuffer.remove(idx));
                 //gets the last element in list
-                System.out.println("found page [" + p.getPageName() + "] in buffer");
+                VerbosePrint.print("found page [" + p.getPageName() + "] in buffer");
                 return pageBuffer.get(pageBuffer.size() - 1);
             }
             idx++;
@@ -64,14 +65,14 @@ public class PageBuffer {
 
     //write all pages in the buffer to disk and empty th e buffer
     public boolean PurgeBuffer() {
-        System.out.println("[purging buffer]");
+        VerbosePrint.print("[purging buffer]");
 
 
         //write all pages in buffer to disk
         for (Page page : pageBuffer) {
 
             if (page.isChanged()) {
-                System.out.println(" writing page [" + page.getPageName() + "] to disk");
+                VerbosePrint.print(" writing page [" + page.getPageName() + "] to disk");
 
                 // check for successful page write
                 if (!page.writeToDisk(page.getPageName(), page.IBelongTo)) {
@@ -87,7 +88,7 @@ public class PageBuffer {
 
 
     private Page loadNewPageToBuffer(String name, ITable table) {
-        System.out.println("buffer loading page " + name + " from disk");
+        VerbosePrint.print("buffer loading page " + name + " from disk");
 
 
         // if buffer is full
@@ -95,7 +96,7 @@ public class PageBuffer {
 
             // write LRU page to disk / check for successful page write
             Page p = pageBuffer.get(0);
-            System.out.println("BUFFER FULL writing page [" + p.getPageName() + "] to disk");
+            VerbosePrint.print("BUFFER FULL writing page [" + p.getPageName() + "] to disk");
 
             if (!p.writeToDisk(p.getPageName(), p.IBelongTo)) {
                 System.err.println("error loading new page to buffer [LRU write to disk failed]");
