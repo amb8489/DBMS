@@ -23,7 +23,6 @@ public class StorageManager extends AStorageManager{
         return false;
     }
 
-    //TODO
     @Override
     public ArrayList<Object> getRecord(ITable table, Object pkValue) {
 
@@ -46,9 +45,6 @@ public class StorageManager extends AStorageManager{
             // next page
             headPtr = headPage.getPtrToNextPage();
         }
-
-
-
         return null;
     }
 
@@ -79,6 +75,7 @@ public class StorageManager extends AStorageManager{
     //TODO
     @Override
     public void purgePageBuffer() {
+        pb.PurgeBuffer();
 
     }
 
