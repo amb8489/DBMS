@@ -146,8 +146,12 @@ public class StorageManager extends AStorageManager {
 
                 switch (pk_type.charAt(0)) {
                     case 'I':
+                        int resI= ((Integer)record.get(pkidx)).compareTo((Integer)row.get(pkidx));
+                        if( resI == 0){
+                            return false;
+                        }
 
-                        if (((Integer)record.get(pkidx)).compareTo((Integer)row.get(pkidx)) < 0) {
+                        if ( resI< 0) {
 
                             headPage.getPageRecords().add(idx, record);
                             headPage.wasChanged = true;
@@ -156,7 +160,12 @@ public class StorageManager extends AStorageManager {
                         break;
                     case 'D':
 
-                        if (((Double)record.get(pkidx)).compareTo((Double)row.get(pkidx)) < 0) {
+                        int resD= ((Double)record.get(pkidx)).compareTo((Double)row.get(pkidx));
+                        if( resD == 0){
+                            return false;
+                        }
+
+                        if ( resD< 0) {
                             headPage.getPageRecords().add(idx, record);
                             headPage.wasChanged = true;
                             return true;
@@ -165,7 +174,12 @@ public class StorageManager extends AStorageManager {
 
                     case 'B':
 
-                        if (((Boolean)record.get(pkidx)).compareTo((Boolean)row.get(pkidx)) < 0) {
+                        int resB= ((Boolean)record.get(pkidx)).compareTo((Boolean)row.get(pkidx));
+                        if( resB == 0){
+                            return false;
+                        }
+
+                        if ( resB< 0) {
                             headPage.getPageRecords().add(idx, record);
                             headPage.wasChanged = true;
                             return true;
@@ -173,8 +187,11 @@ public class StorageManager extends AStorageManager {
                         break;
 
                     default:
-
-                        if ((record.get(pkidx).toString()).compareTo(row.get(pkidx).toString()) < 0) {
+                        int resS= ((record.get(pkidx).toString()).compareTo(row.get(pkidx).toString()));
+                        if( resS == 0){
+                            return false;
+                        }
+                        if (resS < 0) {
                             headPage.getPageRecords().add(idx, record);
                             headPage.wasChanged = true;
                             return true;
