@@ -12,9 +12,9 @@ import java.util.ArrayList;
 public class StorageManager extends AStorageManager{
 
 
-    PageBuffer pb;
+    private static PageBuffer pb;
     public StorageManager(){
-        this.pb = new PageBuffer(Catalog.getCatalog().getPageBufferSize());
+        pb = new PageBuffer(Catalog.getCatalog().getPageBufferSize());
     }
 
     //TODO
@@ -137,11 +137,9 @@ public class StorageManager extends AStorageManager{
         return false;
     }
 
-    //TODO
     @Override
     public void purgePageBuffer() {
         pb.PurgeBuffer();
-
     }
 
     //TODO
