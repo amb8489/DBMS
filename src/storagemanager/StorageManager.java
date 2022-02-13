@@ -50,10 +50,24 @@ public class StorageManager extends AStorageManager{
         return null;
     }
 
-    //TODO
     @Override
     public ArrayList<ArrayList<Object>> getRecords(ITable table) {
-        return null;
+
+        ArrayList<ArrayList<Object>> RECORDS = new ArrayList<>();
+
+        // page name for head is always at idx zero
+        int headPtr = ((Table)table).getPagesThatBelongToMe().get(0);
+
+        // loop though all the tables pages in order
+        while(headPtr != -1){
+
+            Page headPage = pb.getPageFromBuffer(""+headPtr,table);
+            // add all recs
+            RECORDS.addAll(headPage.getPageRecords());
+            // next page
+            headPtr = headPage.getPtrToNextPage();
+        }
+        return RECORDS;
     }
 
     //TODO
