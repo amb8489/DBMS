@@ -1,5 +1,6 @@
 package filesystem;
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.*;
 
 
 /**
@@ -53,6 +54,10 @@ public class FileSystem {
      *
      * How to add:
      * ENUM_NAME(String filepath_relative_to_db_location) - MUST HAVE BACKLASHES
+     *
+     * How to Access File Path:
+     * FilePath.VALUE.rel_loc
+     *  - will return whatever you put in as your string
      */
     private enum FilePath{
         PAGES("\\pages"),
@@ -64,6 +69,43 @@ public class FileSystem {
         private FilePath(String rel_loc) {
             this.rel_loc = rel_loc;
         }
+    }
+
+    public static boolean establishFileSystem(String location){
+        if(!setDBLocation(location)){ // checks if File System already has a location, sets dblocation = location if not
+            ERROR("File System not established, may already be managing a database.");
+            return false;
+        }
+        // check if pages file already exists
+        Path pagePath = Paths.get(location+FilePath.PAGES.rel_loc);
+        Path catPath = Paths.get(location+FilePath.CATALOG.rel_loc);
+
+        // establish pages directory
+        if(!Files.exists(pagePath)){ //if there's not already a pages directory, make one
+            try{
+                Files.createDirectory(pagePath);
+            }
+            catch(IOException e){  // shouldn't happen, but just in case
+                ERROR("pages directory did not exist, but errored on creation.");
+                ERROR(e.getMessage());
+                return false;   //TODO decide if this should actually return false
+            }
+        }
+
+        // establish catalog directory
+        if(!Files.exists(catPath)){
+            try{
+                Files.createDirectory(catPath);
+            }
+            catch(IOException e){  // shouldn't happen, but just in case
+                ERROR("catalog directory did not exist, but errored on creation.");
+                ERROR(e.getMessage());
+                return false;  //TODO ditto line 91
+            }
+        }
+
+        // if either the pages or catalog directories existed, they were left as they were
+        return true;
     }
 
 
