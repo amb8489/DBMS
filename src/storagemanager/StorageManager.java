@@ -32,6 +32,8 @@ public class StorageManager extends AStorageManager{
         // where in a row the pk is
         int pkidx = ((Table) table).pkIdx();
 
+
+
         // loop though all the tables pages in order
         while(headPtr != -1){
 
@@ -57,13 +59,76 @@ public class StorageManager extends AStorageManager{
     //TODO
     @Override
     public boolean insertRecord(ITable table, ArrayList<Object> record) {
+
+        // page name for head is always at idx zero
+        int headPtr = ((Table)table).getPagesThatBelongToMe().get(0);
+
+        // where in a row the pk is
+        int pkidx = ((Table) table).pkIdx();
+
+
+
+        // loop though all the tables pages in order
+        while(headPtr != -1){
+
+            Page headPage = pb.getPageFromBuffer(""+headPtr,table);
+            // look though all record for that page
+
+            int idx = 0;
+
+            //TODO if page is empty
+            if (headPage.getPageRecords().size()==0){
+
+
+
+            }
+
+            for(ArrayList<Object> row: headPage.getPageRecords()){
+
+
+                // TODO compare types
+
+//                if (record.get(pkidx) < row.get(pkidx)){
+//                    headPage.getPageRecords().add(idx-1,row);
+//                    return true;
+//                }
+
+
+                idx++;
+            }
+            // next page
+            headPtr = headPage.getPtrToNextPage();
+        }
         return false;
     }
 
-    //TODO
     @Override
     public boolean deleteRecord(ITable table, Object primaryKey) {
+
+        // page name for head is always at idx zero
+        int headPtr = ((Table)table).getPagesThatBelongToMe().get(0);
+
+        // where in a row the pk is
+        int pkidx = ((Table) table).pkIdx();
+
+        // loop though all the tables pages in order
+        while(headPtr != -1){
+
+            Page headPage = pb.getPageFromBuffer(""+headPtr,table);
+            // look though all record for that page
+            int idx = 0;
+            for(ArrayList<Object> row: headPage.getPageRecords()){
+                if (row.get(pkidx).equals(primaryKey)){
+                    headPage.getPageRecords().remove(idx);
+                    return true;
+                }
+                idx++;
+            }
+            // next page
+            headPtr = headPage.getPtrToNextPage();
+        }
         return false;
+
     }
 
     //TODO
