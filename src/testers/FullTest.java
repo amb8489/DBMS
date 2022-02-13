@@ -95,7 +95,7 @@ public class FullTest {
         attrs.add(new Attribute("attr3", "Boolean"));
         attrs.add(new Attribute("attr4", "Char(5)"));
         attrs.add(new Attribute("attr5", "Varchar(10)"));
-        Attribute pk = attrs.get(0);
+        Attribute pk = attrs.get(1);
         Table tab1 = (Table) cat.addTable("table1", attrs, pk);
 
 
@@ -105,16 +105,31 @@ public class FullTest {
         System.out.println(tab1.getPagesThatBelongToMe());
 
         // insert into table
+
+        ArrayList<Object> MyRec1 = mkRandomRec(tab1);
+        sm.insertRecord(tab1,MyRec1);
+
         for (int i = 0; i < 40; i++) {
             ArrayList<Object> rec = mkRandomRec(tab1);
             sm.insertRecord(tab1,rec);
         }
+
+        ArrayList<Object> MyRec2 = mkRandomRec(tab1);
+        sm.insertRecord(tab1,MyRec2);
+
+
 
         sm.purgePageBuffer();
 
         for (ArrayList<Object> r : sm.getRecords(tab1)) {
             System.out.println(r);
         }
+
+        System.out.println("GETTING"+MyRec1);
+        System.out.println(sm.getRecord(tab1,MyRec1.get(tab1.pkIdx())));
+
+        System.out.println("GETTING"+MyRec2);
+        System.out.println(sm.getRecord(tab1,MyRec2.get(tab1.pkIdx())));
 
 
 
