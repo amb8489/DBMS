@@ -54,6 +54,7 @@ public class FullTest {
         Random r = new Random();
         ArrayList<Object> rec = new ArrayList<>();
         for (int idx = 0; idx < table.getAttributes().size(); idx++) {
+
                 // read in what the schema says is next
                 switch (schema.get(idx)) {
                     case "Integer":
@@ -72,6 +73,9 @@ public class FullTest {
                             rec.add(getSaltString(Math.abs(r.nextInt()) % vacharlen + 1));
                         }
                 }
+            if((table.pkIdx() != idx) && r.nextInt() % 10 == 0){
+                rec.set(idx,null);
+            }
         }
 
         return rec;
@@ -101,7 +105,7 @@ public class FullTest {
         System.out.println(tab1.getPagesThatBelongToMe());
 
         // insert into table
-        for (int i = 0; i < 30; i++) {
+        for (int i = 0; i < 40; i++) {
             ArrayList<Object> rec = mkRandomRec(tab1);
             sm.insertRecord(tab1,rec);
         }

@@ -133,7 +133,7 @@ public class StorageManager extends AStorageManager {
 
             for (ArrayList<Object> row : headPage.getPageRecords()) {
 
-                //SUSS
+                //SUSS find better way in futuer
                 int pkid = ((Table) table).pkIdx();
                 String pk_type = table.getAttributes().get(pkid).getAttributeType();
 
