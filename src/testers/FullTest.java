@@ -95,7 +95,7 @@ public class FullTest {
         attrs.add(new Attribute("attr3", "Boolean"));
         attrs.add(new Attribute("attr4", "Char(5)"));
         attrs.add(new Attribute("attr5", "Varchar(10)"));
-        Attribute pk = attrs.get(1);
+        Attribute pk = attrs.get(0);
         Table tab1 = (Table) cat.addTable("table1", attrs, pk);
 
 
@@ -131,6 +131,13 @@ public class FullTest {
         System.out.println("GETTING"+MyRec2);
         System.out.println(sm.getRecord(tab1,MyRec2.get(tab1.pkIdx())));
 
+
+        System.out.println("REMOVING"+MyRec2);
+        System.out.println(sm.deleteRecord(tab1,MyRec2.get(tab1.pkIdx())));
+        System.out.println("REMOVING"+MyRec1);
+        System.out.println(sm.deleteRecord(tab1,MyRec1.get(tab1.pkIdx())));
+        System.out.println("REMOVING DNE val"+MyRec1);
+        System.out.println(sm.deleteRecord(tab1,null));
 
 
 

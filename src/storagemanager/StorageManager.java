@@ -58,7 +58,6 @@ public class StorageManager extends AStorageManager {
         return false;
     }
 
-    //TODO
     @Override
     public ArrayList<Object> getRecord(ITable table, Object pkValue) {
 
@@ -201,8 +200,12 @@ public class StorageManager extends AStorageManager {
             // look though all record for that page
             int idx = 0;
             for (ArrayList<Object> row : headPage.getPageRecords()) {
+
                 if (row.get(pkidx).equals(primaryKey)) {
+                    System.out.println("REMOVING"+row);
+
                     headPage.getPageRecords().remove(idx);
+
                     headPage.wasChanged = true;
                     return true;
                 }
