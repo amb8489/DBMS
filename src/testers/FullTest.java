@@ -97,18 +97,30 @@ public class FullTest {
         attrs.add(new Attribute("attr5", "Varchar(10)"));
         Attribute pk = attrs.get(0);
         Table tab1= null;
+        Table tab2= null;
+        Table tab3= null;
+
 //
              tab1 = (Table) cat.addTable("table1", attrs, pk);
-            if (tab1 == null){
+             tab2 = (Table) cat.addTable("table2", attrs, pk);
+             tab3 = (Table) cat.addTable("table3", attrs, pk);
+
+        if (tab1 == null){
                 System.out.println("YOU ARE RESTORING TABLE");
                  tab1 = (Table) cat.getTable("table1");
-              }
+                tab2 = (Table) cat.getTable("table2");
+                tab3 = (Table) cat.getTable("table3");
+                System.out.println(tab1.getPagesThatBelongToMe());
+                System.out.println(tab2.getPagesThatBelongToMe());
+                System.out.println(tab3.getPagesThatBelongToMe());
+
+
+        }
 
 
         //see init page made for this table
 
 
-        System.out.println(tab1.getPagesThatBelongToMe());
 
         // insert into table
 

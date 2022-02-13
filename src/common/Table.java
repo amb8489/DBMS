@@ -341,6 +341,8 @@ public class Table implements ITable{
                 // get pages
                 int numPagesThatBelongToMe = dataInputStr.readInt();
                 ArrayList<Integer> BelongToMe = new ArrayList<>();
+                Page.numPages +=numPagesThatBelongToMe;
+
                 if(numPagesThatBelongToMe>0) {
 
                     for (int an = 0; an < numPagesThatBelongToMe; an++) {
