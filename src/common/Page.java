@@ -122,7 +122,7 @@ public class Page {
                 }
             }
 
-            System.out.println("reading records from page " + location);
+            VerbosePrint.print("reading records from page " + location);
 
             String PathToPages = Catalog.getCatalog().getDbLocation() + "/pages/" + location;
             // read in streams
@@ -211,7 +211,7 @@ public class Page {
                 // append row to pageRecords
                 pageRecords.add(rec);
             }
-            System.out.println(pageName + " curr size " + currentSize);
+            VerbosePrint.print(pageName + " curr size " + currentSize);
 
             return new Page(pageName, ptrToNextPage, currentSize, pageRecords, table);
 
@@ -242,7 +242,7 @@ public class Page {
 
 
             // output streams
-            System.out.println(location);
+            VerbosePrint.print(location);
             DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(location)));
 
             // byte array that we will store at the end(all the records stored as bytes at once to reduce the amount of
@@ -252,15 +252,15 @@ public class Page {
 
             ArrayList<Integer> CumSum = calcSizeOfRecordsCumSum(this.pageRecords, this.IBelongTo);
 
-            System.out.println("here");
+            VerbosePrint.print("here");
 
             double pSize = CumSum.get(CumSum.size() - 1);
 
             Double number_of_extra_split_Pages = Math.floor(pSize / Catalog.getCatalog().getPageSize());
-            System.out.println(number_of_extra_split_Pages);
+            VerbosePrint.print(number_of_extra_split_Pages);
             if (number_of_extra_split_Pages == 0) {
 
-                    System.out.println("NO SPLIT NEEDED");
+                    VerbosePrint.print("NO SPLIT NEEDED");
 
                     // WRITE name ,num records to page, and name of next page (nullptr to next = -1)
                     outputStream.write(ByteBuffer.allocate(4).putInt(Integer.parseInt(this.getPageName())).array());
@@ -268,7 +268,7 @@ public class Page {
                     outputStream.write(ByteBuffer.allocate(4).putInt(this.ptrToNextPage).array());
 
 
-                    System.out.println("storing record");
+                    VerbosePrint.print("storing record");
 
                     //for each row in the table
                     for (int i = 0; i < this.pageRecords.size(); i++) {
@@ -344,7 +344,7 @@ public class Page {
 //                pageRecords.clear();
                     // update page size
                     currentSize = 0;
-                    System.out.println("Store complete");
+                    VerbosePrint.print("Store complete");
                     return true;
 
             } else {
@@ -359,7 +359,7 @@ public class Page {
                 List<ArrayList<Object>> RECORDS = this.pageRecords.subList(0, pageRecords.size());
 
                 CumSum.remove(0);
-                System.out.println(CumSum);
+                VerbosePrint.print(CumSum);
                 for (int i = 0; i < CumSum.size(); i++) {
                     if (CumSum.get(i) - adj >= Catalog.getCatalog().getPageSize()) {
                         int numberOfRecordsForpage = (i - start);
@@ -367,15 +367,15 @@ public class Page {
                         adj += CumSum.get(SplitPoint);
 
                         List<ArrayList<Object>> left = RECORDS.subList(start, start + SplitPoint + 1);
-                        System.out.println("SPLITTING PAGE");
+                        VerbosePrint.print("SPLITTING PAGE");
 
                         start = start + SplitPoint + 1;
-                        System.out.println(RECORDS.size());
+                        VerbosePrint.print(RECORDS.size());
 
 
                         // split making new page
                         WillSplit.pageRecords = left;
-                        System.out.println(RECORDS.size());
+                        VerbosePrint.print(RECORDS.size());
 
 
                         // new page will need attribs

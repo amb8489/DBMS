@@ -5,10 +5,7 @@ Kyle Ferguson, Aaron Berghash
 package storagemanager;
 
 import catalog.Catalog;
-import common.Attribute;
-import common.ITable;
-import common.Page;
-import common.Table;
+import common.*;
 import pagebuffer.PageBuffer;
 
 import java.io.File;
@@ -109,7 +106,7 @@ public class StorageManager extends AStorageManager {
 
         // page name for head is always at idx zero
         int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
-//        System.out.println("head page: "+headPtr);
+//        VerbosePrint.print("head page: "+headPtr);
         // where in a row the pk is
         int pkidx = ((Table) table).pkIdx();
 
@@ -119,28 +116,28 @@ public class StorageManager extends AStorageManager {
         while (headPtr != -1) {
 
 
-//            System.out.println("inside: "+headPtr);
-//            System.out.println(((Table) table).getPagesThatBelongToMe());
+//            VerbosePrint.print("inside: "+headPtr);
+//            VerbosePrint.print(((Table) table).getPagesThatBelongToMe());
 
             headPage = pb.getPageFromBuffer("" + headPtr, table);
             // look though all record for that page
-//            System.out.println("got: "+headPtr);
-//            System.out.println(headPage.getPageRecords());
+//            VerbosePrint.print("got: "+headPtr);
+//            VerbosePrint.print(headPage.getPageRecords());
 
 
             int idx = 0;
 
             if (headPage.getPageRecords().size() == 0) {
-//                System.out.println("head page size 0: "+headPtr);
+//                VerbosePrint.print("head page size 0: "+headPtr);
 
                 headPage.getPageRecords().add(record);
                 headPage.wasChanged = true;
                 return true;
             }
-//            System.out.println("here 1: "+headPtr);
+//            VerbosePrint.print("here 1: "+headPtr);
 
             for (ArrayList<Object> row : headPage.getPageRecords()) {
-//                System.out.println("here 2: "+headPtr+ " with "+record);
+//                VerbosePrint.print("here 2: "+headPtr+ " with "+record);
 
 
                 //SUSS find better way in future
@@ -219,7 +216,7 @@ public class StorageManager extends AStorageManager {
             for (ArrayList<Object> row : headPage.getPageRecords()) {
 
                 if (row.get(pkidx).equals(primaryKey)) {
-                    System.out.println("REMOVING"+row);
+                    VerbosePrint.print("REMOVING"+row);
 
                     headPage.getPageRecords().remove(idx);
 

@@ -131,13 +131,13 @@ public class FullTest {
 
 
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 10; i++) {
             sm.insertRecord(tab1,mkRandomRec(tab1));
-            sm.insertRecord(tab2,mkRandomRec(tab2));
-            sm.insertRecord(tab3,mkRandomRec(tab3));
+//            sm.insertRecord(tab2,mkRandomRec(tab2));
+//            sm.insertRecord(tab3,mkRandomRec(tab3));
 
         }
-        System.out.println("!! :)");
+        
 
         ArrayList<Object> MyRec2 = mkRandomRec(tab1);
         MyRec2.set(0,9001);

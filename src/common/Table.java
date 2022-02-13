@@ -202,7 +202,7 @@ public class Table implements ITable{
 
             // total number of tables.txt
             outputStream.write(ByteBuffer.allocate(4).putInt(Table.numTables).array());
-            System.out.println(numTables);
+            VerbosePrint.print(numTables);
 
             // tables.txt name len
             outputStream.write(ByteBuffer.allocate(4).putInt(this.TableName.length()).array());
@@ -259,7 +259,7 @@ public class Table implements ITable{
                 // write page name
                 outputStream.write(ByteBuffer.allocate(4).putInt(pageName).array());
             }
-//            System.out.println(outputStream.toByteArray().length);
+//            VerbosePrint.print(outputStream.toByteArray().length);
             return outputStream.toByteArray();
 
         } catch (IOException e) {
@@ -273,7 +273,7 @@ public class Table implements ITable{
         String location = DBlocation+"/tabs/tables.txt";
 
         try {
-            System.out.println("reading tables.txt from disk");
+            VerbosePrint.print("reading tables.txt from disk");
 
 
             // read in streams
@@ -288,10 +288,10 @@ public class Table implements ITable{
             int numTables = 0;
             try {
                 numTables = dataInputStr.readInt();
-                System.out.println("-------------["+numTables+"]--------------");
+                VerbosePrint.print("-------------["+numTables+"]--------------");
 
             }catch (IOException i){
-                System.out.println("no tables found stored in DB");
+                VerbosePrint.print("no tables found stored in DB");
                 return null;
             }
             Table.numTables = numTables;
@@ -331,7 +331,7 @@ public class Table implements ITable{
                         int lenFk = dataInputStr.readInt();
                         String Fk = new String(dataInputStr.readNBytes(PKattributeLen));
 
-                        System.out.println("hello, this still needs to be finished :) -table");
+                        VerbosePrint.print("hello, this still needs to be finished :) -table");
                         // TODO mk fk
 
                         // TODO add fk to ForeignKeys
