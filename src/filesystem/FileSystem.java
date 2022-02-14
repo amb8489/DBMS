@@ -205,7 +205,7 @@ public class FileSystem {
 
     public static DataInputStream createCatTabsDataInStream() throws FileNotFoundException {
 
-        String tabsLoc = location + FilePath.CATALOG.rel_loc+"\\tables.txt";
+        String tabsLoc = location + FilePath.TABS.rel_loc+"\\tables.txt";
         try {
             // read in streams
             FileInputStream inputStream;
@@ -233,7 +233,7 @@ public class FileSystem {
         try {
             return new DataOutputStream(
                     new BufferedOutputStream(
-                            new FileOutputStream(location + FilePath.CATALOG.rel_loc+"\\tables.txt")));
+                            new FileOutputStream(location + FilePath.TABS.rel_loc+"\\tables.txt")));
         }
         catch (FileNotFoundException e){
             throw e;
