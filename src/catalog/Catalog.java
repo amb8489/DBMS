@@ -77,7 +77,9 @@ public class Catalog extends ACatalog {
         FileSystem.establishFileSystem(location);  // CATALOG ESTABLISHES FILE SYSTEM
     }
 
-
+    public int getNumberOFtables(){
+        return this.CurrentTablesInBD.keySet().size();
+    }
     @Override
     public String getDbLocation() {
         return this.location;

@@ -202,7 +202,8 @@ public class Table implements ITable{
             // WRITE table details
 
             // total number of tables.txt
-            outputStream.write(ByteBuffer.allocate(4).putInt(Table.numTables).array());
+            outputStream.write(ByteBuffer.allocate(4).putInt(((Catalog)Catalog.getCatalog()).getNumberOFtables()).array());
+            System.out.println(((Catalog) Catalog.getCatalog()).getNumberOFtables());
             VerbosePrint.print(numTables);
 
             // tables.txt name len
@@ -285,6 +286,8 @@ public class Table implements ITable{
             int numTables = 0;
             try {
                 numTables = dataInputStr.readInt();
+                System.out.println(numTables);
+
                 VerbosePrint.print("-------------["+numTables+"]--------------");
 
             }catch (IOException i){
@@ -358,6 +361,7 @@ public class Table implements ITable{
                 // not needed but have to do it to read correct bytes
 
                 if(tn < numTables-1) {
+                    System.out.println(tn+" "+numTables);
                     dataInputStr.readInt();}
 
             }

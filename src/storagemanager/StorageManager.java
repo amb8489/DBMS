@@ -38,6 +38,7 @@ public class StorageManager extends AStorageManager {
 
             Catalog.getCatalog().dropTable(table.getTableName());  // drop schema from catalog
             pb.dropFromBuffer(table);
+            Table.numTables--;
             return true;
         }
 
