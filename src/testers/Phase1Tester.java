@@ -124,7 +124,7 @@ public class Phase1Tester {
         //clear non-existent table
         //should return false
         //error message should be reported by function
-        boolean cleared = catalog.dropTable(name);
+        boolean cleared = catalog.clearTable(name);
 
         if(cleared){
             System.err.println("Test Failed: table should not exist");
@@ -288,7 +288,7 @@ public class Phase1Tester {
         inserted = sm.insertRecord(table1, row1);
 
         if(inserted) {
-            System.err.println("Test failed: insertRecord failed---------");
+            System.err.println("Test failed: insertRecord failed");
             System.err.println("inserting a duplicate record");
             System.err.println("Expected: false");
             System.err.println("Got: true");
@@ -427,8 +427,11 @@ public class Phase1Tester {
         int count = Math.min(data.size(), 10);
 
         Random rnd = new Random();
+        int dataSize = data.size();
         for(int i = 0; i < count; i++){
-            ArrayList<Object> row = data.get(Math.abs(rnd.nextInt()% data.size()));
+            int index = Math.abs(rnd.nextInt()% data.size());
+            ArrayList<Object> row = data.get(index);
+            data.remove(index);
             System.out.println("\t\tDeleting: " + row);
             boolean deleted = sm.deleteRecord(table, row.get(table.getAttributes().indexOf(table.getPrimaryKey())));
 
@@ -449,7 +452,7 @@ public class Phase1Tester {
 
         ArrayList<ArrayList<Object>> data2 = sm.getRecords(table);
 
-        if(data2.size() + count != data.size()){
+        if(data2.size() + count != dataSize){
             System.err.println("Test failed. Not enough records were deleted.");
             return true;
         }
@@ -756,7 +759,9 @@ public class Phase1Tester {
         if(testingUpdate("fiveAttrInsert"))
             return;
 
-        System.out.println("Testing complete");
+        sm.purgePageBuffer();
+        catalog.saveToDisk();
 
+        System.out.println("Testing complete");
     }
 }

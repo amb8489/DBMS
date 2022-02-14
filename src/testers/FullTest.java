@@ -173,7 +173,7 @@ public class FullTest {
         System.out.println("update:"+sm.updateRecord( tab1, MyRec2, newRecord));
 
         System.out.println(sm.getRecord(tab1,newRecord.get(tab1.pkIdx())));
-
+        sm.clearTableData(tab1);
 ////         save
         cat.saveToDisk();
 
