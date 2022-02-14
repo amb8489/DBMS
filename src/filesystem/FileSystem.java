@@ -1,7 +1,9 @@
 package filesystem;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.*;
+
+import catalog.Catalog;
+import common.VerbosePrint;
 
 
 /**
@@ -63,6 +65,7 @@ public class FileSystem {
      *  - will return whatever you put in as your string
      */
     private enum FilePath{
+        TABS("\\tabs"),
         PAGES("\\pages"),
         CATALOG("\\catalog");
 
@@ -79,8 +82,9 @@ public class FileSystem {
             ERROR("File System not established, may already be managing a database.");
             return false;
         }
-        // check if pages file already exists
+
         Path pagePath = Paths.get(location+FilePath.PAGES.rel_loc);
+        Path tabsPath = Paths.get(location+FilePath.TABS.rel_loc);
         Path catPath = Paths.get(location+FilePath.CATALOG.rel_loc);
 
         // establish pages directory
@@ -90,6 +94,18 @@ public class FileSystem {
             }
             catch(IOException e){  // shouldn't happen, but just in case
                 ERROR("pages directory did not exist, but errored on creation.");
+                ERROR(e.getMessage());
+                return false;   //TODO decide if this should actually return false
+            }
+        }
+
+        // establish tabs directory
+        if(!Files.exists(tabsPath)){ //if there's not already a tabs directory, make one
+            try{
+                Files.createDirectory(tabsPath);
+            }
+            catch(IOException e){  // shouldn't happen, but just in case
+                ERROR("tabs directory did not exist, but errored on creation.");
                 ERROR(e.getMessage());
                 return false;   //TODO decide if this should actually return false
             }
@@ -107,7 +123,7 @@ public class FileSystem {
             }
         }
 
-        // if either the pages or catalog directories existed, they were left as they were
+        // if either the pages, tabs or catalog directories existed, they were left as they were
         return true;
     }
 
@@ -142,6 +158,89 @@ public class FileSystem {
         return false;
     }
 
+    public static DataInputStream createPageDataInStream(String num) throws FileNotFoundException {
+
+        String tabsLoc = location + FilePath.PAGES.rel_loc+"\\"+num;
+        try {
+            // read in streams
+            FileInputStream inputStream;
+            inputStream = new FileInputStream(tabsLoc);
+
+            return new DataInputStream(inputStream);
+        }
+        catch (FileNotFoundException e){
+            throw e;
+        }
+    }
+
+    public static DataOutputStream createPageDataOutStream(String num) throws FileNotFoundException {
+        try {
+            return new DataOutputStream(
+                    new BufferedOutputStream(
+                            new FileOutputStream(
+                                    location + FilePath.PAGES.rel_loc + "\\"+num)));
+        }
+        catch (FileNotFoundException e){
+            throw e;
+        }
+    }
+
+    // ---------------------------- CATALOG -----------------------------------------
+
+    public static DataInputStream createCatDataInStream() throws FileNotFoundException {
+
+        String catLoc = location + FilePath.CATALOG.rel_loc+"\\catalog.txt";  //TODO decide if catalog.txt goes in enum
+        VerbosePrint.print("attempting to find catalog in: " + catLoc);
+        try {
+            // read in streams
+            FileInputStream inputStream;
+            inputStream = new FileInputStream(catLoc);
+
+            return new DataInputStream(inputStream);
+        }
+        catch (FileNotFoundException e){
+            throw e;
+        }
+    }
+
+    public static DataInputStream createCatTabsDataInStream() throws FileNotFoundException {
+
+        String tabsLoc = location + FilePath.TABS.rel_loc+"\\tables.txt";
+        try {
+            // read in streams
+            FileInputStream inputStream;
+            inputStream = new FileInputStream(tabsLoc);
+
+            return new DataInputStream(inputStream);
+        }
+        catch (FileNotFoundException e){
+            throw e;
+        }
+    }
+
+    public static DataOutputStream createCatDataOutStream() throws FileNotFoundException {
+        try {
+            return new DataOutputStream(
+                    new BufferedOutputStream(
+                            new FileOutputStream(location + FilePath.CATALOG.rel_loc+"\\catalog.txt")));
+        }
+        catch (FileNotFoundException e){
+            throw e;
+        }
+    }
+
+    public static DataOutputStream createCatTabsDataOutStream() throws FileNotFoundException {
+        try {
+            return new DataOutputStream(
+                    new BufferedOutputStream(
+                            new FileOutputStream(location + FilePath.TABS.rel_loc+"\\tables.txt")));
+        }
+        catch (FileNotFoundException e){
+            throw e;
+        }
+    }
+
+
     // ------------------------------ UTILITY ---------------------------------------------
 
     /**
@@ -151,5 +250,20 @@ public class FileSystem {
      */
     private static void ERROR(String error){
         System.err.println("FileSystem: " + error);
+    }
+
+    /**
+     *
+     * @param <X> element of type X
+     * @param <Y> element of type Y
+     */
+    public class Tuple<X,Y>{
+        public final X x;  //element 1
+        public final Y y;  //element 2
+
+        public Tuple(X x, Y y) {
+            this.x = x;
+            this.y = y;
+        }
     }
 }

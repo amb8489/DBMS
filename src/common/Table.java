@@ -5,6 +5,7 @@ import catalog.Catalog;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import filesystem.FileSystem;
 
 /*
   Implementation of the ITable interface.  The interface
@@ -271,16 +272,12 @@ public class Table implements ITable{
     }
 
     public static ArrayList<ITable> ReadAllTablesFromDisk(String DBlocation) {
-        String location = DBlocation+"/tabs/tables.txt";
-
         try {
             VerbosePrint.print("reading tables.txt from disk");
 
 
             // read in streams
-            FileInputStream inputStream;
-            inputStream = new FileInputStream(location);
-            DataInputStream dataInputStr = new DataInputStream(inputStream);
+            DataInputStream dataInputStr = FileSystem.createCatTabsDataInStream();
 
 
             // reading all the tables.txt from page from disk
@@ -373,7 +370,7 @@ public class Table implements ITable{
         }catch (IOException e){
             e.printStackTrace();
 
-            System.err.println("IO Error reading table from disk AT "+location);
+            System.err.println("IO Error reading table from disk AT ");
             return null;
         }
     }
