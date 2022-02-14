@@ -1,6 +1,6 @@
 /*
   Implementation of the catalog interface.
-  @author Aaron Berghash (amb8489@rit.edu)
+  @author Aaron Berghash (amb8489@rit.edu), Kyle Ferguson (krf6081@rit.edu)
 
  */
 
@@ -10,7 +10,7 @@ package catalog;
 import common.Attribute;
 import common.ITable;
 import common.Table;
-import filesystem.FileSystem;
+import filesystem.*;
 import common.VerbosePrint;
 
 import java.io.*;
@@ -33,16 +33,13 @@ public class Catalog extends ACatalog {
 
     public Catalog(String location, int pageSize, int pageBufferSize) {
 
-        VerbosePrint.print("attempting to find catalog in: "+location+"/catalog/catalog.txt");
+
 
         // atempt to read catalog file from DB if its there
-
-
         try {
             // read in streams
-            FileInputStream inputStream;
-            inputStream = new FileInputStream(location+"/catalog/catalog.txt");
-            DataInputStream dataInputStr = new DataInputStream(inputStream);
+
+            DataInputStream dataInputStr = FileSystem.createCatDataInStream();
 
             VerbosePrint.print("found catalog .. restoring");
 
@@ -180,7 +177,7 @@ public class Catalog extends ACatalog {
 
         try {
 
-            DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream("src/DB/catalog/catalog.txt")));
+            DataOutputStream out = FileSystem.createCatDataOutStream();
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
 
@@ -196,9 +193,8 @@ public class Catalog extends ACatalog {
 
             /////// write all tables out to "src/DB/catalog/tables.txt"
             if(CurrentTablesInBD!= null && CurrentTablesInBD.size() >0 ) {
-
-                out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(Catalog.getCatalog().getDbLocation()+"/tabs/tables.txt")));
-            outputStream = new ByteArrayOutputStream();
+                out = FileSystem.createCatTabsDataOutStream();
+                outputStream = new ByteArrayOutputStream();
 
                 for (String tableName : CurrentTablesInBD.keySet()) {
                     Table t = (Table) CurrentTablesInBD.get(tableName);
@@ -213,6 +209,7 @@ public class Catalog extends ACatalog {
             return true;
         }catch (IOException i){
             System.err.println("ERROR Saving catalog to disk");
+            System.err.println(i);
             return false;
         }
     }

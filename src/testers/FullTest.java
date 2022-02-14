@@ -84,7 +84,7 @@ public class FullTest {
 
     public static void main(String[] args) {
         // mk catalog
-        ACatalog cat = Catalog.createCatalog("src/DB", 4048, 10);
+        ACatalog cat = Catalog.createCatalog("DB", 4048, 10);
 
         AStorageManager sm = AStorageManager.createStorageManager();
 
