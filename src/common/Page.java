@@ -1,3 +1,7 @@
+/*
+ * Authors: Aaron Beghash, Kyle Ferguson
+ */
+
 package common;
 
 import catalog.Catalog;
@@ -10,6 +14,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 import java.util.stream.IntStream;
+import filesystem.FileSystem;
 
 public class Page {
 
@@ -124,11 +129,8 @@ public class Page {
 
             VerbosePrint.print("reading records from page " + location);
 
-            String PathToPages = Catalog.getCatalog().getDbLocation() + "/pages/" + location;
             // read in streams
-            FileInputStream inputStream;
-            inputStream = new FileInputStream(PathToPages);
-            DataInputStream dataInputStr = new DataInputStream(inputStream);
+            DataInputStream dataInputStr = FileSystem.createPageDataInStream(location);
 
             int currentSize = 0;
             // reading all the records from page from disk
@@ -243,7 +245,7 @@ public class Page {
 
             // output streams
             VerbosePrint.print(location);
-            DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(location)));
+            DataOutputStream out = FileSystem.createPageDataOutStream(this.pageName);
 
             // byte array that we will store at the end(all the records stored as bytes at once to reduce the amount of
             // I/O operations)

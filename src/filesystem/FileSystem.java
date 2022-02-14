@@ -66,6 +66,7 @@ public class FileSystem {
      */
     private enum FilePath{
         TABS("\\tabs"),
+        PAGES("\\pages"),
         CATALOG("\\catalog");
 
         // code that allows for the enum to hold values
@@ -81,14 +82,27 @@ public class FileSystem {
             ERROR("File System not established, may already be managing a database.");
             return false;
         }
-        // check if tabs file already exists
-        Path pagePath = Paths.get(location+FilePath.TABS.rel_loc);
+
+        Path pagePath = Paths.get(location+FilePath.PAGES.rel_loc);
+        Path tabsPath = Paths.get(location+FilePath.TABS.rel_loc);
         Path catPath = Paths.get(location+FilePath.CATALOG.rel_loc);
 
-        // establish tabs directory
-        if(!Files.exists(pagePath)){ //if there's not already a tabs directory, make one
+        // establish pages directory
+        if(!Files.exists(pagePath)){ //if there's not already a pages directory, make one
             try{
                 Files.createDirectory(pagePath);
+            }
+            catch(IOException e){  // shouldn't happen, but just in case
+                ERROR("pages directory did not exist, but errored on creation.");
+                ERROR(e.getMessage());
+                return false;   //TODO decide if this should actually return false
+            }
+        }
+
+        // establish tabs directory
+        if(!Files.exists(tabsPath)){ //if there's not already a tabs directory, make one
+            try{
+                Files.createDirectory(tabsPath);
             }
             catch(IOException e){  // shouldn't happen, but just in case
                 ERROR("tabs directory did not exist, but errored on creation.");
@@ -109,7 +123,7 @@ public class FileSystem {
             }
         }
 
-        // if either the tabs or catalog directories existed, they were left as they were
+        // if either the pages, tabs or catalog directories existed, they were left as they were
         return true;
     }
 
@@ -127,8 +141,8 @@ public class FileSystem {
             return false;  // we don't even have a location!  we're not deleting anything D:<
         }
 
-        String pageRelPath = String.format("\\%d", num);  // page's path relative to the tabs directory
-        Path pagePath = Paths.get(location+FilePath.TABS.rel_loc+pageRelPath);
+        String pageRelPath = String.format("\\%d", num);  // page's path relative to the pages directory
+        Path pagePath = Paths.get(location+FilePath.PAGES.rel_loc+pageRelPath);
 
         try {
             Files.deleteIfExists(pagePath);
@@ -142,6 +156,33 @@ public class FileSystem {
 
     public static boolean writePageFile(){
         return false;
+    }
+
+    public static DataInputStream createPageDataInStream(String num) throws FileNotFoundException {
+
+        String tabsLoc = location + FilePath.PAGES.rel_loc+"\\"+num;
+        try {
+            // read in streams
+            FileInputStream inputStream;
+            inputStream = new FileInputStream(tabsLoc);
+
+            return new DataInputStream(inputStream);
+        }
+        catch (FileNotFoundException e){
+            throw e;
+        }
+    }
+
+    public static DataOutputStream createPageDataOutStream(String num) throws FileNotFoundException {
+        try {
+            return new DataOutputStream(
+                    new BufferedOutputStream(
+                            new FileOutputStream(
+                                    location + FilePath.PAGES.rel_loc + "\\"+num)));
+        }
+        catch (FileNotFoundException e){
+            throw e;
+        }
     }
 
     // ---------------------------- CATALOG -----------------------------------------
@@ -165,7 +206,6 @@ public class FileSystem {
     public static DataInputStream createCatTabsDataInStream() throws FileNotFoundException {
 
         String tabsLoc = location + FilePath.CATALOG.rel_loc+"\\tables.txt";
-        VerbosePrint.print("attempting to find catalog in: " + tabsLoc);
         try {
             // read in streams
             FileInputStream inputStream;
