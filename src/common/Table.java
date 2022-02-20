@@ -271,7 +271,7 @@ public class Table implements ITable{
         }
     }
 
-    public static ArrayList<ITable> ReadAllTablesFromDisk(String DBlocation) {
+    public static ArrayList<ITable> ReadAllTablesFromDisk() {
         try {
             VerbosePrint.print("reading tables.txt from disk");
 
@@ -331,7 +331,7 @@ public class Table implements ITable{
                         int lenFk = dataInputStr.readInt();
                         String Fk = new String(dataInputStr.readNBytes(PKattributeLen));
 
-                        VerbosePrint.print("hello, this still needs to be finished :) -table");
+                        System.err.println("hello, this still needs to be finished :) -table");
                         // TODO mk fk
 
                         // TODO add fk to ForeignKeys
@@ -370,7 +370,7 @@ public class Table implements ITable{
         }catch (IOException e){
             e.printStackTrace();
 
-            System.err.println("IO Error reading table from disk AT ");
+            System.err.println("IO Error reading table from disk");
             return null;
         }
     }

@@ -1,4 +1,4 @@
-package testers;
+package phase1Testers;
 
 import catalog.ACatalog;
 import catalog.Catalog;

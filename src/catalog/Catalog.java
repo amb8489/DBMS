@@ -24,9 +24,12 @@ public class Catalog extends ACatalog {
 
     // db location
     private String location;
+    // max size a page can be in bytes
     private int pageSize;
+    // number of pages a buffer can hold
     private int pageBufferSize;
-    // string table name    the table
+
+    // string table_name ---> the tables in the DB
     public HashMap<String, ITable> CurrentTablesInBD = new HashMap<>();
 
 
@@ -56,8 +59,7 @@ public class Catalog extends ACatalog {
             this.pageBufferSize = dataInputStr.readInt();
 
             // read in tables.txt
-            //TODO ADD LOCATION TO THIS
-            ArrayList<ITable> tabs = Table.ReadAllTablesFromDisk(location);
+            ArrayList<ITable> tabs = Table.ReadAllTablesFromDisk();
 
             if( tabs!=null && tabs.size() >0) {
                 // restoring tale data
@@ -100,6 +102,26 @@ public class Catalog extends ACatalog {
         return this.CurrentTablesInBD.containsKey(tableName);
     }
 
+    @Override
+    public boolean alterTable(String tableName, Attribute attr, boolean drop, Object defaultValue) {
+        return false;
+    }
+
+    @Override
+    public boolean clearTable(String tableName) {
+        return false;
+    }
+
+    @Override
+    public boolean addIndex(String tableName, String indexName, String attrName) {
+        return false;
+    }
+
+    @Override
+    public boolean dropIndex(String tableName, String indexName) {
+        return false;
+    }
+
 
     // add table to CurrentTablesInBD
     @Override
@@ -122,7 +144,7 @@ public class Catalog extends ACatalog {
         if (containsTable(tableName)) {
             return CurrentTablesInBD.get(tableName);
         }
-        System.err.println(String.format("table with name %s is does not exist", tableName));
+        System.err.printf("table with name %s is does not exist%n", tableName);
 
         return null;
     }
@@ -133,33 +155,16 @@ public class Catalog extends ACatalog {
         // table already exist or not
         if (containsTable(tableName)) {
             this.CurrentTablesInBD.remove(tableName);
+            Table.numTables--;
 
             return true;
         }
-        System.err.println(String.format("table with name %s is does not exist", tableName));
+        System.err.printf("table with name %s is does not exist%n", tableName);
 
         return false;
     }
 
-    @Override
-    public boolean alterTable(String tableName, Attribute attr, boolean drop, Object defaultValue) {
-        return false;
-    }
 
-    @Override
-    public boolean clearTable(String tableName) {
-        return false;
-    }
-
-    @Override
-    public boolean addIndex(String tableName, String indexName, String attrName) {
-        return false;
-    }
-
-    @Override
-    public boolean dropIndex(String tableName, String indexName) {
-        return false;
-    }
 
 
 
@@ -167,7 +172,7 @@ public class Catalog extends ACatalog {
 
     structure is
 
-    1)int: pageSize | int: pageBufferSize | int: number of tables.txt]
+    1)int: pageSize | int: pageBufferSize]
 
     2)saves tables.txt to tables.txt page in DB
 
@@ -211,7 +216,6 @@ public class Catalog extends ACatalog {
             return true;
         }catch (IOException i){
             System.err.println("ERROR Saving catalog to disk");
-            System.err.println(i);
             return false;
         }
     }

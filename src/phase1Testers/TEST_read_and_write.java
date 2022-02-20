@@ -1,14 +1,10 @@
-package testers;
+package phase1Testers;
 
 import java.nio.ByteBuffer;
 
 
-import common.Attribute;
-
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Random;
 
 public class TEST_read_and_write {

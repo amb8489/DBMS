@@ -1,19 +1,13 @@
-package testers;
+package phase1Testers;
 
 import catalog.ACatalog;
 import catalog.Catalog;
 import common.Attribute;
-import common.ITable;
-import common.Page;
 import common.Table;
-import pagebuffer.PageBuffer;
 import storagemanager.AStorageManager;
-import storagemanager.StorageManager;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.SortedMap;
 
 public class FullTest {
 

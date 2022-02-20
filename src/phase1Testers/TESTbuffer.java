@@ -1,7 +1,6 @@
-package testers;
+package phase1Testers;
 
 import common.Attribute;
-import common.ITable;
 import common.Page;
 import common.Table;
 import pagebuffer.PageBuffer;

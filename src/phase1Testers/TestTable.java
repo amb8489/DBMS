@@ -1,4 +1,4 @@
-package testers;
+package phase1Testers;
 
 import catalog.Catalog;
 import common.Attribute;
@@ -6,7 +6,6 @@ import common.ITable;
 import common.Page;
 import common.Table;
 
-import javax.imageio.IIOException;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -73,7 +72,7 @@ public class TestTable {
             out.close();
 
 
-            ArrayList<ITable> tbs = Table.ReadAllTablesFromDisk(Catalog.getCatalog().getDbLocation());
+            ArrayList<ITable> tbs = Table.ReadAllTablesFromDisk();
             System.out.println(tbs.size());
 
             for(ITable t: tbs){
