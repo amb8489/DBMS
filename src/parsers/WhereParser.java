@@ -42,7 +42,7 @@ public class WhereParser {
 
         // making stacks for shunting yard algo
 
-        List<String> q = new ArrayList<String>();
+//        List<String> q = new ArrayList<String>();
         Stack<String> stack = new Stack<String>();
         List<Object> Output = new ArrayList<Object>();
 
@@ -55,7 +55,7 @@ public class WhereParser {
 
 
             if (!OpsContains && !isLeftParentheses && !isRightParentheses) {
-                q.add(token);
+//                q.add(token);
                 Output.add(token);
 
             } else if (OpsContains) {
@@ -68,13 +68,13 @@ public class WhereParser {
                             operators.contains(top) && tokenPrec <= precedence.get(top)) {
 
                         String t = stack.pop();
-                        q.add(t);
+//                        q.add(t);
                         Output.add(t);
                         if (Output.size() >= 3 && operators.contains(t)) {
                             List<Object> nd = Output.subList(Output.size() - 3, Output.size());
                             Output = Output.subList(0, Output.size() - 3);
                             Output.add(eval(nd));
-                            System.out.println("-------------------"+Output.get(Output.size()-1));
+                            System.out.println("--------------------|"+Output.get(Output.size()-1));
 
                         }
 
@@ -93,13 +93,13 @@ public class WhereParser {
 
                 while (!stack.isEmpty() && !stack.peek().equals("(")) {
                     String t = stack.pop();
-                    q.add(t);
+//                    q.add(t);
                     Output.add(t);
                     if (Output.size() >= 3 && operators.contains(t)) {
                         List<Object> nd = Output.subList(Output.size() - 3, Output.size());
                         Output = Output.subList(0, Output.size() - 3);
                         Output.add(eval(nd));
-                        System.out.println("-------------------"+Output.get(Output.size()-1));
+                        System.out.println("--------------------|"+Output.get(Output.size()-1));
 
                     }
                 }
@@ -113,13 +113,13 @@ public class WhereParser {
 
         while (!stack.isEmpty()) {
             String t = stack.pop();
-            q.add(t);
+//            q.add(t);
             Output.add(t);
             if (Output.size() >= 3 && operators.contains(t)) {
                 List<Object> nd = Output.subList(Output.size() - 3, Output.size());
                 Output = Output.subList(0, Output.size() - 3);
                 Output.add(eval(nd));
-                System.out.println("-------------------"+Output.get(Output.size()-1));
+                System.out.println("--------------------|"+Output.get(Output.size()-1));
             }
         }
         return (boolean) Output.get(Output.size() - 1);
@@ -129,14 +129,13 @@ public class WhereParser {
         System.out.println("eval--------------->" + nd);
         String left = nd.get(0).toString();
         String right = nd.get(1).toString();
-
         String op = nd.get(2).toString();
 
         switch (op) {
             case "and":
-                return Objects.equals(left, right);
+                return left.equals("true") && right.equals("true");
             case "or":
-                return Objects.equals(left, "true") || Objects.equals(right, "true");
+                return left.equals("true") || right.equals("true");
             case "=":
                 return Objects.equals(left, right);
             case "!=":
@@ -173,11 +172,12 @@ public class WhereParser {
     }
 
 
+
+
+
     public static boolean whereIsTrue(String stmt, List<Object> row, ArrayList<Attribute> attrs){
         List<String> tokens = fillString(stmt, row, attrs);
         return Validate(tokens, row);
-
-
     }
 
     public static void main(String[] args) {
@@ -198,10 +198,9 @@ public class WhereParser {
         r.add(3.4);
         r.add(1);
 
-        String s = "(fName = \"Aaron\" and gpa > 2) and lName = berg or 1 = 1";
+        String s = "fName = \"Aaron\" and gpa > 2 and lName = berg and 1 = 1";
 
-        List<String> tokens = fillString(s, r, attrs);
-        System.out.println(Validate(tokens, r));
+        System.out.println(whereIsTrue(s,r,attrs));
 
     }
 
