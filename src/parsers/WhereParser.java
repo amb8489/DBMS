@@ -26,26 +26,11 @@ public class WhereParser {
     private static final Set<String> operators = precedence.keySet();
 
 
-    /*--------------    HOW TO USE  -------------------
-
-
-    stmt is a string that follows the where clause.
-    EXAMPLE:
-    if your statement was:
-    "delete from foo where foo > 2 or 1 = 1 and doo != 2 or 21 = 21;"
-
-    -- you will pass in ONLY: "[foo > 2 or 1 = yoo and doo != 2 or 21 = 21"
-
-   1) REMOVE ANYTHING BEFORE AND INCLUDING THE WHERE
-   2) REMOVE THE ; AT THE END
-
-     */
     private static boolean Validate(List<String> tokens, List<Object> row) {
 
         try {
             // making stacks for shunting yard algo
 
-//        List<String> q = new ArrayList<String>();
             Stack<String> stack = new Stack<String>();
             List<Object> Output = new ArrayList<Object>();
 
@@ -58,7 +43,6 @@ public class WhereParser {
 
 
                 if (!OpsContains && !isLeftParentheses && !isRightParentheses) {
-//                q.add(token);
                     Output.add(token);
 
                 } else if (OpsContains) {
@@ -71,7 +55,6 @@ public class WhereParser {
                                 operators.contains(top) && tokenPrec <= precedence.get(top)) {
 
                             String t = stack.pop();
-//                        q.add(t);
                             Output.add(t);
                             if (Output.size() >= 3 && operators.contains(t)) {
                                 List<Object> nd = Output.subList(Output.size() - 3, Output.size());
@@ -96,7 +79,6 @@ public class WhereParser {
 
                     while (!stack.isEmpty() && !stack.peek().equals("(")) {
                         String t = stack.pop();
-//                    q.add(t);
                         Output.add(t);
                         if (Output.size() >= 3 && operators.contains(t)) {
                             List<Object> nd = Output.subList(Output.size() - 3, Output.size());
@@ -116,7 +98,6 @@ public class WhereParser {
 
             while (!stack.isEmpty()) {
                 String t = stack.pop();
-//            q.add(t);
                 Output.add(t);
                 if (Output.size() >= 3 && operators.contains(t)) {
                     List<Object> nd = Output.subList(Output.size() - 3, Output.size());
@@ -136,7 +117,6 @@ public class WhereParser {
     /*
 
 
-    todo ask if all strings need a " " on the right?
     refactor this junk using the types given in the attribs in fillString
      */
     private static Object eval(List<Object> nd) throws Exception {
@@ -212,14 +192,52 @@ public class WhereParser {
     }
 
 
+
+
+    /*--------------    HOW TO USE  -------------------
+
+
+    -- stmt is a string that follows the where clause.
+    -- row is the row in the db being evaluated
+    -- attrs is the table.getAttributes()
+
+
+
+    EXAMPLE USAGE:
+
+    if you want to delete:
+    "delete from foo where (Fname = Aaron and Gpa < 3) or HeightI = 71"
+
+    1) you will pass in ONLY what comes after where and removing the semi-colon at the end:
+       "(Fname = Aaron and Gpa < 3) or HeightI = 71"
+
+    2) the row values (aaron,berg,3.4,71,23)
+
+    3) the attribs for that table (Fname,Lname,Gpa,HeightI,Age)
+
+    ...
+    if (whereIsTrue(stmt, row attribs)){
+        delete record
+    }
+    ...
+
+    //TODO
+       - ASK about () in stmts
+       - ASK about "" for strings
+       - fix fil string
+       - possible refactor of this entire thing to better accommodate eval function
+     */
     public static boolean whereIsTrue(String stmt, List<Object> row, ArrayList<Attribute> attrs) {
         List<String> tokens = fillString(stmt, row, attrs);
         return Validate(tokens, row);
     }
 
+
+
+    /////////////////////////////////////////// EXAMPLE
     public static void main(String[] args) {
 
-        // mk table
+        // TALE ATTRIBUTES
         ArrayList<Attribute> attrs = new ArrayList<>();
         attrs.add(new Attribute("fName", "Varchar(10)"));
         attrs.add(new Attribute("lName", "Varchar(10)"));
@@ -228,6 +246,8 @@ public class WhereParser {
         attrs.add(new Attribute("ID", "Integer"));
         Attribute pk = attrs.get(4);
 
+
+        // ROW VALS
         List<Object> r = new ArrayList<>();
         r.add("\"Aaron\"");
         r.add("Berghash");
@@ -235,9 +255,11 @@ public class WhereParser {
         r.add(3.4);
         r.add(1);
 
-        String s = "(fName = \"AArON\" or gpa > 2.0) and (lName = berg or 1 < 2)";
+        // STMT
 
-        System.out.println(whereIsTrue(s, r, attrs));
+        String s = "(fName = \"AArON\" or gpa > 2.0) and (lName = berg or 1 < 2)";
+        System.out.println(s);
+        System.out.println("STMT IS :"+whereIsTrue(s, r, attrs));
 
     }
 

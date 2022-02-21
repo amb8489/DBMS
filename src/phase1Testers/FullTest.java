@@ -118,20 +118,20 @@ public class FullTest {
 //
 //        // insert into table
 //
-//        ArrayList<Object> MyRec1 = mkRandomRec(tab1);
-//        sm.insertRecord(tab1,MyRec1);
+        ArrayList<Object> MyRec1 = mkRandomRec(tab1);
+        sm.insertRecord(tab1,MyRec1);
 //
 //
 //        System.out.println("------------");
 //
 //
 //
-//        for (int i = 0; i < 10; i++) {
-//            sm.insertRecord(tab1,mkRandomRec(tab1));
-////            sm.insertRecord(tab2,mkRandomRec(tab2));
-////            sm.insertRecord(tab3,mkRandomRec(tab3));
-//
-//        }
+        for (int i = 0; i < 10; i++) {
+            sm.insertRecord(tab1,mkRandomRec(tab1));
+//            sm.insertRecord(tab2,mkRandomRec(tab2));
+//            sm.insertRecord(tab3,mkRandomRec(tab3));
+
+        }
 //
 //
         ArrayList<Object> MyRec2 = mkRandomRec(tab1);
@@ -141,25 +141,25 @@ public class FullTest {
 ////
 ////
         sm.purgePageBuffer();
-////
-//        for (ArrayList<Object> r : sm.getRecords(tab1)) {
-//            System.out.println(r);
-//        }
-////
-//        System.out.println("GETTING"+MyRec1);
-//        System.out.println(sm.getRecord(tab1,MyRec1.get(tab1.pkIdx())));
-////
-//        System.out.println("GETTING"+MyRec2);
-//        System.out.println(sm.getRecord(tab1,MyRec2.get(tab1.pkIdx())));
-////
-////
-////
-//        System.out.println("REMOVING"+MyRec1);
-//        System.out.println(sm.deleteRecord(tab1,MyRec1.get(tab1.pkIdx())));
+//
+        for (ArrayList<Object> r : sm.getRecords(tab1)) {
+            System.out.println(r);
+        }
+//
+        System.out.println("GETTING"+MyRec1);
+        System.out.println(sm.getRecord(tab1,MyRec1.get(tab1.pkIdx())));
+//
+        System.out.println("GETTING"+MyRec2);
+        System.out.println(sm.getRecord(tab1,MyRec2.get(tab1.pkIdx())));
 //
 //
-//        System.out.println("REMOVING DNE val"+MyRec1);
-//        System.out.println(sm.deleteRecord(tab1,null));
+//
+        System.out.println("REMOVING"+MyRec1);
+        System.out.println(sm.deleteRecord(tab1,MyRec1.get(tab1.pkIdx())));
+//
+//
+        System.out.println("REMOVING DNE val"+MyRec1);
+        System.out.println(sm.deleteRecord(tab1,null));
 
 
         ArrayList<Object> newRecord = mkRandomRec(tab1);
@@ -167,10 +167,14 @@ public class FullTest {
         System.out.println("update:"+sm.updateRecord( tab1, MyRec2, newRecord));
         System.out.println(sm.getRecord(tab1,newRecord.get(tab1.pkIdx())));
 
-        sm.clearTableData(tab1);
-////         save
+//        sm.clearTableData(tab1);
+//         save
 //        cat.saveToDisk();
 
 
+        sm.getRecords(tab1).forEach(r ->r.remove(0));
+        for (ArrayList<Object> r : sm.getRecords(tab1)) {
+            System.out.println(r);
+        }
     }
 }
