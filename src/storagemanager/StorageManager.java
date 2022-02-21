@@ -322,8 +322,10 @@ public class StorageManager extends AStorageManager {
         }
     }
 
-    //TODO TEST reading and writing from updated page
-    //TODO test removing out of bounds of attrib array
+    //TODO
+    // - TEST reading and writing from updated page
+    // - test removing out of bounds of attrib array
+
     @Override
     public boolean dropAttributeValue(ITable table, int attrIndex) {
 
