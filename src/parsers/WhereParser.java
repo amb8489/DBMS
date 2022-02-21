@@ -3,11 +3,15 @@ package parsers;
 
 import common.Attribute;
 
+import java.lang.reflect.Type;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import static java.util.Map.entry;
 
 public class WhereParser {
+
+    private Pattern pattern = Pattern.compile("-?\\d+(\\.\\d+)?");
 
     private static final Map<String, Integer> precedence = Map.ofEntries(
             entry("and", 1),
@@ -38,125 +42,145 @@ public class WhereParser {
      */
     private static boolean Validate(List<String> tokens, List<Object> row) {
 
-
-
-        // making stacks for shunting yard algo
+        try {
+            // making stacks for shunting yard algo
 
 //        List<String> q = new ArrayList<String>();
-        Stack<String> stack = new Stack<String>();
-        List<Object> Output = new ArrayList<Object>();
+            Stack<String> stack = new Stack<String>();
+            List<Object> Output = new ArrayList<Object>();
 
-        // look through each char
-        for (String token : tokens) {
+            // look through each char
+            for (String token : tokens) {
 
-            boolean OpsContains = operators.contains(token);
-            boolean isLeftParentheses = token.equals("(");
-            boolean isRightParentheses = token.equals(")");
+                boolean OpsContains = operators.contains(token);
+                boolean isLeftParentheses = token.equals("(");
+                boolean isRightParentheses = token.equals(")");
 
 
-            if (!OpsContains && !isLeftParentheses && !isRightParentheses) {
+                if (!OpsContains && !isLeftParentheses && !isRightParentheses) {
 //                q.add(token);
-                Output.add(token);
+                    Output.add(token);
 
-            } else if (OpsContains) {
-                if (!stack.isEmpty()) {
-                    String top = stack.peek();
-                    Integer tokenPrec = precedence.get(token);
+                } else if (OpsContains) {
+                    if (!stack.isEmpty()) {
+                        String top = stack.peek();
+                        Integer tokenPrec = precedence.get(token);
 
 
-                    while (!stack.isEmpty() && !top.equals("(") &&
-                            operators.contains(top) && tokenPrec <= precedence.get(top)) {
+                        while (!stack.isEmpty() && !top.equals("(") &&
+                                operators.contains(top) && tokenPrec <= precedence.get(top)) {
 
-                        String t = stack.pop();
+                            String t = stack.pop();
 //                        q.add(t);
+                            Output.add(t);
+                            if (Output.size() >= 3 && operators.contains(t)) {
+                                List<Object> nd = Output.subList(Output.size() - 3, Output.size());
+                                Output = Output.subList(0, Output.size() - 3);
+                                Output.add(eval(nd));
+                                System.out.println("--------------------|" + Output.get(Output.size() - 1));
+
+                            }
+
+                            if (!stack.isEmpty()) {
+                                top = stack.peek();
+                            }
+                        }
+                    }
+
+                    stack.push(token);
+
+                } else if (isLeftParentheses) {
+                    stack.push(token);
+
+                } else if (isRightParentheses) {
+
+                    while (!stack.isEmpty() && !stack.peek().equals("(")) {
+                        String t = stack.pop();
+//                    q.add(t);
                         Output.add(t);
                         if (Output.size() >= 3 && operators.contains(t)) {
                             List<Object> nd = Output.subList(Output.size() - 3, Output.size());
                             Output = Output.subList(0, Output.size() - 3);
                             Output.add(eval(nd));
-                            System.out.println("--------------------|"+Output.get(Output.size()-1));
+                            System.out.println("--------------------|" + Output.get(Output.size() - 1));
 
                         }
-
-                        if (!stack.isEmpty()) {
-                            top = stack.peek();
-                        }
                     }
-                }
 
-                stack.push(token);
-
-            } else if (isLeftParentheses) {
-                stack.push(token);
-
-            } else if (isRightParentheses) {
-
-                while (!stack.isEmpty() && !stack.peek().equals("(")) {
-                    String t = stack.pop();
-//                    q.add(t);
-                    Output.add(t);
-                    if (Output.size() >= 3 && operators.contains(t)) {
-                        List<Object> nd = Output.subList(Output.size() - 3, Output.size());
-                        Output = Output.subList(0, Output.size() - 3);
-                        Output.add(eval(nd));
-                        System.out.println("--------------------|"+Output.get(Output.size()-1));
-
+                    if (!stack.isEmpty() && stack.peek().equals("(")) {
+                        stack.pop();
                     }
-                }
-
-                if (!stack.isEmpty() && stack.peek().equals("(")) {
-                    stack.pop();
                 }
             }
-        }
 
 
-        while (!stack.isEmpty()) {
-            String t = stack.pop();
+            while (!stack.isEmpty()) {
+                String t = stack.pop();
 //            q.add(t);
-            Output.add(t);
-            if (Output.size() >= 3 && operators.contains(t)) {
-                List<Object> nd = Output.subList(Output.size() - 3, Output.size());
-                Output = Output.subList(0, Output.size() - 3);
-                Output.add(eval(nd));
-                System.out.println("--------------------|"+Output.get(Output.size()-1));
+                Output.add(t);
+                if (Output.size() >= 3 && operators.contains(t)) {
+                    List<Object> nd = Output.subList(Output.size() - 3, Output.size());
+                    Output = Output.subList(0, Output.size() - 3);
+                    Output.add(eval(nd));
+                    System.out.println("--------------------|" + Output.get(Output.size() - 1));
+                }
             }
+            return (boolean) Output.get(Output.size() - 1);
+        }catch (Exception exp) {
+            System.err.println(exp);
+            return false;
         }
-        return (boolean) Output.get(Output.size() - 1);
     }
 
-    private static Object eval(List<Object> nd) {
+    private static Object eval(List<Object> nd) throws Exception {
         System.out.println("eval--------------->" + nd);
+
         String left = nd.get(0).toString();
         String right = nd.get(1).toString();
         String op = nd.get(2).toString();
+
 
         switch (op) {
             case "and":
                 return left.equals("true") && right.equals("true");
             case "or":
                 return left.equals("true") || right.equals("true");
-            case "=":
-                return Objects.equals(left, right);
-            case "!=":
-                return !Objects.equals(left, right);
-            case "<":
-                return left.compareTo(right) < 0;
-            case ">":
-                return left.compareTo(right) > 0;
-            case "<=":
-                return left.compareTo(right) <= 0;
-            case ">=":
-                return left.compareTo(right) >= 0;
             default:
-                return null;
+                break;
         }
+
+        if (left.matches("^.*[A-Za-z].*$") && right.matches("^.*[A-Za-z].*$")) {
+            return switch (op) {
+                case "=" -> left.compareTo(right) == 0;
+                case "!=" -> left.compareTo(right) != 0;
+                case "<" -> left.compareTo(right) < 0;
+                case ">" -> left.compareTo(right) > 0;
+                case "<=" -> left.compareTo(right) <= 0;
+                case ">=" -> left.compareTo(right) >= 0;
+                default -> null;
+            };
+        } else if (!left.matches(".*[A-Za-z].*$") && !right.matches("^.*[A-Za-z].*$")) {
+
+            Double numLeft = Double.parseDouble(left);
+            Double numRight = Double.parseDouble(right);
+
+            return switch (op) {
+                case "=" -> numLeft.compareTo(numRight) == 0;
+                case "!=" -> numLeft.compareTo(numRight) != 0;
+                case "<" -> numLeft.compareTo(numRight) < 0;
+                case ">" -> numLeft.compareTo(numRight) > 0;
+                case "<=" -> numLeft.compareTo(numRight) <= 0;
+                case ">=" -> numLeft.compareTo(numRight) >= 0;
+                default -> null;
+            };
+        }
+        throw new Exception("\"COMPARING DIFFERENT TYPES:\" + left + \" with \" + right");
 
     }
 
     private static List<String> fillString(String s, List<Object> r, ArrayList<Attribute> attrs) {
-        s = s.replace("(","( ");
-        s = s.replace(")"," )");
+        s = s.replace("(", "( ");
+        s = s.replace(")", " )");
 
         List<String> tokens = new ArrayList<>(List.of(s.split(" ")));
         int idx = 0;
@@ -172,10 +196,7 @@ public class WhereParser {
     }
 
 
-
-
-
-    public static boolean whereIsTrue(String stmt, List<Object> row, ArrayList<Attribute> attrs){
+    public static boolean whereIsTrue(String stmt, List<Object> row, ArrayList<Attribute> attrs) {
         List<String> tokens = fillString(stmt, row, attrs);
         return Validate(tokens, row);
     }
@@ -198,9 +219,9 @@ public class WhereParser {
         r.add(3.4);
         r.add(1);
 
-        String s = "fName = \"Aaron\" and gpa > 2 and lName = berg and 1 = 1";
+        String s = "(fName = \"AArON\" or gpa > 2.0) and (lName = berg or 1 < 2)";
 
-        System.out.println(whereIsTrue(s,r,attrs));
+        System.out.println(whereIsTrue(s, r, attrs));
 
     }
 
