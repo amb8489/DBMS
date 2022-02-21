@@ -77,7 +77,7 @@ public class WhereParser {
                                 List<Object> nd = Output.subList(Output.size() - 3, Output.size());
                                 Output = Output.subList(0, Output.size() - 3);
                                 Output.add(eval(nd));
-                                System.out.println("--------------------|" + Output.get(Output.size() - 1));
+                                System.out.println("  " + Output.get(Output.size() - 1));
 
                             }
 
@@ -102,7 +102,7 @@ public class WhereParser {
                             List<Object> nd = Output.subList(Output.size() - 3, Output.size());
                             Output = Output.subList(0, Output.size() - 3);
                             Output.add(eval(nd));
-                            System.out.println("--------------------|" + Output.get(Output.size() - 1));
+                            System.out.println("  " + Output.get(Output.size() - 1));
 
                         }
                     }
@@ -122,7 +122,7 @@ public class WhereParser {
                     List<Object> nd = Output.subList(Output.size() - 3, Output.size());
                     Output = Output.subList(0, Output.size() - 3);
                     Output.add(eval(nd));
-                    System.out.println("--------------------|" + Output.get(Output.size() - 1));
+                    System.out.println("  " + Output.get(Output.size() - 1));
                 }
             }
             return (boolean) Output.get(Output.size() - 1);
@@ -132,8 +132,15 @@ public class WhereParser {
         }
     }
 
+
+    /*
+
+
+    todo ask if all strings need a " " on the right?
+    refactor this junk using the types given in the attribs in fillString
+     */
     private static Object eval(List<Object> nd) throws Exception {
-        System.out.println("eval--------------->" + nd);
+        System.out.print("eval: " + nd);
 
         String left = nd.get(0).toString();
         String right = nd.get(1).toString();
@@ -178,6 +185,15 @@ public class WhereParser {
 
     }
 
+
+    /*
+
+    TODO if column name is in twice it will fail
+            String s = "(fName = \"AArON\" or gpa > 2.0) and (lName = berg and gpa < 2)"; gpa in twice
+
+
+
+     */
     private static List<String> fillString(String s, List<Object> r, ArrayList<Attribute> attrs) {
         s = s.replace("(", "( ");
         s = s.replace(")", " )");

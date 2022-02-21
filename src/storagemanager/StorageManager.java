@@ -267,8 +267,9 @@ public class StorageManager extends AStorageManager {
 
             Page headPage = pb.getPageFromBuffer("" + headPtr, table);
             // look through all record for that page
+
             for (ArrayList<Object> currRec : headPage.getPageRecords()) {
-                if (oldRecord.get(pkidx) == currRec.get(pkidx)) {
+                if (oldRecord.get(pkidx).toString().equals(currRec.get(pkidx).toString())) {
                     headPage.getPageRecords().remove(oldRecord);
                     headPage.wasChanged = true;
                     return insertRecord(table, newRecord);
@@ -278,8 +279,6 @@ public class StorageManager extends AStorageManager {
             headPtr = headPage.getPtrToNextPage();
         }
 
-
-
         return false;
     }
 
@@ -288,15 +287,75 @@ public class StorageManager extends AStorageManager {
         pb.PurgeBuffer();
     }
 
-    //TODO
+    //TODO TEST how do we know what the defaultValue type is????
+    // how do we update the attribute array in table????
     @Override
     public boolean addAttributeValue(ITable table, Object defaultValue) {
-        return false;
+
+        try {
+
+
+            // TODO need to do this first or at some point before
+            //  Attribute newAttrib = new Attribute(...);
+            //  Catalog.getCatalog().getTable(table.getTableName()).getAttributes().add(newAttrib);
+
+            // page name for head is always at idx zero
+            int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
+
+            // loop though all the tables pages in order
+            while (headPtr != -1) {
+
+                Page headPage = pb.getPageFromBuffer("" + headPtr, table);
+                // delete that col from all recs
+
+                headPage.getPageRecords().forEach(r -> r.add(defaultValue));
+
+                // next page
+                headPtr = headPage.getPtrToNextPage();
+            }
+
+
+            return true;
+        }catch (Exception e){
+            System.err.println("failure adding attribute from table "+table.getTableName());
+            return false;
+        }
     }
 
-    //TODO
+    //TODO TEST reading and writing from updated page
+    //TODO test removing out of bounds of attrib array
     @Override
     public boolean dropAttributeValue(ITable table, int attrIndex) {
-        return false;
+
+        try {
+
+            if (attrIndex>=table.getAttributes().size()){
+                System.err.println("Table cant remove attribute at index "+attrIndex+" because" +
+                        " table doesn't have that many attributes");
+                return false;
+            }
+            // update table first
+            Catalog.getCatalog().getTable(table.getTableName()).getAttributes().remove(attrIndex);
+
+            // page name for head is always at idx zero
+            int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
+
+            // loop though all the tables pages in order
+            while (headPtr != -1) {
+
+                Page headPage = pb.getPageFromBuffer("" + headPtr, table);
+                // delete that col from all recs
+
+                headPage.getPageRecords().forEach(r -> r.remove(attrIndex));
+                // next page
+                headPtr = headPage.getPtrToNextPage();
+            }
+
+
+            return true;
+        }catch (Exception e){
+            System.err.println("failure removing attribute at index "+attrIndex+" from table "+table.getTableName());
+            return false;
+        }
     }
 }
