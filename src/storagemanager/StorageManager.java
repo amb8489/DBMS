@@ -7,14 +7,8 @@ package storagemanager;
 import catalog.Catalog;
 import common.*;
 import pagebuffer.PageBuffer;
-
-import java.io.File;
-
-import java.lang.reflect.Array;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import filesystem.FileSystem;
-import java.util.List;
 
 public class StorageManager extends AStorageManager {
 
@@ -26,7 +20,7 @@ public class StorageManager extends AStorageManager {
     }
 
 
-    //TODO
+
     @Override
     public boolean clearTableData(ITable table) {
         if (table instanceof Table workingTable) {  //cool piece of code IntelliJ made for me.
@@ -44,7 +38,7 @@ public class StorageManager extends AStorageManager {
         return false;
     }
 
-    //TODO
+
     @Override
     public ArrayList<Object> getRecord(ITable table, Object pkValue) {
 
@@ -131,7 +125,6 @@ public class StorageManager extends AStorageManager {
 //                VerbosePrint.print("here 2: "+headPtr+ " with "+record);
 
 
-                //SUSS find better way in future
                 int pkid = ((Table) table).pkIdx();
                 String pk_type = table.getAttributes().get(pkid).getAttributeType();
 

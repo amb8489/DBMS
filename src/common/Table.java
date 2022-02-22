@@ -329,7 +329,7 @@ public class Table implements ITable{
                 if(numOfFk>0) {
                     for (int fn = 0; fn < numOfFk; fn++) {
                         int lenFk = dataInputStr.readInt();
-                        String Fk = new String(dataInputStr.readNBytes(PKattributeLen));
+                        String Fk = new String(dataInputStr.readNBytes(lenFk));
 
                         System.err.println("hello, this still needs to be finished :) -table");
                         // TODO mk fk
