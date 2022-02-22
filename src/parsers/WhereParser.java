@@ -278,6 +278,7 @@ public class WhereParser {
     3) the attribs for that table (Fname,Lname,Gpa,HeightI,Age)
 
     ...
+
     if (whereIsTrue(stmt, row attribs)){
         delete record
     }
