@@ -279,6 +279,7 @@ public class WhereParser {
 
     ...
 
+
     if (whereIsTrue(stmt, row attribs)){
         delete record
     }
