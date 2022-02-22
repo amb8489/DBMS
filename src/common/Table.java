@@ -21,6 +21,11 @@ public class Table implements ITable{
     private int ID;
     private Attribute PrimaryKey;
     private ArrayList<Attribute> Attributes;
+
+    //TODO save to disk
+    private ArrayList<Integer>indicesOfNotNullAttributes;
+
+    private int pkeyIdx = -1;
     private ArrayList<ForeignKey> ForeignKeys= new ArrayList<>();
     private ArrayList<Integer>PagesThatBelongToMe = new ArrayList<>();
 
@@ -42,14 +47,17 @@ public class Table implements ITable{
     }
 
     public int pkIdx(){
-        int idx = 0;
-        for(Attribute Attrib:Attributes){
-            if (Attrib.equals(this.PrimaryKey)){
-                return idx;
+        if (pkeyIdx<0) {
+            int idx = 0;
+            for (Attribute Attrib : Attributes) {
+                if (Attrib.equals(this.PrimaryKey)) {
+                    this.pkeyIdx = idx;
+                    return idx;
+                }
+                idx++;
             }
-            idx++;
         }
-        return -1;
+        return this.pkeyIdx;
     }
 
     public Table(String tableName, ArrayList<Attribute> tableAttributes, Attribute pk, ArrayList<Integer> belongToMe) {
@@ -242,8 +250,11 @@ public class Table implements ITable{
 
             // for each fk write it out
             for (ForeignKey FK:  this.ForeignKeys) {
-                String StringFK = FK.toString();
-                int StringFkLen =  StringFK.length();
+                //""
+                int StringFkLen = FK.getAttrName().length()+FK.refTableName().length()+FK.getRefAttribute().length()+2;
+
+                String StringFK = FK.getAttrName()+" "+     FK.getRefTableName()+" "+  FK.getRefAttribute();
+
                 // write how log the fk is
                 outputStream.write(ByteBuffer.allocate(4).putInt(StringFkLen).array());
                 // write attribute str
@@ -329,12 +340,14 @@ public class Table implements ITable{
                 if(numOfFk>0) {
                     for (int fn = 0; fn < numOfFk; fn++) {
                         int lenFk = dataInputStr.readInt();
-                        String Fk = new String(dataInputStr.readNBytes(lenFk));
+                        String[] fk = new String(dataInputStr.readNBytes(lenFk)).split(" ");
+                        String attrName = fk[0];
+                        String refTableName = fk[1];
+                        String refAttribute = fk[2];
 
-                        System.err.println("hello, this still needs to be finished :) -table");
-                        // TODO mk fk
 
-                        // TODO add fk to ForeignKeys
+                        ForeignKeys.add(new ForeignKey(refTableName, refAttribute, attrName));
+
                     }
                 }
 

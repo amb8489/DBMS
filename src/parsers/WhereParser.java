@@ -6,6 +6,7 @@ import common.Attribute;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 
 import static java.util.Map.entry;
 
@@ -117,7 +118,7 @@ public class WhereParser {
     /*
 
 
-    refactor this junk using the types given in the attribs in fillString
+    TODO refactor this junk using the types given in the attribs in fillString
      */
     private static Object eval(List<Object> nd) throws Exception {
         System.out.print("eval: " + nd);
@@ -168,8 +169,6 @@ public class WhereParser {
 
     /*
 
-    TODO if column name is in twice it will fail
-            String s = "(fName = \"AArON\" or gpa > 2.0) and (lName = berg and gpa < 2)"; gpa in twice
 
 
 
@@ -177,12 +176,27 @@ public class WhereParser {
     private static List<String> fillString(String s, List<Object> r, ArrayList<Attribute> attrs) {
         s = s.replace("(", "( ");
         s = s.replace(")", " )");
+        s = s.replace("=", " = ");
+        s = s.replace("!=", " != ");
+        s = s.replace("<", " < ");
+        s = s.replace(">", " > ");
+        s = s.replace("<=", " <= ");
+        s = s.replace(">=", " >= ");
+
 
         List<String> tokens = new ArrayList<>(List.of(s.split(" ")));
+        System.out.println(tokens);
+
+        tokens.removeIf(String::isBlank);
+        System.out.println(tokens);
         int idx = 0;
         for (Attribute a : attrs) {
-            int i = tokens.indexOf(a.attributeName());
-            if (i != -1) {
+//            int i = tokens.indexOf(a.attributeName());
+            int[] WhereColEqName = IntStream.range(0, tokens.size()).filter(i -> tokens.get(i).equals(a.attributeName())).toArray();
+
+            System.out.println(Arrays.toString(WhereColEqName));
+
+            for(Integer i :WhereColEqName) {
                 String val = r.get(idx).toString();
                 tokens.set(i, val);
             }
@@ -224,7 +238,6 @@ public class WhereParser {
     //TODO
        - ASK about () in stmts
        - ASK about "" for strings
-       - fix fil string
        - possible refactor of this entire thing to better accommodate eval function
      */
     public static boolean whereIsTrue(String stmt, List<Object> row, ArrayList<Attribute> attrs) {
@@ -257,7 +270,7 @@ public class WhereParser {
 
         // STMT
 
-        String s = "(fName = \"AArON\" or gpa > 2.0) and (lName = berg or 1 < 2)";
+        String s = "(fName=\"AArON\" or gpa>2.0) and (lName=berg or 2 < 2) or gpa > 1";
         System.out.println(s);
         System.out.println("STMT IS :"+whereIsTrue(s, r, attrs));
 
