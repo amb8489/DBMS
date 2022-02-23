@@ -1,7 +1,9 @@
 package parsers;
 
+import catalog.Catalog;
 import common.Attribute;
 import common.ForeignKey;
+import common.Table;
 import common.VerbosePrint;
 
 import java.nio.ByteBuffer;
@@ -51,7 +53,6 @@ public class DDLParser {
 
     //TODO
     // --- how many attrib Constraints can attib have??
-    // --- The referenced table must exist and the data types of the attributes must match.
     private static boolean CreateTable(String stmt){
 
         // vars for the new table
@@ -104,11 +105,14 @@ public class DDLParser {
                 for (Attribute att : TableAttributes) {
                     if(att.getAttributeName().equals(pk)){
                         primaryKey = att;
+                        tableHasPk = true;
                         break;
                     }
                 }
-                tableHasPk = true;
-
+                if (!tableHasPk) {
+                    System.err.println("table does not have attribute " + pk);
+                    return false;
+                }
 
 
             //-----------------find the foreign key-----------------
@@ -170,18 +174,23 @@ public class DDLParser {
             }
         }
 
+        Catalog cat = (Catalog) Catalog.getCatalog();
+
+        for (ForeignKey fk : TableForeignkeys) {
+            if (!cat.containsTable(fk.getRefTableName())){
+
+                Table tab = (Table) cat.getTable(fk.getRefTableName());
+                // TODO check attribute types match between tables
+
+                System.err.println("Foreign key: "+fk+" references unknown table: "+fk.getRefTableName());
+                return false;
+            }
+        }
 
 
-
-        // TODO MAKE TABLE AND CHECK that everything in the todo above is all good
-        // check pk is in the attributes for this table
-        // check that fk is legal
-
-        // add table to catalog
-
+        cat.addTable(TableName,TableAttributes,primaryKey);
+        ((Table)cat.getTable(TableName)).setForeignKeys(TableForeignkeys);
         // TODO IN table null indexes to table
-
-
 
 
 
@@ -214,18 +223,6 @@ public class DDLParser {
     }
 
 
-    public static void main(String[] args) {
-        CreateTable("""
-                creAte taBle f0o(
-                        bAz Varchar(10),
-                        baR Double notnull,
-                        primarykey(bar1),
-                        foreignkey( bar3 ) REFERENCES bazzle1( baz6 ),
-                        FOREIGNKEY(bar4) references bazzle2( baz7 ),
-                        foreignkey(cat) references bazzle3(baz8)
-                );""");
-    }
-
     // will decide if a name follows rules of
     // 1) not being a key word && 2) starting with a letter and only having alphanumeric
     private static boolean isiIllLegalName(String name){
@@ -240,5 +237,17 @@ public class DDLParser {
         }
 
         return false;
+    }
+
+    public static void main(String[] args) {
+        CreateTable("""
+                creAte taBle A0o(
+                        bAz Varchar(10),
+                        bar1 Double notnull,
+                        primarykey(bar1),
+                        foreignkey( bar3 ) REFERENCES bazzle1( baz6 ),
+                        FOREIGNKEY(bar4) references bazzle2( baz7 ),
+                        foreignkey(cat) references bazzle3(baz8)
+                );""");
     }
 }

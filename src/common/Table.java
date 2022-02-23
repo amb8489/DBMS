@@ -46,6 +46,8 @@ public class Table implements ITable{
 
     }
 
+
+    // gets the index of the pk attribute in Table attributes
     public int pkIdx(){
         if (pkeyIdx<0) {
             int idx = 0;
@@ -63,7 +65,6 @@ public class Table implements ITable{
     public Table(String tableName, ArrayList<Attribute> tableAttributes, Attribute pk, ArrayList<Integer> belongToMe) {
 
         ID = numTables;
-//        numTables++;
         this.Attributes = tableAttributes;
         this.TableName = tableName;
         this.PrimaryKey = pk;
