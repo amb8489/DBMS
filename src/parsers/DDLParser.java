@@ -31,7 +31,7 @@ public class DDLParser {
     public static Set<String> KEYWORDS =  Stream.of(
                     "create", "table", "drop","insert","into","delete","from","where","update",
                     "notnull","primarykey","foreignkey","references","add","default","set",
-                    "values").collect(Collectors.toCollection(HashSet::new));
+                    "values","null").collect(Collectors.toCollection(HashSet::new));
 
     public static boolean parseDDLStatement(String stmt){
 
@@ -49,36 +49,41 @@ public class DDLParser {
 
 
     //TODO
-    // --- Names can start with a alpha-character and contain alphanumeric characters
     // --- how many attrib Constraints can attib have??
     // --- The referenced table must exist and the data types of the attributes must match.
     private static boolean CreateTable(String stmt){
 
-
-        stmt = stmt.substring(13);
-        stmt = stmt.replace("\n","");
-        String TableName = stmt.substring(0,stmt.indexOf("("));
-        stmt = stmt.substring(TableName.length()+1);
-        if (KEYWORDS.contains(TableName.toLowerCase())){
-            System.err.println("table name: "+TableName+" is a keyword");
-            return false;
-        }
-        System.out.println(TableName);
-        boolean tableHasPk = false;
-
+        // vars for the new table
         ArrayList<Attribute> TableAttributes = new ArrayList<>();
         Attribute primaryKey = null;
         ArrayList<Attribute> TableForeignkeys = new ArrayList<>();
 
 
 
+        //-----------------find the table name key-----------------
+        stmt = stmt.substring(13);
+        stmt = stmt.replace("\n","");
+        String TableName = stmt.substring(0,stmt.indexOf("("));
+        stmt = stmt.substring(TableName.length()+1);
+
+        // check that name is not keyword
+        if (isiIllLegalName(TableName.toLowerCase())){
+            System.err.println("table name: "+TableName+" is a keyword");
+            return false;
+        }
+        System.out.println("table name"+TableName);
+
+        // parsing for the rest of the string
+        boolean tableHasPk = false;
         for(String attrib: stmt.split(",")) {
             String attribute = attrib.strip();
             String UppercaseAttribute = attribute.toUpperCase();
 
+
+            //-----------------find the PRIMARY key-----------------
             if (UppercaseAttribute.startsWith("PRIMARYKEY")) {
 
-                // check for more then 1 pk
+                // check for more than 1 pk
                 if(tableHasPk){
                     System.err.println("creating table "+TableName+" cant have more then 1 primary key");
                     return false;
@@ -87,15 +92,16 @@ public class DDLParser {
                 // regex pk name out
                 String pk = attribute.substring(11).replace(")","").strip();
 
-                // check for keyword
-                if (KEYWORDS.contains(pk.toLowerCase())){
-                    System.err.println("PRIMARYKEY name: "+pk+" is a keyword");
+                // check for name keyword
+                if (isiIllLegalName(pk.toLowerCase())){
                     return false;
                 }
-
                 System.out.println("primarykey: {" + pk+"}");
                 tableHasPk = true;
 
+
+
+            //-----------------find the foreign key-----------------
             } else if (UppercaseAttribute.startsWith("FOREIGNKEY")) {
 
                 // regex names out
@@ -106,12 +112,16 @@ public class DDLParser {
                 String[] fkSpit = fk.split(" ");
 
                 // check for keyword
-                if (KEYWORDS.contains(fkSpit[0].toLowerCase())){
-                    System.err.println("foreignkey name: "+fkSpit[0]+" is a keyword");
+                if (fkSpit.length < 3 || isiIllLegalName(fkSpit[0].toLowerCase())){
+                    System.err.println("ERROR: foreignkey name was a keyword");
                     return false;
                 }
 
                 System.out.println(Arrays.toString(fkSpit));
+
+
+
+                //-----------------find the attributes-----------------
 
             } else {
                 //regex names types and Constraints out
@@ -121,8 +131,7 @@ public class DDLParser {
                 ArrayList<String> AttributeConstraint = new ArrayList<>();
 
                 // check for keyword
-                if (KEYWORDS.contains(AttributeName.toLowerCase())){
-                    System.err.println("Attribute name: "+AttributeName+" is a keyword");
+                if (isiIllLegalName(AttributeName.toLowerCase())){
                     return false;
                 }
 
@@ -134,6 +143,7 @@ public class DDLParser {
                 }
                 System.out.println("attribute NAME: {" + AttributeName+"} TYPE: {"+AttributeType+
                         "} CONSTRAINTS: "+AttributeConstraint);
+
             }
         }
 
@@ -160,7 +170,23 @@ public class DDLParser {
                         primarykey(bar1),
                         foreignkey( bar3 ) REFERENCES bazzle1( baz6 ),
                         FOREIGNKEY(bar4) references bazzle2( baz7 ),
-                        foreignkey(bar) references bazzle3(baz8)
+                        foreignkey(foreignkey) references bazzle3(baz8)
                 );""");
+    }
+
+    // will decide if a name follows rules of
+    // 1) not being a key word && 2) starting with a letter and only having alphanumeric
+    private static boolean isiIllLegalName(String name){
+
+        if (KEYWORDS.contains(name)){
+            System.err.println("name: "+name+" is a keyword and cant be used");
+            return true;
+        }
+        if(!(name.chars().allMatch(Character::isLetterOrDigit) && (name.charAt(0) >='A' && name.charAt(0)<= 'z'))){
+            System.err.println("name must start with letter and only contain alphanumerics");
+            return true;
+        }
+
+        return false;
     }
 }

@@ -338,8 +338,8 @@ public class WhereParser {
         // STMT
         long startTime = System.currentTimeMillis();
 
-        for (int i = 0; i < 1; i++) {
-            String s = "delete from foo where (fName=\"AArON\" or gpa>2.0) and (lName=berg or 2<2) or gpa>1";
+        for (int i = 0; i < 100; i++) {
+            String s = "delete from foo where fName=\"AArON\" or gpa>2.0 and (lName=berg or age<2) or gpa>1";
 
             boolean res = parser.whereIsTrue(s, r, attrs);
 //            System.out.println("STMT IS :" + res);
@@ -352,7 +352,7 @@ public class WhereParser {
 
     }
 
-    /**
+    /**   author kyle f
      *
      * @param <X> element of type X
      * @param <Y> element of type Y
