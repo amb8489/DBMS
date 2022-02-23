@@ -1,7 +1,10 @@
 package parsers;
 
 import common.Attribute;
+import common.ForeignKey;
+import common.VerbosePrint;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -17,6 +20,7 @@ import java.util.stream.Stream;
   You will implement the parseDDLStatement function.
   You can add helper functions as needed, but the must be private and static.
 
+  @author Aaron Berghash
   @author Scott C Johnson (sxjcs@rit.edu)
 
  */
@@ -40,9 +44,6 @@ public class DDLParser {
             return CreateTable(stmt);
         }
 
-
-
-
         return false;
     }
 
@@ -56,25 +57,27 @@ public class DDLParser {
         // vars for the new table
         ArrayList<Attribute> TableAttributes = new ArrayList<>();
         Attribute primaryKey = null;
-        ArrayList<Attribute> TableForeignkeys = new ArrayList<>();
+        ArrayList<ForeignKey> TableForeignkeys = new ArrayList<>();
+        ArrayList<Integer> notNullIndexs = new ArrayList<>();
 
+        String TableName;
 
 
         //-----------------find the table name key-----------------
         stmt = stmt.substring(13);
         stmt = stmt.replace("\n","");
-        String TableName = stmt.substring(0,stmt.indexOf("("));
+        TableName = stmt.substring(0,stmt.indexOf("("));
         stmt = stmt.substring(TableName.length()+1);
 
         // check that name is not keyword
         if (isiIllLegalName(TableName.toLowerCase())){
-            System.err.println("table name: "+TableName+" is a keyword");
             return false;
         }
-        System.out.println("table name"+TableName);
+        VerbosePrint.print("table name"+TableName);
 
         // parsing for the rest of the string
         boolean tableHasPk = false;
+        int numberOfNewAttribs = 0;
         for(String attrib: stmt.split(",")) {
             String attribute = attrib.strip();
             String UppercaseAttribute = attribute.toUpperCase();
@@ -96,7 +99,14 @@ public class DDLParser {
                 if (isiIllLegalName(pk.toLowerCase())){
                     return false;
                 }
-                System.out.println("primarykey: {" + pk+"}");
+                VerbosePrint.print("primarykey: {" + pk+"}");
+
+                for (Attribute att : TableAttributes) {
+                    if(att.getAttributeName().equals(pk)){
+                        primaryKey = att;
+                        break;
+                    }
+                }
                 tableHasPk = true;
 
 
@@ -117,8 +127,8 @@ public class DDLParser {
                     return false;
                 }
 
-                System.out.println(Arrays.toString(fkSpit));
-
+                VerbosePrint.print(Arrays.toString(fkSpit));
+                TableForeignkeys.add(new ForeignKey(fkSpit[1],fkSpit[2],fkSpit[0]));
 
 
                 //-----------------find the attributes-----------------
@@ -127,11 +137,18 @@ public class DDLParser {
                 //regex names types and Constraints out
                 String[] AttributeSplit = attribute.split(" ");
                 String AttributeName = AttributeSplit[0];
-                String AttributeType = AttributeSplit[1].toUpperCase();
+                String AttributeType = AttributeSplit[1];
                 ArrayList<String> AttributeConstraint = new ArrayList<>();
+
+
+
 
                 // check for keyword
                 if (isiIllLegalName(AttributeName.toLowerCase())){
+                    return false;
+                }
+                if(!isLegalType(AttributeSplit[1])){
+                    System.err.println("bad type:"+AttributeSplit[1]);
                     return false;
                 }
 
@@ -141,18 +158,28 @@ public class DDLParser {
                     // check for keywords allowed
                     AttributeConstraint.removeIf(constraint -> !constraint.equalsIgnoreCase("notnull") &&  !constraint.equalsIgnoreCase("primarykey"));
                 }
-                System.out.println("attribute NAME: {" + AttributeName+"} TYPE: {"+AttributeType+
+                VerbosePrint.print("attribute NAME: {" + AttributeName+"} TYPE: {"+AttributeType+
                         "} CONSTRAINTS: "+AttributeConstraint);
+
+                TableAttributes.add(new Attribute(AttributeName,AttributeType));
+                if(AttributeConstraint.contains("notnull")) {
+                    notNullIndexs.add(numberOfNewAttribs);
+                }
+                numberOfNewAttribs++;
 
             }
         }
 
+
+
+
         // TODO MAKE TABLE AND CHECK that everything in the todo above is all good
         // check pk is in the attributes for this table
+        // check that fk is legal
 
         // add table to catalog
 
-        // TODO IN table make sure to add fk write out and not null indexes to table
+        // TODO IN table null indexes to table
 
 
 
@@ -161,16 +188,41 @@ public class DDLParser {
         return false;
     }
 
+    private static boolean isLegalType(String TypeName) {
+        switch (TypeName) {
+            case "Integer":
+                return true;
+            case "Double":
+                return true;
+            case "Boolean":
+                return true;
+            default:
+                if (TypeName.startsWith("Char(") || TypeName.startsWith("Varchar(")) {
+                    int Lparen = TypeName.indexOf("(");
+                    int Rparen = TypeName.indexOf(")");
+
+                    // ()
+                    if (Rparen == Lparen + 1 || Rparen == -1 ) {return false;}
+                    //(nums)
+                    String num = TypeName.substring(Lparen+1, Rparen);
+                    // all numbers
+                    return num.chars().allMatch(Character::isDigit);
+                }
+        }
+        return false;
+
+    }
+
 
     public static void main(String[] args) {
         CreateTable("""
                 creAte taBle f0o(
-                        bAz integer,
+                        bAz Varchar(10),
                         baR Double notnull,
                         primarykey(bar1),
                         foreignkey( bar3 ) REFERENCES bazzle1( baz6 ),
                         FOREIGNKEY(bar4) references bazzle2( baz7 ),
-                        foreignkey(foreignkey) references bazzle3(baz8)
+                        foreignkey(cat) references bazzle3(baz8)
                 );""");
     }
 
