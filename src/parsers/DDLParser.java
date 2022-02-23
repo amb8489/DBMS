@@ -43,8 +43,15 @@ public class DDLParser {
     public static boolean parseDDLStatement(String stmt) {
 
 
+
         if (stmt.toLowerCase().startsWith("create table")) {
             return CreateTable(stmt);
+        }else if (stmt.toLowerCase().startsWith("drop table")) {
+            //TODO
+            return false;
+        }else if (stmt.toLowerCase().startsWith("alter table")) {
+            //TODO
+            return false;
         }
 
         return false;
