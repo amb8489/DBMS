@@ -10,7 +10,7 @@ import static java.util.Map.entry;
 
 public class WhereParser {
 
-    private Pattern pattern = Pattern.compile("-?\\d+(\\.\\d+)?");
+    private Pattern pattern = Pattern.compile("^.*[A-Za-z].*$");
 
     private static HashMap<String, Tuple<List<String>, ArrayList<Tuple<Integer,Integer>>>> CacheWhereStmtPlacementPattern = new HashMap<>();
 
@@ -30,12 +30,11 @@ public class WhereParser {
     private static boolean Validate(List<String> tokens, List<Object> row) {
 
 
-
         try {
             // making stacks for shunting yard algo
 
-            Stack<String> stack = new Stack<String>();
-            List<Object> Output = new ArrayList<Object>();
+            Stack<String> stack = new Stack<>();
+            List<Object> Output = new ArrayList<>();
 
             // look through each char
             for (String token : tokens) {
@@ -59,11 +58,11 @@ public class WhereParser {
 
                             String t = stack.pop();
                             Output.add(t);
+
                             if (Output.size() >= 3 && operators.contains(t)) {
-                                List<Object> nd = Output.subList(Output.size() - 3, Output.size());
+                                Object val = eval(Output.get(Output.size() - 3),Output.get(Output.size() - 2),Output.get(Output.size() - 1));
                                 Output = Output.subList(0, Output.size() - 3);
-                                Output.add(eval(nd));
-//                                System.out.println("  " + Output.get(Output.size() - 1));
+                                Output.add(val);
 
                             }
 
@@ -84,13 +83,9 @@ public class WhereParser {
                         String t = stack.pop();
                         Output.add(t);
                         if (Output.size() >= 3 && operators.contains(t)) {
-                            List<Object> nd = Output.subList(Output.size() - 3, Output.size());
+                            Object val = eval(Output.get(Output.size() - 3),Output.get(Output.size() - 2),Output.get(Output.size() - 1));
                             Output = Output.subList(0, Output.size() - 3);
-
-                            Output.add(eval(nd));
-
-//                            System.out.println("  " + Output.get(Output.size() - 1));
-
+                            Output.add(val);
                         }
                     }
 
@@ -106,16 +101,12 @@ public class WhereParser {
                 Output.add(t);
 
 
-                //TODO optimise this
                 if (Output.size() >= 3 && operators.contains(t)) {
-                    List<Object> nd = Output.subList(Output.size() - 3, Output.size());
+                    Object val = eval(Output.get(Output.size() - 3),Output.get(Output.size() - 2),Output.get(Output.size() - 1));
                     Output = Output.subList(0, Output.size() - 3);
-
-                    Output.add(eval(nd));
-
+                    Output.add(val);
 
 
-//                    System.out.println("  " + Output.get(Output.size() - 1));
                 }
             }
             return (boolean) Output.get(Output.size() - 1);
@@ -125,20 +116,19 @@ public class WhereParser {
         }
     }
 
+    public static boolean isNumeric(String str) {
+        try {
+            Double.parseDouble(str);
+            return true;
+        } catch(NumberFormatException e){
+            return false;
+        }
+    }
+    private static Object eval(Object lexp,Object rexp,Object oplexp) throws Exception {
 
-    /*
-
-
-    TODO refactor this junk using the types given in the attribs in fillString
-     */
-    private static Object eval(List<Object> nd) throws Exception {
-
-
-//        System.out.print("eval: " + nd);
-
-        String left = nd.get(0).toString();
-        String right = nd.get(1).toString();
-        String op = nd.get(2).toString();
+        String left = lexp.toString();
+        String right = rexp.toString();
+        String op = oplexp.toString();
 
 
         switch (op) {
@@ -150,7 +140,44 @@ public class WhereParser {
                 break;
         }
 
-        if (left.matches("^.*[A-Za-z].*$") && right.matches("^.*[A-Za-z].*$")) {
+
+
+        boolean leftMatch = false;
+        boolean rightMatch  = false;
+
+
+        if(left.equals(".")){
+            leftMatch = true;
+
+        }else {
+
+            for (int i = 0; i < left.length(); i++) {
+                char ch = left.charAt(i);
+
+
+                if (ch > '9'|| ch < '.'  || ch == '/') {
+                    leftMatch = true;
+                    break;
+                }
+            }
+        }
+
+        if(right.equals(".")){
+            rightMatch = true;
+
+        }else {
+
+            for (int i = 0; i < right.length(); i++) {
+                char ch = right.charAt(i);
+
+                if (ch > '9' || ch < '.' || ch == '/') {
+                    rightMatch = true;
+                    break;
+                }
+            }
+        }
+        if (leftMatch && rightMatch) {
+
             return switch (op) {
                 case "=" -> left.compareTo(right) == 0;
                 case "!=" -> left.compareTo(right) != 0;
@@ -160,22 +187,21 @@ public class WhereParser {
                 case ">=" -> left.compareTo(right) >= 0;
                 default -> null;
             };
-        } else if (!left.matches(".*[A-Za-z].*$") && !right.matches("^.*[A-Za-z].*$")) {
-
+        } else if (!leftMatch && !rightMatch) {
             Double numLeft = Double.parseDouble(left);
             Double numRight = Double.parseDouble(right);
 
             return switch (op) {
-                case "=" -> numLeft.compareTo(numRight) == 0;
-                case "!=" -> numLeft.compareTo(numRight) != 0;
-                case "<" -> numLeft.compareTo(numRight) < 0;
-                case ">" -> numLeft.compareTo(numRight) > 0;
-                case "<=" -> numLeft.compareTo(numRight) <= 0;
-                case ">=" -> numLeft.compareTo(numRight) >= 0;
+                case "=" -> numLeft.equals(numRight);
+                case "!=" ->  !numLeft.equals(numRight);
+                case "<" -> numLeft<numRight;
+                case ">" -> numLeft>numRight;
+                case "<=" -> numLeft<=numRight;
+                case ">=" -> numLeft>=numRight;
                 default -> null;
             };
         }
-        throw new Exception("\"COMPARING DIFFERENT TYPES:\" + left + \" with \" + right");
+        throw new Exception("COMPARING DIFFERENT TYPES:" + left + " with " + right);
 
     }
 
@@ -246,8 +272,6 @@ public class WhereParser {
                 whereIdx++;
             }
 
-            System.out.println(tokens);
-
 
 
 
@@ -282,7 +306,6 @@ public class WhereParser {
         Tuple<List<String>, ArrayList<Tuple<Integer, Integer>>> cached = CacheWhereStmtPlacementPattern.get(s);
         List<String>tokens = cached.x;
         ArrayList<Tuple<Integer, Integer>>replaceAt = cached.y;
-
         for(Tuple<Integer,Integer> t:replaceAt){
             tokens.set(t.x, r.get(t.y).toString() );
         }
@@ -319,20 +342,8 @@ public class WhereParser {
     ...
             */
     public boolean whereIsTrue(String stmt, List<Object> row, ArrayList<Attribute> attrs) {
-
-        long startTime = System.currentTimeMillis();
         List<String> tokens = fillString(stmt, row, attrs);
-        long endTime = System.currentTimeMillis();
-        System.out.println(endTime - startTime);
-
-
-        startTime = System.currentTimeMillis();
-        boolean res =  Validate(tokens, row);
-        endTime = System.currentTimeMillis();
-        System.out.println(endTime - startTime);
-        System.out.println("-----------------------------");
-
-        return res;
+        return Validate(tokens, row);
     }
 
 
@@ -370,7 +381,7 @@ public class WhereParser {
             String s = "delete from foo where gpa < 1";
 
             boolean res = parser.whereIsTrue(s, r, attrs);
-            System.out.println("STMT IS :" + res);
+//            System.out.println("STMT IS :" + res);
             r.set(3,i);
         }
 
