@@ -104,6 +104,9 @@ public class WhereParser {
             while (!stack.isEmpty()) {
                 String t = stack.pop();
                 Output.add(t);
+
+
+                //TODO optimise this
                 if (Output.size() >= 3 && operators.contains(t)) {
                     List<Object> nd = Output.subList(Output.size() - 3, Output.size());
                     Output = Output.subList(0, Output.size() - 3);
@@ -201,7 +204,37 @@ public class WhereParser {
 
 
 
-            List<String> tokens = new ArrayList<>(List.of(s.split(" ")));
+            //             s = s.trim().replaceAll(" +", " ");
+
+            List<String> tokens = new ArrayList<>();
+            StringBuilder tk = new StringBuilder();
+            boolean inQuoats = false;
+            for (int i = 0; i < s.length(); i++) {
+                char ch = s.charAt(i);
+
+                if (!inQuoats && ch ==' '){
+
+                    if (!tk.toString().isBlank()) {
+                        tokens.add(tk.toString());
+                        tk = new StringBuilder();
+                    }
+                }else {
+
+                    if (ch == '\"') {
+                        inQuoats = !inQuoats;
+                    }
+                    tk.append(ch);
+                }
+            }
+            if (tk.length()>0){
+                tokens.add(tk.toString());
+            }
+
+//            System.exit(1);
+
+
+
+//            List<String> tokens = new ArrayList<>(List.of(s.split(" ")));
             tokens.removeIf(String::isBlank);
 
             int whereIdx = 1;
@@ -284,12 +317,7 @@ public class WhereParser {
         delete record
     }
     ...
-
-    //TODO
-       - ASK about () in stmts
-       - ASK about "" for strings
-       - possible refactor of this entire thing to better accommodate eval function
-     */
+            */
     public boolean whereIsTrue(String stmt, List<Object> row, ArrayList<Attribute> attrs) {
 
         long startTime = System.currentTimeMillis();
@@ -338,11 +366,11 @@ public class WhereParser {
         // STMT
         long startTime = System.currentTimeMillis();
 
-        for (int i = 0; i < 100; i++) {
-            String s = "delete from foo where fName=\"AArON\" or gpa>2.0 and (lName=berg or age<2) or gpa>1";
+        for (int i = 0; i < 1000; i++) {
+            String s = "delete from foo where gpa < 1";
 
             boolean res = parser.whereIsTrue(s, r, attrs);
-//            System.out.println("STMT IS :" + res);
+            System.out.println("STMT IS :" + res);
             r.set(3,i);
         }
 
