@@ -42,6 +42,7 @@ public class FileSystem {
 
     /**
      * Getter for the database location.
+     * Protects the use of the location variable, gives an error if location is not set
      * TODO - decide if this isn't useful, or if it should be used internally
      * @return the database location
      */
@@ -65,9 +66,9 @@ public class FileSystem {
      *  - will return whatever you put in as your string
      */
     private enum FilePath{
-        TABS("\\tabs"),
-        PAGES("\\pages"),
-        CATALOG("\\catalog");
+        TABS(DBLocation() + File.separator + "tabs"),
+        PAGES(DBLocation() + File.separator + "pages"),
+        CATALOG(DBLocation() + File.separator + "catalog");
 
         // code that allows for the enum to hold values
         // https://www.baeldung.com/java-enum-values
@@ -83,9 +84,9 @@ public class FileSystem {
             return false;
         }
 
-        Path pagePath = Paths.get(location+FilePath.PAGES.rel_loc);
-        Path tabsPath = Paths.get(location+FilePath.TABS.rel_loc);
-        Path catPath = Paths.get(location+FilePath.CATALOG.rel_loc);
+        Path pagePath = Paths.get(FilePath.PAGES.rel_loc);  // DBLocation should be set by first if
+        Path tabsPath = Paths.get(FilePath.TABS.rel_loc);
+        Path catPath = Paths.get(FilePath.CATALOG.rel_loc);
 
         // establish pages directory
         if(!Files.exists(pagePath)){ //if there's not already a pages directory, make one
@@ -141,8 +142,8 @@ public class FileSystem {
             return false;  // we don't even have a location!  we're not deleting anything D:<
         }
 
-        String pageRelPath = String.format("\\%d", num);  // page's path relative to the pages directory
-        Path pagePath = Paths.get(location+FilePath.PAGES.rel_loc+pageRelPath);
+        String pageRelPath = String.format(File.separator+"%d", num);  // page's path relative to the pages directory
+        Path pagePath = Paths.get(FilePath.PAGES.rel_loc+pageRelPath);
 
         try {
             Files.deleteIfExists(pagePath);
@@ -154,97 +155,86 @@ public class FileSystem {
         return true;
     }
 
-    public static boolean writePageFile(){
+    private static boolean writePageFile(){
         return false;
     }
 
     public static DataInputStream createPageDataInStream(String num) throws FileNotFoundException {
 
-        String tabsLoc = location + FilePath.PAGES.rel_loc+"\\"+num;
-        try {
-            // read in streams
-            FileInputStream inputStream;
-            inputStream = new FileInputStream(tabsLoc);
-
-            return new DataInputStream(inputStream);
-        }
-        catch (FileNotFoundException e){
-            throw e;
-        }
+        String tabsLoc = FilePath.PAGES.rel_loc+File.separator+num;
+        return createDataInStream(tabsLoc);
     }
 
     public static DataOutputStream createPageDataOutStream(String num) throws FileNotFoundException {
-        try {
-            return new DataOutputStream(
-                    new BufferedOutputStream(
-                            new FileOutputStream(
-                                    location + FilePath.PAGES.rel_loc + "\\"+num)));
-        }
-        catch (FileNotFoundException e){
-            throw e;
-        }
+        String tabsLoc = FilePath.PAGES.rel_loc + File.separator + num;
+        return createDataOutStream(tabsLoc);
     }
 
     // ---------------------------- CATALOG -----------------------------------------
 
     public static DataInputStream createCatDataInStream() throws FileNotFoundException {
 
-        String catLoc = location + FilePath.CATALOG.rel_loc+"\\catalog.txt";  //TODO decide if catalog.txt goes in enum
+        String catLoc = FilePath.CATALOG.rel_loc+File.separator+"catalog.txt";
         VerbosePrint.print("attempting to find catalog in: " + catLoc);
-        try {
-            // read in streams
-            FileInputStream inputStream;
-            inputStream = new FileInputStream(catLoc);
-
-            return new DataInputStream(inputStream);
-        }
-        catch (FileNotFoundException e){
-            throw e;
-        }
+        return createDataInStream(catLoc);
     }
 
     public static DataInputStream createCatTabsDataInStream() throws FileNotFoundException {
 
-        String tabsLoc = location + FilePath.TABS.rel_loc+"\\tables.txt";
-        try {
-            // read in streams
-            FileInputStream inputStream;
-            inputStream = new FileInputStream(tabsLoc);
-
-            return new DataInputStream(inputStream);
-        }
-        catch (FileNotFoundException e){
-            throw e;
-        }
+        String tabsLoc = FilePath.TABS.rel_loc+File.separator+"tables.txt";
+        return createDataInStream(tabsLoc);
     }
 
     public static DataOutputStream createCatDataOutStream() throws FileNotFoundException {
-        try {
-            return new DataOutputStream(
-                    new BufferedOutputStream(
-                            new FileOutputStream(location + FilePath.CATALOG.rel_loc+"\\catalog.txt")));
-        }
-        catch (FileNotFoundException e){
-            throw e;
-        }
+        String catLoc = FilePath.CATALOG.rel_loc+File.separator+"catalog.txt";
+        return createDataOutStream(catLoc);
     }
 
     public static DataOutputStream createCatTabsDataOutStream() throws FileNotFoundException {
-        try {
-            return new DataOutputStream(
-                    new BufferedOutputStream(
-                            new FileOutputStream(location + FilePath.TABS.rel_loc+"\\tables.txt")));
-        }
-        catch (FileNotFoundException e){
-            throw e;
-        }
+        String tabsLoc = FilePath.TABS.rel_loc+File.separator+"tables.txt";
+        return createDataOutStream(tabsLoc);
     }
 
 
     // ------------------------------ UTILITY ---------------------------------------------
 
     /**
-     * Util function so I don't have to type "System.err.println(FileSystem:" before every error message.
+     * Util to create a data input stream.  Meant to be used in a static function where the path is hard-coded
+     * @param path the path to which the data should be input from
+     * @return a DataInputStream to the path
+     * @throws FileNotFoundException
+     */
+    private static DataInputStream createDataInStream(String path) throws FileNotFoundException {
+        try {
+            // read in streams
+            FileInputStream inputStream;
+            inputStream = new FileInputStream(path);
+
+            return new DataInputStream(inputStream);
+        }
+        catch (FileNotFoundException e){
+            throw e;
+        }
+    }
+
+    /**
+     * Util to create a data output stream.  Meant to be used in a static function where the path is hard-coded
+     * @param path the path to which the data should be output
+     * @return a DataInputStream to the path
+     * @throws FileNotFoundException
+     */
+    private static DataOutputStream createDataOutStream(String path) throws FileNotFoundException {
+        try {
+            return new DataOutputStream(
+                    new BufferedOutputStream(
+                            new FileOutputStream(path)));
+        }
+        catch (FileNotFoundException e){
+            throw e;
+        }
+    }
+    /**
+     * Util function, so I don't have to type "System.err.println(FileSystem:" before every error message.
      * Made for printing out user errors such as trying to establish a FileSystem when one exists already.
      * @param error the user error to display
      */
