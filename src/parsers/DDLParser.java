@@ -23,6 +23,7 @@ import java.util.stream.Stream;
   You can add helper functions as needed, but the must be private and static.
 
   @author Aaron Berghash
+  @author Emma Reynolds
   @author Scott C Johnson (sxjcs@rit.edu)
 
  */
@@ -47,11 +48,9 @@ public class DDLParser {
         if (stmt.toLowerCase().startsWith("create table")) {
             return CreateTable(stmt);
         }else if (stmt.toLowerCase().startsWith("drop table")) {
-            //TODO
-            return false;
+            return dropTable(stmt);
         }else if (stmt.toLowerCase().startsWith("alter table")) {
-            //TODO
-            return false;
+            return alterTable(stmt);
         }
 
         return false;
@@ -250,7 +249,6 @@ public class DDLParser {
 
     }
 
-
     // will decide if a name follows rules of
     // 1) not being a key word && 2) starting with a letter and only having alphanumeric
     private static boolean isiIllLegalName(String name) {
@@ -266,6 +264,40 @@ public class DDLParser {
 
         return false;
     }
+
+    public static boolean dropTable(String stmt){
+        try {
+
+            String TableName;
+
+
+            //-----------------find the table name key-----------------
+            stmt = stmt.substring(13);
+            stmt = stmt.replace("\n", "");
+            TableName = stmt.substring(0, stmt.indexOf("("));
+            stmt = stmt.substring(TableName.length() + 1);
+
+        //TODO: make sure table exists
+
+
+            Catalog cat = (Catalog) Catalog.getCatalog();
+            // Dropping table
+            cat.dropTable(TableName);
+
+            return true;
+
+        } catch (Exception e) {
+
+            System.err.println("unknown error in removing table\n" +
+                    "make sure catalog exists before running function");
+            return false;
+        }
+    }
+
+    public static boolean alterTable(String stmt) {
+        return false;
+    }
+
 
 
 
