@@ -7,10 +7,7 @@ import common.Table;
 import common.VerbosePrint;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -309,6 +306,46 @@ public class DDLParser {
     }
 
     public static boolean alterTable(String stmt) {
+        /**
+         * alter table <name> drop <a_name>;
+         * alter table <name> add <a_name> <a_type>;
+         * alter table <name> add <a_name> <a_type> default <value>;
+         */
+        String TableName;
+        String command;
+        String attribute;
+        String type;
+        String[] stmtTokens;
+        String defaultValue;
+
+        //-----------------find the table name key-----------------
+
+        stmt = stmt.substring(12); //<name> command <a_name> <a_type> default <value>
+        stmt = stmt.replace("\n", "");
+        stmtTokens= stmt.split(" ;");
+        TableName = stmtTokens[0]; //<name>
+        command = stmtTokens[1].toLowerCase();
+        attribute = stmtTokens[2];
+        if (command.equals("add")){
+            type = stmtTokens[3];
+            if (stmtTokens.length > 4){
+                defaultValue = stmtTokens[4];
+                //TODO: add the attribute
+            }
+            else{
+                //TODO: add the attribute
+            }
+        } else if (command.equals("drop")){
+            //TODO: no more parsing, just drop the thing
+        }
+        else{
+            //TODO: figure out our error handling across application
+        }
+
+
+
+
+
         return false;
     }
 
