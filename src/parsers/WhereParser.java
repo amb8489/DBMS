@@ -202,31 +202,7 @@ public class WhereParser {
             s = s.replace(">=", " >= ");
 
 
-            List<String> tokens = new ArrayList<>();
-            StringBuilder tk = new StringBuilder();
-            boolean inQuoats = false;
-            for (int i = 0; i < s.length(); i++) {
-                char ch = s.charAt(i);
-
-                if (!inQuoats && ch == ' ') {
-
-                    if (!tk.toString().isBlank()) {
-                        tokens.add(tk.toString());
-                        tk = new StringBuilder();
-                    }
-                } else {
-
-                    if (ch == '\"') {
-                        inQuoats = !inQuoats;
-                    }
-                    tk.append(ch);
-                }
-            }
-            if (tk.length() > 0) {
-                tokens.add(tk.toString());
-            }
-
-            tokens.removeIf(String::isBlank);
+            List<String>tokens = StringFormatter.mkTokensFromStr(s);
 
             int whereIdx = 1;
             for (String t : tokens) {

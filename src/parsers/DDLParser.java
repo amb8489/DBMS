@@ -281,7 +281,7 @@ public class DDLParser {
                     }
                     //(nums)
                     String num = TypeName.substring(Lparen + 1, Rparen);
-                    // all numbers
+                    // all numbers in str
                     return num.chars().allMatch(Character::isDigit);
                 }
         }
@@ -347,7 +347,7 @@ public class DDLParser {
 
         stmt = stmt.substring(12); //<name> command <a_name> <a_type> default <value>
         stmt = stmt.replace("\n", "");
-        stmtTokens= stmt.split(" ;");
+        stmtTokens= stmt.split(" ;");  //<-----do you want the space before the ;  ??
         TableName = stmtTokens[0]; //<name>
         command = stmtTokens[1].toLowerCase();
         attribute = stmtTokens[2];

@@ -282,6 +282,9 @@ public class StorageManager extends AStorageManager {
 
     //TODO TEST how do we know what the defaultValue type is????
     // how do we update the attribute array in table????
+
+
+    // is alwats at the end in attribute array?
     @Override
     public boolean addAttributeValue(ITable table, Object defaultValue) {
 
