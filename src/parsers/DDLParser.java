@@ -349,8 +349,8 @@ public class DDLParser {
         //-----------------find the table name key-----------------
 
         stmt = stmt.substring(12); //<name> command <a_name> <a_type> default <value>
-        stmt = stmt.replace("\n", "");
-        stmtTokens= stmt.split(" ;");  // ??
+        stmt = StringFormatter.format(stmt);
+        stmtTokens= stmt.split(" ;+");  // ??
         TableName = stmtTokens[0]; //<name>
         command = stmtTokens[1].toLowerCase();
         attribute = stmtTokens[2];
