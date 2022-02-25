@@ -273,7 +273,7 @@ public class DDLParser {
             //-----------------find the table name key-----------------
             stmt = stmt.substring(11);
             stmt = stmt.replace("\n", "");
-            TableName = stmt.substring(0, stmt.indexOf(";")); //TODO: find out if semicolor will always be here
+            TableName = stmt.substring(0, stmt.indexOf(";")-1); //TODO: find out if semicolor will always be here
             TableName = TableName.trim();
 
             Catalog cat = (Catalog) Catalog.getCatalog();
