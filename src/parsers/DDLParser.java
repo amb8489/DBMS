@@ -43,7 +43,8 @@ public class DDLParser {
 
     public static boolean parseDDLStatement(String stmt) {
 
-
+        stmt = StringFormatter.format(stmt);
+        System.out.println(stmt);
 
         if (stmt.toLowerCase().startsWith("create table")) {
             return CreateTable(stmt);
@@ -59,8 +60,9 @@ public class DDLParser {
 
     // will create and add table to the DB given a Create table statement
     private static boolean CreateTable(String stmt) {
-        try {
 
+        try {
+            stmt =stmt.replace(";","");
 
             // vars for the new table
             ArrayList<Attribute> TableAttributes = new ArrayList<>();
@@ -168,7 +170,7 @@ public class DDLParser {
                         return false;
                     }
 
-                    VerbosePrint.print(Arrays.toString(fkSpit));
+                    VerbosePrint.print("fk: "+Arrays.toString(fkSpit));
 
                     // mk new fk
                     TableForeignkeys.add(new ForeignKey(fkSpit[1], fkSpit[2], fkSpit[0]));
@@ -208,14 +210,19 @@ public class DDLParser {
                     TableAttributes.add(newAttribute);
 
                     // check constraints for attribute
-                    if (AttributeConstraint.contains("notnull") ) {
-                        notNullIndexs.add(numberOfNewAttribs);
+                    for (String constraint : AttributeConstraint) {
+
+                        if (constraint.equalsIgnoreCase("notnull") ) {
+                            notNullIndexs.add(numberOfNewAttribs);
+                        }else
+                        if (constraint.equalsIgnoreCase("primarykey") ){
+                            primaryKey = newAttribute;
+                            tableHasPk = true;
+                            notNullIndexs.add(numberOfNewAttribs);
+                        }
+
                     }
-                    if (AttributeConstraint.contains("primarykey")){
-                        primaryKey = newAttribute;
-                        tableHasPk = true;
-                        notNullIndexs.add(numberOfNewAttribs);
-                    }
+
                     numberOfNewAttribs++;
 
                 }
@@ -245,7 +252,7 @@ public class DDLParser {
                     return false;
                 }
             }
-
+            System.out.println("here");
             // make new table
             cat.addTable(TableName, TableAttributes, primaryKey);
             ((Table) cat.getTable(TableName)).setForeignKeys(TableForeignkeys);
@@ -379,15 +386,16 @@ public class DDLParser {
 
 
     public static void main(String[] args) {
+
+
+
+        VerbosePrint.Verbose = true;
         DDLParser.parseDDLStatement("""
-                creAte taBle A0o(
-                        bAz Varchar(10),
-                        bar1 Double notnull primarykey,
-                        primarykey(bar1),
-                        foreignkey( bar3 ) REFERENCES bazzle1( baz6 ),
-                        FOREIGNKEY(bar4) references bazzle2( baz7 ),
-                        foreignkey(cat) references bazzle3(baz8)
-                );""");
+                create table foo(
+                        baz Integer,
+                        bar Double notnull,
+                        primarykey( bar ),
+                        foreignkey( bar ) references bazzle( baz ));""");
     }
 
 

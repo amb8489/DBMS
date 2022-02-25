@@ -41,8 +41,20 @@ public class DMLParser {
         System.out.println(tokens);
 
         System.out.println("deleting from table name:"+tokens.get(2));
-        String Where = String.join(" ",tokens.subList(4,tokens.size())).replace(";","");
-        System.out.println("where:"+ Where);
+
+
+        //WHERE CLAUSE
+        if (tokens.size() != 3){
+            String Where = String.join(" ",tokens.subList(4,tokens.size())).replace(";","");
+            System.out.println("where{"+ Where+"}");
+
+
+
+
+            return;
+        }
+        // DELETE ALL ROWS IN TABLE
+
 
 
 

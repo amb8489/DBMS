@@ -9,6 +9,8 @@ public class StringFormatter {
 
     public static String format(String stmt) {
 
+
+
         // step 1 remove all new line chars
         stmt = stmt.replace("\n", " ").strip();
 
@@ -46,7 +48,6 @@ public class StringFormatter {
             }
 
         }
-
         return str.toString();
     }
 
