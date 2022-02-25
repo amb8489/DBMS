@@ -10,19 +10,13 @@ import static java.util.Map.entry;
 
 public class WhereParser {
 
-    private Pattern pattern = Pattern.compile("^.*[A-Za-z].*$");
-
-    private static HashMap<String, Tuple<List<String>, ArrayList<Tuple<Integer,Integer>>>> CacheWhereStmtPlacementPattern = new HashMap<>();
+    private static HashMap<String, Tuple<List<String>, ArrayList<Tuple<Integer, Integer>>>> CacheWhereStmtPlacementPattern = new HashMap<>();
 
     private static final Map<String, Integer> precedence = Map.ofEntries(
-            entry("and", 1),
-            entry("or", 2),
-            entry("=", 3),
-            entry("!=", 3),
-            entry("<", 3),
-            entry(">", 3),
-            entry("<=", 3),
-            entry(">=", 3));
+            entry("and", 1), entry("or", 2),
+            entry("=", 3), entry("!=", 3),
+            entry("<", 3), entry(">", 3),
+            entry("<=", 3), entry(">=", 3));
 
     private static final Set operators = precedence.keySet();
 
@@ -60,7 +54,7 @@ public class WhereParser {
                             Output.add(t);
 
                             if (Output.size() >= 3 && operators.contains(t)) {
-                                Object val = eval(Output.get(Output.size() - 3),Output.get(Output.size() - 2),Output.get(Output.size() - 1));
+                                Object val = eval(Output.get(Output.size() - 3), Output.get(Output.size() - 2), Output.get(Output.size() - 1));
                                 Output = Output.subList(0, Output.size() - 3);
                                 Output.add(val);
 
@@ -83,7 +77,7 @@ public class WhereParser {
                         String t = stack.pop();
                         Output.add(t);
                         if (Output.size() >= 3 && operators.contains(t)) {
-                            Object val = eval(Output.get(Output.size() - 3),Output.get(Output.size() - 2),Output.get(Output.size() - 1));
+                            Object val = eval(Output.get(Output.size() - 3), Output.get(Output.size() - 2), Output.get(Output.size() - 1));
                             Output = Output.subList(0, Output.size() - 3);
                             Output.add(val);
                         }
@@ -100,13 +94,10 @@ public class WhereParser {
                 String t = stack.pop();
                 Output.add(t);
 
-
                 if (Output.size() >= 3 && operators.contains(t)) {
-                    Object val = eval(Output.get(Output.size() - 3),Output.get(Output.size() - 2),Output.get(Output.size() - 1));
+                    Object val = eval(Output.get(Output.size() - 3), Output.get(Output.size() - 2), Output.get(Output.size() - 1));
                     Output = Output.subList(0, Output.size() - 3);
                     Output.add(val);
-
-
                 }
             }
             return (boolean) Output.get(Output.size() - 1);
@@ -116,15 +107,8 @@ public class WhereParser {
         }
     }
 
-    public static boolean isNumeric(String str) {
-        try {
-            Double.parseDouble(str);
-            return true;
-        } catch(NumberFormatException e){
-            return false;
-        }
-    }
-    private static Object eval(Object lexp,Object rexp,Object oplexp) throws Exception {
+
+    private static Object eval(Object lexp, Object rexp, Object oplexp) throws Exception {
 
         String left = lexp.toString();
         String right = rexp.toString();
@@ -141,35 +125,31 @@ public class WhereParser {
         }
 
 
-
         boolean leftMatch = false;
-        boolean rightMatch  = false;
+        boolean rightMatch = false;
 
 
-        if(left.equals(".")){
+        if (left.equals(".")) {
             leftMatch = true;
 
-        }else {
+        } else {
 
             for (int i = 0; i < left.length(); i++) {
                 char ch = left.charAt(i);
-
-
-                if (ch > '9'|| ch < '.'  || ch == '/') {
+                if (ch > '9' || ch < '.' || ch == '/') {
                     leftMatch = true;
                     break;
                 }
             }
         }
 
-        if(right.equals(".")){
+        if (right.equals(".")) {
             rightMatch = true;
 
-        }else {
+        } else {
 
             for (int i = 0; i < right.length(); i++) {
                 char ch = right.charAt(i);
-
                 if (ch > '9' || ch < '.' || ch == '/') {
                     rightMatch = true;
                     break;
@@ -193,11 +173,11 @@ public class WhereParser {
 
             return switch (op) {
                 case "=" -> numLeft.equals(numRight);
-                case "!=" ->  !numLeft.equals(numRight);
-                case "<" -> numLeft<numRight;
-                case ">" -> numLeft>numRight;
-                case "<=" -> numLeft<=numRight;
-                case ">=" -> numLeft>=numRight;
+                case "!=" -> !numLeft.equals(numRight);
+                case "<" -> numLeft < numRight;
+                case ">" -> numLeft > numRight;
+                case "<=" -> numLeft <= numRight;
+                case ">=" -> numLeft >= numRight;
                 default -> null;
             };
         }
@@ -206,15 +186,9 @@ public class WhereParser {
     }
 
 
-    /*
-
-
-
-
-     */
     private static List<String> fillString(String s, List<Object> r, ArrayList<Attribute> attrs) {
 
-        if(!CacheWhereStmtPlacementPattern.containsKey(s)) {
+        if (!CacheWhereStmtPlacementPattern.containsKey(s)) {
 
             String stmt = s;
 
@@ -228,23 +202,19 @@ public class WhereParser {
             s = s.replace(">=", " >= ");
 
 
-
-
-            //             s = s.trim().replaceAll(" +", " ");
-
             List<String> tokens = new ArrayList<>();
             StringBuilder tk = new StringBuilder();
             boolean inQuoats = false;
             for (int i = 0; i < s.length(); i++) {
                 char ch = s.charAt(i);
 
-                if (!inQuoats && ch ==' '){
+                if (!inQuoats && ch == ' ') {
 
                     if (!tk.toString().isBlank()) {
                         tokens.add(tk.toString());
                         tk = new StringBuilder();
                     }
-                }else {
+                } else {
 
                     if (ch == '\"') {
                         inQuoats = !inQuoats;
@@ -252,27 +222,20 @@ public class WhereParser {
                     tk.append(ch);
                 }
             }
-            if (tk.length()>0){
+            if (tk.length() > 0) {
                 tokens.add(tk.toString());
             }
 
-//            System.exit(1);
-
-
-
-//            List<String> tokens = new ArrayList<>(List.of(s.split(" ")));
             tokens.removeIf(String::isBlank);
 
             int whereIdx = 1;
             for (String t : tokens) {
-                if (t.equalsIgnoreCase("where")){
-                    tokens = tokens.subList(whereIdx,tokens.size());
+                if (t.equalsIgnoreCase("where")) {
+                    tokens = tokens.subList(whereIdx, tokens.size());
                     break;
                 }
                 whereIdx++;
             }
-
-
 
 
             HashMap<String, Integer> AttribNames = new HashMap<>();
@@ -291,23 +254,23 @@ public class WhereParser {
                     // set that token to the value from the given row at the idx of the col name
                     Integer attribIdx = AttribNames.get(t);
 
-                    IdxsToReplace.add(new Tuple<>(tokenIdx,attribIdx));
+                    IdxsToReplace.add(new Tuple<>(tokenIdx, attribIdx));
 
                     tokens.set(tokenIdx, r.get(attribIdx).toString());
                 }
                 tokenIdx++;
             }
-            Tuple<List<String>,ArrayList<Tuple<Integer,Integer>>> tup = new Tuple<>(tokens,IdxsToReplace);
-            CacheWhereStmtPlacementPattern.put(stmt,tup);
+            Tuple<List<String>, ArrayList<Tuple<Integer, Integer>>> tup = new Tuple<>(tokens, IdxsToReplace);
+            CacheWhereStmtPlacementPattern.put(stmt, tup);
             return tokens;
         }
 
 
         Tuple<List<String>, ArrayList<Tuple<Integer, Integer>>> cached = CacheWhereStmtPlacementPattern.get(s);
-        List<String>tokens = cached.x;
-        ArrayList<Tuple<Integer, Integer>>replaceAt = cached.y;
-        for(Tuple<Integer,Integer> t:replaceAt){
-            tokens.set(t.x, r.get(t.y).toString() );
+        List<String> tokens = cached.x;
+        ArrayList<Tuple<Integer, Integer>> replaceAt = cached.y;
+        for (Tuple<Integer, Integer> t : replaceAt) {
+            tokens.set(t.x, r.get(t.y).toString());
         }
 
         return tokens;
@@ -354,8 +317,6 @@ public class WhereParser {
         WhereParser parser = new WhereParser();
 
 
-
-
         // TALE ATTRIBUTES
         ArrayList<Attribute> attrs = new ArrayList<>();
         attrs.add(new Attribute("fName", "Varchar(10)"));
@@ -378,11 +339,11 @@ public class WhereParser {
         long startTime = System.currentTimeMillis();
 
         for (int i = 0; i < 1000; i++) {
-            String s = "delete from foo where gpa < 1";
+            String s = "delete from foo where gpa < 1 or Fname = berg";
 
             boolean res = parser.whereIsTrue(s, r, attrs);
 //            System.out.println("STMT IS :" + res);
-            r.set(3,i);
+            r.set(3, i);
         }
 
         long endTime = System.currentTimeMillis();
@@ -391,12 +352,13 @@ public class WhereParser {
 
     }
 
-    /**   author kyle f
+    /**
+     * author kyle f
      *
      * @param <X> element of type X
      * @param <Y> element of type Y
      */
-    public static class Tuple<X,Y>{
+    public static class Tuple<X, Y> {
         public X x;  //element 1
         public Y y;  //element 2
 
@@ -407,7 +369,7 @@ public class WhereParser {
 
         @Override
         public String toString() {
-            return x + " "+y;
+            return x + " " + y;
         }
     }
 }

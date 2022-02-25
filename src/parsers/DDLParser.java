@@ -67,7 +67,7 @@ public class DDLParser {
             ArrayList<Attribute> TableAttributes = new ArrayList<>();
             Attribute primaryKey = null;
             ArrayList<ForeignKey> TableForeignkeys = new ArrayList<>();
-            ArrayList<Integer> notNullIndexs = new ArrayList<>();
+            Set<Integer> notNullIndexs = new HashSet<>();
 
             String TableName;
 
@@ -96,13 +96,23 @@ public class DDLParser {
                 if (UppercaseAttribute.startsWith("PRIMARYKEY")) {
 
                     // check for more than 1 pk
-                    if (tableHasPk) {
-                        System.err.println("creating table " + TableName + " cant have more then 1 primary key");
-                        return false;
-                    }
 
                     // regex pk name out
                     String pk = attribute.substring(11).replace(")", "").strip();
+
+
+                    if (tableHasPk) {
+
+                        if (!primaryKey.getAttributeName().equals(pk)) {
+
+
+                            System.err.println("creating table " + TableName + " cant have more then 1 primary key");
+                            return false;
+                        }
+                        continue;
+                    }
+
+
 
                     // check for name keyword
                     if (isiIllLegalName(pk.toLowerCase())) {
@@ -110,12 +120,16 @@ public class DDLParser {
                     }
                     VerbosePrint.print("primarykey: {" + pk + "}");
 
+                    int pkidx = 0;
                     for (Attribute att : TableAttributes) {
                         if (att.getAttributeName().equals(pk)) {
                             primaryKey = att;
                             tableHasPk = true;
+                            notNullIndexs.add(pkidx);
+
                             break;
                         }
+                        pkidx++;
                     }
                     if (!tableHasPk) {
                         System.err.println("table does not have attribute " + pk);
@@ -171,8 +185,15 @@ public class DDLParser {
                     VerbosePrint.print("attribute NAME: {" + AttributeName + "} TYPE: {" + AttributeType +
                             "} CONSTRAINTS: " + AttributeConstraint);
 
-                    TableAttributes.add(new Attribute(AttributeName, AttributeType));
-                    if (AttributeConstraint.contains("notnull")) {
+
+                    Attribute newAttribute= new Attribute(AttributeName, AttributeType);
+                    TableAttributes.add(newAttribute);
+                    if (AttributeConstraint.contains("notnull") ) {
+                        notNullIndexs.add(numberOfNewAttribs);
+                    }
+                    if (AttributeConstraint.contains("primarykey")){
+                        primaryKey = newAttribute;
+                        tableHasPk = true;
                         notNullIndexs.add(numberOfNewAttribs);
                     }
                     numberOfNewAttribs++;
@@ -208,8 +229,7 @@ public class DDLParser {
             // make new table
             cat.addTable(TableName, TableAttributes, primaryKey);
             ((Table) cat.getTable(TableName)).setForeignKeys(TableForeignkeys);
-            // TODO IN table null indexes to table
-
+            ((Table) cat.getTable(TableName)).setNotNullIdxs(notNullIndexs);
 
             return true;
 
@@ -300,7 +320,7 @@ public class DDLParser {
         DDLParser.parseDDLStatement("""
                 creAte taBle A0o(
                         bAz Varchar(10),
-                        bar1 Double notnull,
+                        bar1 Double notnull primarykey,
                         primarykey(bar1),
                         foreignkey( bar3 ) REFERENCES bazzle1( baz6 ),
                         FOREIGNKEY(bar4) references bazzle2( baz7 ),
