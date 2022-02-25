@@ -270,21 +270,15 @@ public class DDLParser {
 
             String TableName;
 
-
             //-----------------find the table name key-----------------
-            stmt = stmt.substring(13);
+            stmt = stmt.substring(11);
             stmt = stmt.replace("\n", "");
-            TableName = stmt.substring(0, stmt.indexOf("("));
-            stmt = stmt.substring(TableName.length() + 1);
-
-        //TODO: make sure table exists
-
+            TableName = stmt.substring(0, stmt.indexOf(";")); //TODO: find out if semicolor will always be here
+            TableName = TableName.trim();
 
             Catalog cat = (Catalog) Catalog.getCatalog();
             // Dropping table
-            cat.dropTable(TableName);
-
-            return true;
+            return cat.dropTable(TableName);
 
         } catch (Exception e) {
 
