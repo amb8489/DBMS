@@ -26,17 +26,20 @@ import java.util.stream.Stream;
  */
 public class DDLParser {
 
+    // list of key words not allowed for use for table/ column names
+    private static Set<String> KEYWORDS = Stream.of(
+            "create", "table", "drop", "insert", "into", "delete", "from", "where", "update",
+            "notnull", "primarykey", "foreignkey", "references", "add", "default", "set",
+            "values", "null").collect(Collectors.toCollection(HashSet::new));
+
+
+
     /**
      * This function will parse and execute DDL statements (create table, create index, etc)
      *
      * @param stmt the statement to parse
      * @return true if successfully parsed/executed; false otherwise
      */
-
-    private static Set<String> KEYWORDS = Stream.of(
-            "create", "table", "drop", "insert", "into", "delete", "from", "where", "update",
-            "notnull", "primarykey", "foreignkey", "references", "add", "default", "set",
-            "values", "null").collect(Collectors.toCollection(HashSet::new));
 
     public static boolean parseDDLStatement(String stmt) {
 
@@ -54,8 +57,7 @@ public class DDLParser {
     }
 
 
-    //TODO
-    // --- how many attrib Constraints can attib have write up inconsistent??
+    // will create and add table to the DB given a Create table statement
     private static boolean CreateTable(String stmt) {
         try {
 
@@ -65,15 +67,15 @@ public class DDLParser {
             Attribute primaryKey = null;
             ArrayList<ForeignKey> TableForeignkeys = new ArrayList<>();
             Set<Integer> notNullIndexs = new HashSet<>();
-
             String TableName;
 
 
-            //-----------------find the table name key-----------------
+            //-----------------finding the table name key-----------------
             stmt = stmt.substring(13);
             stmt = stmt.replace("\n", "");
+
+            // parsing the table name
             TableName = stmt.substring(0, stmt.indexOf("("));
-            stmt = stmt.substring(TableName.length() + 1);
 
             // check that name is not keyword
             if (isiIllLegalName(TableName.toLowerCase())) {
@@ -81,10 +83,19 @@ public class DDLParser {
             }
             VerbosePrint.print("table name" + TableName);
 
-            // parsing for the rest of the string
+
+            // removing the name from the string
+            stmt = stmt.substring(TableName.length() + 1);
+
+
+            // parsing for the rest of the table attributes, pk and fks
             boolean tableHasPk = false;
             int numberOfNewAttribs = 0;
+
+            // splitting on comma
+            // for each token
             for (String attrib : stmt.split(",")) {
+
                 String attribute = attrib.strip();
                 String UppercaseAttribute = attribute.toUpperCase();
 
@@ -92,42 +103,47 @@ public class DDLParser {
                 //-----------------find the PRIMARY key-----------------
                 if (UppercaseAttribute.startsWith("PRIMARYKEY")) {
 
-                    // check for more than 1 pk
 
                     // regex pk name out
                     String pk = attribute.substring(11).replace(")", "").strip();
 
-
+                    // check for more than 1 pk
                     if (tableHasPk) {
 
+                        // if pk is not just being redundantly redeclare
                         if (!primaryKey.getAttributeName().equals(pk)) {
-
-
                             System.err.println("creating table " + TableName + " cant have more then 1 primary key");
                             return false;
                         }
+
+                        // the pk was already defined earlier
                         continue;
                     }
 
+                    // table does not have a p yet
 
 
-                    // check for name keyword
+                    // check pk name is not keyword
                     if (isiIllLegalName(pk.toLowerCase())) {
                         return false;
                     }
                     VerbosePrint.print("primarykey: {" + pk + "}");
 
+                    // finding the index of the pk in the attributes
                     int pkidx = 0;
                     for (Attribute att : TableAttributes) {
                         if (att.getAttributeName().equals(pk)) {
+                            // setting the pk
                             primaryKey = att;
                             tableHasPk = true;
+                            // pk are always notnull
                             notNullIndexs.add(pkidx);
-
                             break;
                         }
                         pkidx++;
                     }
+
+                    // if setting pk to something that's not in the table
                     if (!tableHasPk) {
                         System.err.println("table does not have attribute " + pk);
                         return false;
@@ -137,20 +153,24 @@ public class DDLParser {
                     //-----------------find the foreign key-----------------
                 } else if (UppercaseAttribute.startsWith("FOREIGNKEY")) {
 
-                    // regex names out
+                    // regex names out of string and removing ;
                     String fk = attribute.replaceAll("(?i)(foreignkey|references)", "").replace(";", "");
+
+                    // replacing ( ) with spaces to be able to split on space
                     fk = fk.replace(" ", "").replaceAll("[()]", " ").strip();
 
-                    //attrib -> tablename attrib
+                    //splittiing [attrib, ref-table-name, attrib in ref table]
                     String[] fkSpit = fk.split(" ");
 
-                    // check for keyword
+                    // check for keyword is name
                     if (fkSpit.length < 3 || isiIllLegalName(fkSpit[0].toLowerCase())) {
                         System.err.println("ERROR: foreignkey name was a keyword");
                         return false;
                     }
 
                     VerbosePrint.print(Arrays.toString(fkSpit));
+
+                    // mk new fk
                     TableForeignkeys.add(new ForeignKey(fkSpit[1], fkSpit[2], fkSpit[0]));
 
 
@@ -164,10 +184,11 @@ public class DDLParser {
                     ArrayList<String> AttributeConstraint = new ArrayList<>();
 
 
-                    // check for keyword
+                    // check for keyword in name
                     if (isiIllLegalName(AttributeName.toLowerCase())) {
                         return false;
                     }
+                    // check for bad type of attribute
                     if (!isLegalType(AttributeSplit[1])) {
                         System.err.println("bad type:" + AttributeSplit[1]);
                         return false;
@@ -185,6 +206,8 @@ public class DDLParser {
 
                     Attribute newAttribute= new Attribute(AttributeName, AttributeType);
                     TableAttributes.add(newAttribute);
+
+                    // check constraints for attribute
                     if (AttributeConstraint.contains("notnull") ) {
                         notNullIndexs.add(numberOfNewAttribs);
                     }
@@ -265,6 +288,8 @@ public class DDLParser {
         return false;
 
     }
+
+
 
     // will decide if a name follows rules of
     // 1) not being a key word && 2) starting with a letter and only having alphanumeric
