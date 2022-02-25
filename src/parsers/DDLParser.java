@@ -27,6 +27,10 @@ import java.util.stream.Stream;
 public class DDLParser {
 
     // list of key words not allowed for use for table/ column names
+
+    //TODO add types
+    // possible move
+    // split(,#)
     private static Set<String> KEYWORDS = Stream.of(
             "create", "table", "drop", "insert", "into", "delete", "from", "where", "update",
             "notnull", "primarykey", "foreignkey", "references", "add", "default", "set",
@@ -56,9 +60,8 @@ public class DDLParser {
 
         return false;
     }
-
-
     // will create and add table to the DB given a Create table statement
+    // TODO check for dups on all p attributes and pk check that table doesn't already exist
     private static boolean CreateTable(String stmt) {
 
         try {
@@ -220,11 +223,8 @@ public class DDLParser {
                             tableHasPk = true;
                             notNullIndexs.add(numberOfNewAttribs);
                         }
-
                     }
-
                     numberOfNewAttribs++;
-
                 }
             }
 
@@ -267,7 +267,6 @@ public class DDLParser {
             return false;
         }
     }
-
     // check that a type for an atrribute is legal
     private static boolean isLegalType(String TypeName) {
         switch (TypeName) {
@@ -295,9 +294,6 @@ public class DDLParser {
         return false;
 
     }
-
-
-
     // will decide if a name follows rules of
     // 1) not being a key word && 2) starting with a letter and only having alphanumeric
     private static boolean isiIllLegalName(String name) {
@@ -354,7 +350,7 @@ public class DDLParser {
 
         stmt = stmt.substring(12); //<name> command <a_name> <a_type> default <value>
         stmt = stmt.replace("\n", "");
-        stmtTokens= stmt.split(" ;");  //<-----do you want the space before the ;  ??
+        stmtTokens= stmt.split(" ;");  // ??
         TableName = stmtTokens[0]; //<name>
         command = stmtTokens[1].toLowerCase();
         attribute = stmtTokens[2];
@@ -381,12 +377,10 @@ public class DDLParser {
         return false;
     }
 
-
-
-
-
     public static void main(String[] args) {
 
+
+        //todo create sm and catalog then test
 
 
         VerbosePrint.Verbose = true;
@@ -395,7 +389,7 @@ public class DDLParser {
                         baz Integer,
                         bar Double notnull,
                         primarykey( bar ),
-                        foreignkey( bar ) references bazzle( baz ));""");
+                        foreignkey( bar ) references bazzle( baz )   )   ;""");
     }
 
 

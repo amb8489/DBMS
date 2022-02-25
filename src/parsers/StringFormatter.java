@@ -9,12 +9,8 @@ public class StringFormatter {
 
     public static String format(String stmt) {
 
-
-
         // step 1 remove all new line chars
         stmt = stmt.replace("\n", " ").strip();
-
-
         // step 2 remove any redundant spaces
 
         StringBuilder str = new StringBuilder();
@@ -53,7 +49,7 @@ public class StringFormatter {
 
 
         public static void main (String[]args){
-            String stmt = "     hi     \"Aaron  Berghash\"          is       here";
+            String stmt = "     hi     \"Aaron    Berghash\"          is       here";
             System.out.println(format(stmt));
         }
 

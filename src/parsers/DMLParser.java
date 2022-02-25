@@ -44,6 +44,8 @@ public class DMLParser {
 
 
         //WHERE CLAUSE
+
+
         if (tokens.size() != 3){
             String Where = String.join(" ",tokens.subList(4,tokens.size())).replace(";","");
             System.out.println("where{"+ Where+"}");
