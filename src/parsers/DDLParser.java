@@ -62,6 +62,8 @@ public class DDLParser {
     }
     // will create and add table to the DB given a Create table statement
     // TODO check for dups on all p attributes and pk check that table doesn't already exist
+
+    // check attributes exits when adding
     private static boolean CreateTable(String stmt) {
 
         try {
@@ -244,15 +246,32 @@ public class DDLParser {
                     return false;
                 }
 
+
                 //test types match in both tables for attributes
                 Table tab = (Table) cat.getTable(fk.getRefTableName());
-                if (!tab.getAttrByName(fk.getRefAttribute()).getAttributeType()
-                        .equals(primaryKey.getAttributeType())) {
+
+
+
+                boolean hasAttrib = false;
+                for (Attribute a : tab.getAttributes()) {
+                    if (a.getAttributeName().equals(fk.getRefAttribute())) {
+                        hasAttrib=true;
+                        break;
+                    }
+                }
+                if (!hasAttrib){
+                    System.err.println("Attribute "+fk.getRefAttribute() +" does not does not exist in table "+ fk.getRefTableName());
+                    return false;
+                }
+
+
+
+
+                if (!tab.getAttrByName(fk.getRefAttribute()).getAttributeType().equals(primaryKey.getAttributeType())) {
                     System.err.println("Foreign key: " + fk + " reference and attribute types mismatch");
                     return false;
                 }
             }
-            System.out.println("here");
             // make new table
             cat.addTable(TableName, TableAttributes, primaryKey);
             ((Table) cat.getTable(TableName)).setForeignKeys(TableForeignkeys);
@@ -262,8 +281,7 @@ public class DDLParser {
 
         } catch (Exception e) {
 
-            System.err.println("unknown error in creating new table\n" +
-                    "make sure catalog exists before running function");
+            System.err.println("unknown error in creating new table\n");
             return false;
         }
     }
@@ -349,8 +367,8 @@ public class DDLParser {
         //-----------------find the table name key-----------------
 
         stmt = stmt.substring(12); //<name> command <a_name> <a_type> default <value>
-        stmt = StringFormatter.format(stmt);
-        stmtTokens= stmt.split(" ;+");  // ??
+        stmt = stmt.replace("\n", "");
+        stmtTokens= stmt.split(" ;");  // ??
         TableName = stmtTokens[0]; //<name>
         command = stmtTokens[1].toLowerCase();
         attribute = stmtTokens[2];
@@ -383,7 +401,6 @@ public class DDLParser {
         //todo create sm and catalog then test
 
 
-        VerbosePrint.Verbose = true;
         DDLParser.parseDDLStatement("""
                 create table foo(
                         baz Integer,

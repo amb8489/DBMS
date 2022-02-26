@@ -128,8 +128,7 @@ public class WhereParser {
         boolean leftMatch = false;
         boolean rightMatch = false;
 
-
-        if (left.equals(".")) {
+        if (left.startsWith("\"") || left.equals(".") ) {
             leftMatch = true;
 
         } else {
@@ -143,7 +142,7 @@ public class WhereParser {
             }
         }
 
-        if (right.equals(".")) {
+        if (right.startsWith("\"") || right.equals(".")) {
             rightMatch = true;
 
         } else {
@@ -156,6 +155,7 @@ public class WhereParser {
                 }
             }
         }
+
         if (leftMatch && rightMatch) {
 
             return switch (op) {
@@ -185,6 +185,7 @@ public class WhereParser {
 
     }
 
+    // TODO check attributes exits when adding
 
     private static List<String> fillString(String s, List<Object> r, ArrayList<Attribute> attrs) {
 
@@ -194,12 +195,21 @@ public class WhereParser {
 
             s = s.replace("(", " ( ");
             s = s.replace(")", " ) ");
-            s = s.replace("=", " = ");
-            s = s.replace("!=", " != ");
+
+            s = s.replace("!", " !");
             s = s.replace("<", " < ");
             s = s.replace(">", " > ");
-            s = s.replace("<=", " <= ");
-            s = s.replace(">=", " >= ");
+            s = s.replace("=", " = ");
+
+            s = s.replace("<  =", " <= ");
+            s = s.replace(">  =", " >= ");
+            s = s.replace("! =", " != ");
+
+
+
+
+
+
 
 
             List<String>tokens = StringFormatter.mkTokensFromStr(s);
@@ -314,8 +324,8 @@ public class WhereParser {
         // STMT
         long startTime = System.currentTimeMillis();
 
-        for (int i = 0; i < 1000; i++) {
-            String s = "delete from foo where gpa < 1 or Fname = berg";
+        for (int i = 0; i < 1; i++) {
+            String s = "delete from foo where gpa < 1 or fName = \"berg\"";
 
             boolean res = parser.whereIsTrue(s, r, attrs);
 //            System.out.println("STMT IS :" + res);

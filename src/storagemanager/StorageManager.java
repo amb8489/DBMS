@@ -8,15 +8,21 @@ import catalog.Catalog;
 import common.*;
 import pagebuffer.PageBuffer;
 import java.util.ArrayList;
+import java.util.List;
+
 import filesystem.FileSystem;
+import parsers.WhereParser;
 
 public class StorageManager extends AStorageManager {
 
 
     private static PageBuffer pb;
+    private static WhereParser wp;
 
     public StorageManager() {
+
         pb = new PageBuffer(Catalog.getCatalog().getPageBufferSize());
+        wp = new WhereParser();
     }
 
 
@@ -197,6 +203,43 @@ public class StorageManager extends AStorageManager {
 
         return true;
     }
+
+
+
+    public boolean deleteRecordWhere(ITable table,String where,Boolean removeAllRecords) {
+
+        // page name for head is always at idx zero
+        int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
+
+        ArrayList<Attribute> attributes = table.getAttributes();
+            // loop though all the tables pages in order
+            while (headPtr != -1) {
+
+                Page headPage = pb.getPageFromBuffer("" + headPtr, table);
+                // look though all record for that page
+
+                int recSize = headPage.getPageRecords().size();
+
+                for (int i = recSize-1; i >-1; i--) {
+                    ArrayList<Object> row = headPage.getPageRecords().get(i);
+                    if (removeAllRecords || wp.whereIsTrue(where, row, attributes)) {
+                        VerbosePrint.Verbose = true;
+                        VerbosePrint.print("REMOVING" + row);
+                        VerbosePrint.Verbose = false;
+
+                        headPage.getPageRecords().remove(i);
+                        headPage.wasChanged = true;
+                    }
+                }
+
+                // next page
+                headPtr = headPage.getPtrToNextPage();
+            }
+            return false;
+        }
+
+
+
 
 
     @Override
