@@ -158,7 +158,7 @@ public class Phase2Testers {
         ///////////////////////////////////////////////////
 
 
-        DMLParser.parseDMLStatement("delete from student where uid >= 5;");
+        DMLParser.parseDMLStatement("delete from student where uid >= 5 and classId > 0.0;");
 
 
 

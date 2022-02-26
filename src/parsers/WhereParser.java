@@ -128,31 +128,30 @@ public class WhereParser {
         boolean leftMatch = false;
         boolean rightMatch = false;
 
-        if (left.startsWith("\"") || left.equals(".") ) {
+        Double numLeft = 0.0;
+        Double numRight = 0.0;
+
+        if (left.startsWith("\"") ) {
             leftMatch = true;
 
         } else {
 
-            for (int i = 0; i < left.length(); i++) {
-                char ch = left.charAt(i);
-                if (ch > '9' || ch < '.' || ch == '/') {
-                    leftMatch = true;
-                    break;
-                }
+            try {
+                numLeft = Double.parseDouble(left);
+            }catch (Exception e){
+                leftMatch = true;
             }
         }
 
-        if (right.startsWith("\"") || right.equals(".")) {
+        if (right.startsWith("\"")) {
             rightMatch = true;
 
         } else {
 
-            for (int i = 0; i < right.length(); i++) {
-                char ch = right.charAt(i);
-                if (ch > '9' || ch < '.' || ch == '/') {
-                    rightMatch = true;
-                    break;
-                }
+            try {
+                numRight = Double.parseDouble(left);
+            }catch (Exception e){
+                rightMatch = true;
             }
         }
 
@@ -168,8 +167,8 @@ public class WhereParser {
                 default -> null;
             };
         } else if (!leftMatch && !rightMatch) {
-            Double numLeft = Double.parseDouble(left);
-            Double numRight = Double.parseDouble(right);
+             numLeft = Double.parseDouble(left);
+             numRight = Double.parseDouble(right);
 
             return switch (op) {
                 case "=" -> numLeft.equals(numRight);
@@ -204,12 +203,6 @@ public class WhereParser {
             s = s.replace("<  =", " <= ");
             s = s.replace(">  =", " >= ");
             s = s.replace("! =", " != ");
-
-
-
-
-
-
 
 
             List<String>tokens = StringFormatter.mkTokensFromStr(s);
