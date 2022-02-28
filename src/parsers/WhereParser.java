@@ -137,7 +137,7 @@ public class WhereParser {
         } else {
 
             try {
-                numLeft = Double.parseDouble(left);
+                Double.parseDouble(left);
             }catch (Exception e){
                 leftMatch = true;
             }
@@ -149,7 +149,7 @@ public class WhereParser {
         } else {
 
             try {
-                numRight = Double.parseDouble(left);
+                Double.parseDouble(right);
             }catch (Exception e){
                 rightMatch = true;
             }
@@ -226,6 +226,8 @@ public class WhereParser {
             // loop though tokens
 
             int tokenIdx = 0;
+
+            //todo make sure attribute is actally in the table if its on the right or left of operator like bazzel in write up
             ArrayList<Tuple<Integer, Integer>> IdxsToReplace = new ArrayList<>();
             for (String t : tokens) {
                 // if that token is a column name in the table, (aka an attribute name)
