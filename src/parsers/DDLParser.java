@@ -398,9 +398,6 @@ public class DDLParser {
     public static void main(String[] args) {
 
 
-        //todo create sm and catalog then test
-
-
         DDLParser.parseDDLStatement("""
                 create table foo(
                         baz Integer,

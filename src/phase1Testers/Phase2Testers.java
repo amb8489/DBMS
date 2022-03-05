@@ -108,6 +108,13 @@ public class Phase2Testers {
         sm = AStorageManager.createStorageManager();
 
 
+
+        if(cat.containsTable("student")){
+            System.out.println(((Table)cat.getTable("student")).indicesOfNotNullAttributes);
+
+        }
+
+
         DDLParser.parseDDLStatement("""
                 create table class(
                         name Varchar(10) notnull,
@@ -165,6 +172,7 @@ public class Phase2Testers {
 
 //        sm.purgePageBuffer();
 //        cat.saveToDisk();
+
 
     }
 }

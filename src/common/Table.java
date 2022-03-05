@@ -26,7 +26,7 @@ public class Table implements ITable{
     private Attribute PrimaryKey;
     private ArrayList<Attribute> Attributes;
 
-    private HashSet<Integer> indicesOfNotNullAttributes = new HashSet<>();
+    public HashSet<Integer> indicesOfNotNullAttributes = new HashSet<>();
 
     private int pkeyIdx = -1;
     private ArrayList<ForeignKey> ForeignKeys= new ArrayList<>();

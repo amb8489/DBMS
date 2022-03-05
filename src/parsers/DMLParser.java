@@ -63,8 +63,6 @@ public class DMLParser {
                 ((StorageManager) StorageManager.getStorageManager()).deleteRecordWhere(table, "", removeEverything);
                 return;
             }
-
-
             //WHERE CLAUSE
             String Where = String.join(" ", tokens.subList(4, tokens.size())).replace(";", "");
             System.out.println("where{" + Where + "}");
