@@ -2,11 +2,10 @@ package parsers;
 
 import catalog.Catalog;
 import common.ITable;
-import common.Table;
+import common.Utilities;
 import common.VerbosePrint;
 import storagemanager.StorageManager;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /*
@@ -38,17 +37,15 @@ public class DMLParser {
         return true;
     }
 
-    // delete from <name> where <condition>
+    // delete from <tableName> where <condition>
     private static void deleteFromTable(String stmt) {
 
-
         try {
-
 
             // removes redundant spaces and new lines
             stmt = stmt.replace(";", "");
             // tokenizing tokens
-            List<String> tokens = StringFormatter.mkTokensFromStr(stmt);
+            List<String> tokens = Utilities.mkTokensFromStr(stmt);
 
             // getting the tablet o remove from
             String tableName = tokens.get(2);

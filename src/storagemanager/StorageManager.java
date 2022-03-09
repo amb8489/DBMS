@@ -372,7 +372,7 @@ public class StorageManager extends AStorageManager {
                 return false;
             }
             // update table first
-            Catalog.getCatalog().getTable(table.getTableName()).getAttributes().remove(attrIndex);
+            table.getAttributes().remove(attrIndex);
 
             // page name for head is always at idx zero
             int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
@@ -383,7 +383,9 @@ public class StorageManager extends AStorageManager {
                 Page headPage = pb.getPageFromBuffer("" + headPtr, table);
                 // delete that col from all recs
 
-                headPage.getPageRecords().forEach(r -> r.remove(attrIndex));
+                // for each row in rows remove row[i] from the row
+                headPage.getPageRecords().forEach(row -> row.remove(attrIndex));
+                headPage.wasChanged = true;
                 // next page
                 headPtr = headPage.getPtrToNextPage();
             }

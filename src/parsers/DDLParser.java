@@ -1,12 +1,9 @@
 package parsers;
 
 import catalog.Catalog;
-import common.Attribute;
-import common.ForeignKey;
-import common.Table;
-import common.VerbosePrint;
+import common.*;
+import storagemanager.StorageManager;
 
-import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -26,16 +23,6 @@ import java.util.stream.Stream;
  */
 public class DDLParser {
 
-    // list of key words not allowed for use for table/ column names
-
-    //TODO add types
-    // possible move
-    // split(,#)
-    private static Set<String> KEYWORDS = Stream.of(
-            "create", "table", "drop", "insert", "into", "delete", "from", "where", "update",
-            "notnull", "primarykey", "foreignkey", "references", "add", "default", "set",
-            "values", "null").collect(Collectors.toCollection(HashSet::new));
-
 
     /**
      * This function will parse and execute DDL statements (create table, create index, etc)
@@ -46,7 +33,7 @@ public class DDLParser {
 
     public static boolean parseDDLStatement(String stmt) {
 
-        stmt = StringFormatter.format(stmt);
+        stmt = Utilities.format(stmt);
         System.out.println(stmt);
 
         if (stmt.toLowerCase().startsWith("create table")) {
@@ -55,14 +42,14 @@ public class DDLParser {
             return dropTable(stmt);
         } else if (stmt.toLowerCase().startsWith("alter table")) {
             return alterTable(stmt);
+        }else{
+            System.err.println(stmt+" is not a DDL statement");
+            return false;
         }
-
-        return false;
     }
     // will create and add table to the DB given a Create table statement
     // TODO check for dups on all p attributes and pk check that table doesn't already exist
-
-    // check attributes exits when adding
+    // TODO check attributes exits when adding
     private static boolean CreateTable(String stmt) {
 
         try {
@@ -84,7 +71,7 @@ public class DDLParser {
             TableName = stmt.substring(0, stmt.indexOf("("));
 
             // check that name is not keyword
-            if (isiIllLegalName(TableName.toLowerCase())) {
+            if (Utilities.isiIllLegalName(TableName.toLowerCase())) {
                 return false;
             }
             VerbosePrint.print("table name" + TableName);
@@ -130,7 +117,7 @@ public class DDLParser {
 
 
                     // check pk name is not keyword
-                    if (isiIllLegalName(pk.toLowerCase())) {
+                    if (Utilities.isiIllLegalName(pk.toLowerCase())) {
                         return false;
                     }
                     VerbosePrint.print("primarykey: {" + pk + "}");
@@ -169,7 +156,7 @@ public class DDLParser {
                     String[] fkSpit = fk.split(" ");
 
                     // check for keyword is name
-                    if (fkSpit.length < 3 || isiIllLegalName(fkSpit[0].toLowerCase())) {
+                    if (fkSpit.length < 3 || Utilities.isiIllLegalName(fkSpit[0].toLowerCase())) {
                         System.err.println("ERROR: foreignkey name was a keyword");
                         return false;
                     }
@@ -191,11 +178,11 @@ public class DDLParser {
 
 
                     // check for keyword in name
-                    if (isiIllLegalName(AttributeName.toLowerCase())) {
+                    if (Utilities.isiIllLegalName(AttributeName.toLowerCase())) {
                         return false;
                     }
                     // check for bad type of attribute
-                    if (!isLegalType(AttributeSplit[1])) {
+                    if (!Utilities.isLegalType(AttributeSplit[1])) {
                         System.err.println("bad type:" + AttributeSplit[1]);
                         return false;
                     }
@@ -281,50 +268,7 @@ public class DDLParser {
         }
     }
 
-    // check that a type for an atrribute is legal
-    private static boolean isLegalType(String TypeName) {
-        switch (TypeName) {
-            case "Integer":
-                return true;
-            case "Double":
-                return true;
-            case "Boolean":
-                return true;
-            default:
-                if (TypeName.startsWith("Char(") || TypeName.startsWith("Varchar(")) {
-                    int Lparen = TypeName.indexOf("(");
-                    int Rparen = TypeName.indexOf(")");
-
-                    // ()
-                    if (Rparen == Lparen + 1 || Rparen == -1) {
-                        return false;
-                    }
-                    //(nums)
-                    String num = TypeName.substring(Lparen + 1, Rparen);
-                    // all numbers in str
-                    return num.chars().allMatch(Character::isDigit);
-                }
-        }
-        return false;
-
-    }
-
-    // will decide if a name follows rules of
-    // 1) not being a key word && 2) starting with a letter and only having alphanumeric
-    private static boolean isiIllLegalName(String name) {
-
-        if (KEYWORDS.contains(name)) {
-            System.err.println("name: " + name + " is a keyword and cant be used");
-            return true;
-        }
-        if (!(name.chars().allMatch(Character::isLetterOrDigit) && (name.charAt(0) >= 'A' && name.charAt(0) <= 'z'))) {
-            System.err.println("name must start with letter and only contain alphanumerics");
-            return true;
-        }
-
-        return false;
-    }
-
+    // will drop a table from db
     public static boolean dropTable(String stmt) {
         try {
 
@@ -349,6 +293,12 @@ public class DDLParser {
     }
 
     public static boolean alterTable(String stmt) {
+
+        // will guarantee no funky spacing will mess up the parsing
+        stmt = stmt.replace(";", "");
+        stmt = Utilities.format(stmt);
+
+
         /**
          * alter table <name> drop <a_name>;
          * alter table <name> add <a_name> <a_type>;
@@ -356,33 +306,106 @@ public class DDLParser {
          */
         String TableName;
         String command;
-        String attribute;
+        String attributeName;
         String type;
         String[] stmtTokens;
         String defaultValue;
 
         //-----------------find the table name key-----------------
 
-        stmt = stmt.substring(12); //<name> command <a_name> <a_type> default <value>
-        stmt = stmt.replace("\n", "");
-        stmtTokens = stmt.split(" ;");  // ??
-        TableName = stmtTokens[0]; //<name>
-        command = stmtTokens[1].toLowerCase();
-        attribute = stmtTokens[2];
-        if (command.equals("add")) {
-            type = stmtTokens[3];
-            if (stmtTokens.length > 4) {
-                defaultValue = stmtTokens[4];
-                //TODO: add the attribute
-            } else {
-                //TODO: add the attribute
-            }
-        } else if (command.equals("drop")) {
-            //TODO: no more parsing, just drop the thing
-        } else {
-            //TODO: figure out our error handling across application
+
+        // removing "alter table " from front of the string
+        stmt = stmt.substring(12);
+
+        // tokenizing into [tableName, command, attrib_name, attrib_type, default ,value]
+        // first three should  always  exist
+        stmtTokens = stmt.split(" ");  // ??
+
+        // check for first three should  always  exist
+        if (stmtTokens.length < 3){
+            System.err.println("bad format in alter table: "+stmt);
+            return false;
         }
 
+
+        // getting table name
+        TableName = stmtTokens[0];
+
+        // check that table exist
+        if(!Catalog.getCatalog().containsTable(TableName)){
+            System.err.println("table: "+TableName+" does not exist");
+            return false;
+        }
+
+        // getting the command can be add/drop
+        command = stmtTokens[1].toLowerCase();
+
+        if(!command.equals("add") && !command.equals("drop") ){
+            System.err.println(command+" is not a command for alter table");
+            return false;
+        }
+
+
+        attributeName = stmtTokens[2];
+
+
+
+
+        if (command.equals("add")) {
+            // if were adding we need at least 4 tokens
+            if (stmtTokens.length < 4){
+                System.err.println("bad format in alter table missing arguments in statement: "+stmt);
+                return false;
+            }
+            // check new name is legal
+            if (Utilities.isiIllLegalName(attributeName.toLowerCase())) {
+                System.err.println("Not a legal name: "+attributeName);
+                return false;
+            }
+
+            // check that attribute doesnt alreaady exist in table
+
+            for(Attribute attribute: Catalog.getCatalog().getTable(TableName).getAttributes()){
+                if(attribute.getAttributeName().equals(attributeName)){
+                    System.err.println("attribute "+attributeName+" already exists in table: "+TableName);
+                    return false;
+                }
+            }
+
+            // getting attribute type
+            type = stmtTokens[3];
+
+            // check that type is a legal type
+            if(!Utilities.isLegalType(type)){
+                System.err.println("type "+type+" is not a legal type");
+                return false;
+            }
+
+            // we have a default val
+            if (stmtTokens.length > 4) {
+
+                //TODO check that default val type matches the type of the attribute
+                defaultValue = stmtTokens[4];
+                //TODO: add the attribute
+            }
+            //TODO: add the attribute
+
+        } else {
+            // dropping attribute if it exist in the table
+
+            int attribIdx = 0;
+            ITable table = Catalog.getCatalog().getTable(TableName);
+
+            for(Attribute attribute: table.getAttributes()){
+                if(attribute.getAttributeName().equals(attributeName)){
+                    return StorageManager.getStorageManager().dropAttributeValue(table,attribIdx);
+                }
+                attribIdx++;
+            }
+            // attribute could not be found in the table
+            System.err.println("attribute "+attributeName+" does not exists in table: "+TableName);
+            return false;
+        }
 
         return false;
     }
@@ -390,13 +413,27 @@ public class DDLParser {
     public static void main(String[] args) {
 
 
+//        DDLParser.parseDDLStatement("""
+//                create table foo(
+//                        baz Integer,
+//                        bar Double notnull,
+//                        primarykey( bar ),
+//                        foreignkey( bar ) references bazzle( baz )   )   ;""");
+//    }
+
+
         DDLParser.parseDDLStatement("""
-                create table foo(
-                        baz Integer,
-                        bar Double notnull,
-                        primarykey( bar ),
-                        foreignkey( bar ) references bazzle( baz )   )   ;""");
+                alter    
+                
+                table   
+                bigfooman99          
+                
+                
+                
+                add fish String;
+                """);
     }
-
-
 }
+
+//alter table bigfooman99 add <a_name> <a_type>;
+//alter table <name> add <a_name> <a_type> default <value>;

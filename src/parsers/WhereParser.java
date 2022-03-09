@@ -2,6 +2,7 @@ package parsers;
 
 
 import common.Attribute;
+import common.Utilities;
 
 import java.util.*;
 
@@ -244,7 +245,7 @@ public class WhereParser {
             s = s.replace("! =", " != ");
 
             // tokenize the string by spaces
-            List<String> tokens = StringFormatter.mkTokensFromStr(s);
+            List<String> tokens = Utilities.mkTokensFromStr(s);
 
 
             // finding the the WHERE token, we only care what comes after the "where"
