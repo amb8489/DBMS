@@ -37,7 +37,6 @@ public class DDLParser {
             "values", "null").collect(Collectors.toCollection(HashSet::new));
 
 
-
     /**
      * This function will parse and execute DDL statements (create table, create index, etc)
      *
@@ -52,9 +51,9 @@ public class DDLParser {
 
         if (stmt.toLowerCase().startsWith("create table")) {
             return CreateTable(stmt);
-        }else if (stmt.toLowerCase().startsWith("drop table")) {
+        } else if (stmt.toLowerCase().startsWith("drop table")) {
             return dropTable(stmt);
-        }else if (stmt.toLowerCase().startsWith("alter table")) {
+        } else if (stmt.toLowerCase().startsWith("alter table")) {
             return alterTable(stmt);
         }
 
@@ -67,7 +66,7 @@ public class DDLParser {
     private static boolean CreateTable(String stmt) {
 
         try {
-            stmt =stmt.replace(";","");
+            stmt = stmt.replace(";", "");
 
             // vars for the new table
             ArrayList<Attribute> TableAttributes = new ArrayList<>();
@@ -175,7 +174,7 @@ public class DDLParser {
                         return false;
                     }
 
-                    VerbosePrint.print("fk: "+Arrays.toString(fkSpit));
+                    VerbosePrint.print("fk: " + Arrays.toString(fkSpit));
 
                     // mk new fk
                     TableForeignkeys.add(new ForeignKey(fkSpit[1], fkSpit[2], fkSpit[0]));
@@ -211,16 +210,15 @@ public class DDLParser {
                             "} CONSTRAINTS: " + AttributeConstraint);
 
 
-                    Attribute newAttribute= new Attribute(AttributeName, AttributeType);
+                    Attribute newAttribute = new Attribute(AttributeName, AttributeType);
                     TableAttributes.add(newAttribute);
 
                     // check constraints for attribute
                     for (String constraint : AttributeConstraint) {
 
-                        if (constraint.equalsIgnoreCase("notnull") ) {
+                        if (constraint.equalsIgnoreCase("notnull")) {
                             notNullIndexs.add(numberOfNewAttribs);
-                        }else
-                        if (constraint.equalsIgnoreCase("primarykey") ){
+                        } else if (constraint.equalsIgnoreCase("primarykey")) {
                             primaryKey = newAttribute;
                             tableHasPk = true;
                             notNullIndexs.add(numberOfNewAttribs);
@@ -251,20 +249,17 @@ public class DDLParser {
                 Table tab = (Table) cat.getTable(fk.getRefTableName());
 
 
-
                 boolean hasAttrib = false;
                 for (Attribute a : tab.getAttributes()) {
                     if (a.getAttributeName().equals(fk.getRefAttribute())) {
-                        hasAttrib=true;
+                        hasAttrib = true;
                         break;
                     }
                 }
-                if (!hasAttrib){
-                    System.err.println("Attribute "+fk.getRefAttribute() +" does not does not exist in table "+ fk.getRefTableName());
+                if (!hasAttrib) {
+                    System.err.println("Attribute " + fk.getRefAttribute() + " does not does not exist in table " + fk.getRefTableName());
                     return false;
                 }
-
-
 
 
                 if (!tab.getAttrByName(fk.getRefAttribute()).getAttributeType().equals(primaryKey.getAttributeType())) {
@@ -285,6 +280,7 @@ public class DDLParser {
             return false;
         }
     }
+
     // check that a type for an atrribute is legal
     private static boolean isLegalType(String TypeName) {
         switch (TypeName) {
@@ -312,6 +308,7 @@ public class DDLParser {
         return false;
 
     }
+
     // will decide if a name follows rules of
     // 1) not being a key word && 2) starting with a letter and only having alphanumeric
     private static boolean isiIllLegalName(String name) {
@@ -328,7 +325,7 @@ public class DDLParser {
         return false;
     }
 
-    public static boolean dropTable(String stmt){
+    public static boolean dropTable(String stmt) {
         try {
 
             String TableName;
@@ -336,7 +333,7 @@ public class DDLParser {
             //-----------------find the table name key-----------------
             stmt = stmt.substring(11);
             stmt = stmt.replace("\n", "");
-            TableName = stmt.substring(0, stmt.indexOf(";")-1); //TODO: find out if semicolor will always be here
+            TableName = stmt.substring(0, stmt.indexOf(";") - 1); //TODO: find out if semicolor will always be here
             TableName = TableName.trim();
 
             Catalog cat = (Catalog) Catalog.getCatalog();
@@ -368,28 +365,23 @@ public class DDLParser {
 
         stmt = stmt.substring(12); //<name> command <a_name> <a_type> default <value>
         stmt = stmt.replace("\n", "");
-        stmtTokens= stmt.split(" ;");  // ??
+        stmtTokens = stmt.split(" ;");  // ??
         TableName = stmtTokens[0]; //<name>
         command = stmtTokens[1].toLowerCase();
         attribute = stmtTokens[2];
-        if (command.equals("add")){
+        if (command.equals("add")) {
             type = stmtTokens[3];
-            if (stmtTokens.length > 4){
+            if (stmtTokens.length > 4) {
                 defaultValue = stmtTokens[4];
                 //TODO: add the attribute
-            }
-            else{
+            } else {
                 //TODO: add the attribute
             }
-        } else if (command.equals("drop")){
+        } else if (command.equals("drop")) {
             //TODO: no more parsing, just drop the thing
-        }
-        else{
+        } else {
             //TODO: figure out our error handling across application
         }
-
-
-
 
 
         return false;
@@ -405,8 +397,6 @@ public class DDLParser {
                         primarykey( bar ),
                         foreignkey( bar ) references bazzle( baz )   )   ;""");
     }
-
-
 
 
 }

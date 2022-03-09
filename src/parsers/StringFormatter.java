@@ -36,7 +36,7 @@ public class StringFormatter {
                     }
                     SpaceAlreadySeen = false;
                 }
-            }else {
+            } else {
                 str.append(ch);
                 if (ch == '\"') {
                     insideQuoats = false;
@@ -48,10 +48,10 @@ public class StringFormatter {
     }
 
 
-        public static void main (String[]args){
-            String stmt = "     hi     \"Aaron    Berghash\"          is       here";
-            System.out.println(format(stmt));
-        }
+    public static void main(String[] args) {
+        String stmt = "     hi     \"Aaron    Berghash\"          is       here";
+        System.out.println(format(stmt));
+    }
 
     public static List<String> mkTokensFromStr(String stmt) {
         stmt = format(stmt);

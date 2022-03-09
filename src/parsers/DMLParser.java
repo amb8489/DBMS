@@ -46,28 +46,30 @@ public class DMLParser {
 
 
             // removes redundant spaces and new lines
-            stmt = stmt.replace(";","");
+            stmt = stmt.replace(";", "");
+            // tokenizing tokens
             List<String> tokens = StringFormatter.mkTokensFromStr(stmt);
-            System.out.println(tokens);
 
+            // getting the tablet o remove from
             String tableName = tokens.get(2);
 
-            System.out.println("deleting from table name:" + tableName);
+            VerbosePrint.print("deleting from table name:" + tableName);
 
             // cehck table exists
             ITable table = Catalog.getCatalog().getTable(tableName);
 
+            // if no where clause then remove all from table
             boolean removeEverything = tokens.size() == 3;
             if (removeEverything) {
                 VerbosePrint.print("removing everyting from table : " + tableName);
-                ((StorageManager) StorageManager.getStorageManager()).deleteRecordWhere(table, "", removeEverything);
+                ((StorageManager) StorageManager.getStorageManager()).deleteRecordWhere(table, "", true);
                 return;
             }
-            //WHERE CLAUSE
+            //WHERE CLAUSE found
             String Where = String.join(" ", tokens.subList(4, tokens.size())).replace(";", "");
             System.out.println("where{" + Where + "}");
-            // deleteing where
-            ((StorageManager) StorageManager.getStorageManager()).deleteRecordWhere(table, Where, removeEverything);
+            // deleteing where is true
+            ((StorageManager) StorageManager.getStorageManager()).deleteRecordWhere(table, Where, false);
 
 
         } catch (Exception e) {

@@ -7,6 +7,7 @@ package storagemanager;
 import catalog.Catalog;
 import common.*;
 import pagebuffer.PageBuffer;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,13 +27,12 @@ public class StorageManager extends AStorageManager {
     }
 
 
-
     @Override
     public boolean clearTableData(ITable table) {
         if (table instanceof Table workingTable) {  //cool piece of code IntelliJ made for me.
             // workingTable is a "patter var" https://openjdk.java.net/jeps/394
             ArrayList<Integer> tablePages = workingTable.getPagesThatBelongToMe();
-            for(int page: tablePages){
+            for (int page : tablePages) {
                 FileSystem.deletePageFile(page);
             }
 
@@ -136,12 +136,12 @@ public class StorageManager extends AStorageManager {
 
                 switch (pk_type.charAt(0)) {
                     case 'I':
-                        int resI= ((Integer)record.get(pkidx)).compareTo((Integer)row.get(pkidx));
-                        if( resI == 0){
+                        int resI = ((Integer) record.get(pkidx)).compareTo((Integer) row.get(pkidx));
+                        if (resI == 0) {
                             return false;
                         }
 
-                        if ( resI< 0) {
+                        if (resI < 0) {
 
                             headPage.getPageRecords().add(idx, record);
                             headPage.wasChanged = true;
@@ -150,12 +150,12 @@ public class StorageManager extends AStorageManager {
                         break;
                     case 'D':
 
-                        int resD= ((Double)record.get(pkidx)).compareTo((Double)row.get(pkidx));
-                        if( resD == 0){
+                        int resD = ((Double) record.get(pkidx)).compareTo((Double) row.get(pkidx));
+                        if (resD == 0) {
                             return false;
                         }
 
-                        if ( resD< 0) {
+                        if (resD < 0) {
                             headPage.getPageRecords().add(idx, record);
                             headPage.wasChanged = true;
                             return true;
@@ -164,12 +164,12 @@ public class StorageManager extends AStorageManager {
 
                     case 'B':
 
-                        int resB= ((Boolean)record.get(pkidx)).compareTo((Boolean)row.get(pkidx));
-                        if( resB == 0){
+                        int resB = ((Boolean) record.get(pkidx)).compareTo((Boolean) row.get(pkidx));
+                        if (resB == 0) {
                             return false;
                         }
 
-                        if ( resB< 0) {
+                        if (resB < 0) {
                             headPage.getPageRecords().add(idx, record);
                             headPage.wasChanged = true;
                             return true;
@@ -177,8 +177,8 @@ public class StorageManager extends AStorageManager {
                         break;
 
                     default:
-                        int resS= ((record.get(pkidx).toString()).compareTo(row.get(pkidx).toString()));
-                        if( resS == 0){
+                        int resS = ((record.get(pkidx).toString()).compareTo(row.get(pkidx).toString()));
+                        if (resS == 0) {
                             return false;
                         }
                         if (resS < 0) {
@@ -205,41 +205,37 @@ public class StorageManager extends AStorageManager {
     }
 
 
-
-    public boolean deleteRecordWhere(ITable table,String where,Boolean removeAllRecords) {
+    public boolean deleteRecordWhere(ITable table, String where, Boolean removeAllRecords) {
 
         // page name for head is always at idx zero
         int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
 
         ArrayList<Attribute> attributes = table.getAttributes();
-            // loop though all the tables pages in order
-            while (headPtr != -1) {
+        // loop though all the tables pages in order
+        while (headPtr != -1) {
 
-                Page headPage = pb.getPageFromBuffer("" + headPtr, table);
-                // look though all record for that page
+            Page headPage = pb.getPageFromBuffer("" + headPtr, table);
+            // look though all record for that page
 
-                int recSize = headPage.getPageRecords().size();
+            int recSize = headPage.getPageRecords().size();
 
-                for (int i = recSize-1; i >-1; i--) {
-                    ArrayList<Object> row = headPage.getPageRecords().get(i);
-                    if (removeAllRecords || wp.whereIsTrue(where, row, attributes)) {
-                        VerbosePrint.Verbose = true;
-                        VerbosePrint.print("REMOVING" + row);
-                        VerbosePrint.Verbose = false;
+            for (int i = recSize - 1; i > -1; i--) {
+                ArrayList<Object> row = headPage.getPageRecords().get(i);
+                if (removeAllRecords || wp.whereIsTrue(where, row, attributes)) {
+                    VerbosePrint.Verbose = true;
+                    VerbosePrint.print("REMOVING" + row);
+                    VerbosePrint.Verbose = false;
 
-                        headPage.getPageRecords().remove(i);
-                        headPage.wasChanged = true;
-                    }
+                    headPage.getPageRecords().remove(i);
+                    headPage.wasChanged = true;
                 }
-
-                // next page
-                headPtr = headPage.getPtrToNextPage();
             }
-            return false;
+
+            // next page
+            headPtr = headPage.getPtrToNextPage();
         }
-
-
-
+        return false;
+    }
 
 
     @Override
@@ -260,7 +256,7 @@ public class StorageManager extends AStorageManager {
             for (ArrayList<Object> row : headPage.getPageRecords()) {
 
                 if (row.get(pkidx).equals(primaryKey)) {
-                    VerbosePrint.print("REMOVING"+row);
+                    VerbosePrint.print("REMOVING" + row);
 
                     headPage.getPageRecords().remove(idx);
 
@@ -355,8 +351,8 @@ public class StorageManager extends AStorageManager {
 
 
             return true;
-        }catch (Exception e){
-            System.err.println("failure adding attribute from table "+table.getTableName());
+        } catch (Exception e) {
+            System.err.println("failure adding attribute from table " + table.getTableName());
             return false;
         }
     }
@@ -370,8 +366,8 @@ public class StorageManager extends AStorageManager {
 
         try {
 
-            if (attrIndex>=table.getAttributes().size()){
-                System.err.println("Table cant remove attribute at index "+attrIndex+" because" +
+            if (attrIndex >= table.getAttributes().size()) {
+                System.err.println("Table cant remove attribute at index " + attrIndex + " because" +
                         " table doesn't have that many attributes");
                 return false;
             }
@@ -394,8 +390,8 @@ public class StorageManager extends AStorageManager {
 
 
             return true;
-        }catch (Exception e){
-            System.err.println("failure removing attribute at index "+attrIndex+" from table "+table.getTableName());
+        } catch (Exception e) {
+            System.err.println("failure removing attribute at index " + attrIndex + " from table " + table.getTableName());
             return false;
         }
     }
