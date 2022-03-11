@@ -19,16 +19,6 @@ public class Phase2Testers {
     private static AStorageManager sm;
 
 
-
-
-
-
-
-
-
-
-
-
     private static String getSaltString(int length) {
         String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
         StringBuilder salt = new StringBuilder();
@@ -40,7 +30,9 @@ public class Phase2Testers {
         return salt.toString();
 
     }
+
     public static int tot = 0;
+
     // makes a random record with the schema
     public static ArrayList<Object> mkRandomRec(Table table) {
         tot++;
@@ -69,9 +61,9 @@ public class Phase2Testers {
             // read in what the schema says is next
             switch (schema.get(idx)) {
                 case "Integer":
-                    if (idx == table.pkIdx()){
+                    if (idx == table.pkIdx()) {
                         rec.add(tot);
-                    }else {
+                    } else {
                         rec.add(r.nextInt());
 
                     }
@@ -98,10 +90,6 @@ public class Phase2Testers {
     }
 
 
-
-
-
-
     public static void main(String[] args) {
 
         // mk catalog
@@ -109,23 +97,22 @@ public class Phase2Testers {
         sm = AStorageManager.createStorageManager();
 
 
-
-        if(cat.containsTable("student")){
-            System.out.println(((Table)cat.getTable("student")).indicesOfNotNullAttributes);
+        if (cat.containsTable("student")) {
+            System.out.println(((Table) cat.getTable("student")).indicesOfNotNullAttributes);
 
         }
 
 
         DDLParser.parseDDLStatement("""
-                create table class(
-                        name Varchar(10) notnull,
-                        uid Integer primarykey,
-                        primarykey( uid )         
-               );"""
+                 create table class(
+                         name Varchar(10) notnull,
+                         uid Integer primarykey,
+                         primarykey( uid )        
+                );"""
         );
         boolean tableMade = cat.containsTable("class");
         System.out.println(cat.getTable("class").tableToString());
-        System.out.println("created table class:"+tableMade);
+        System.out.println("created table class:" + tableMade);
 
 
         System.out.println("----------------------------------------------");
@@ -139,17 +126,18 @@ public class Phase2Testers {
                         gpa Double,
                         classId Integer,
                         primarykey( uid ),
+                        foreignkey( classId ) references class( uid ),
                         foreignkey( classId ) references class( uid )
+
                 );"""
         );
 
         tableMade = cat.containsTable("student");
         System.out.println(cat.getTable("student").tableToString());
-        System.out.println("created table student:"+ tableMade);
+        System.out.println("created table student:" + tableMade);
 
         System.out.println("----------------------------------------------");
         System.out.println("----------------------------------------------");
-
 
 
         int numberOfRows = 10;
@@ -160,7 +148,7 @@ public class Phase2Testers {
         for (int i = 0; i < numberOfRows; i++) {
             ArrayList<Object> row = mkRandomRec((Table) studentTab);
             System.out.println(row);
-            sm.insertRecord(studentTab,row);
+            sm.insertRecord(studentTab, row);
         }
 
         ///////////////////////////////////////////////////
@@ -176,7 +164,7 @@ public class Phase2Testers {
                 """);
         System.out.println(studentTab.tableToString());
 
-        for(ArrayList<Object>row:StorageManager.getStorageManager().getRecords(studentTab)){
+        for (ArrayList<Object> row : StorageManager.getStorageManager().getRecords(studentTab)) {
             System.out.println(row);
         }
 
@@ -189,7 +177,7 @@ public class Phase2Testers {
 
         System.out.println(studentTab.tableToString());
 
-        for(ArrayList<Object>row:StorageManager.getStorageManager().getRecords(studentTab)){
+        for (ArrayList<Object> row : StorageManager.getStorageManager().getRecords(studentTab)) {
             System.out.println(row);
         }
 
@@ -201,10 +189,9 @@ public class Phase2Testers {
                 """);
         System.out.println(studentTab.tableToString());
 
-        for(ArrayList<Object>row:StorageManager.getStorageManager().getRecords(studentTab)){
+        for (ArrayList<Object> row : StorageManager.getStorageManager().getRecords(studentTab)) {
             System.out.println(row);
         }
-
 
 
 //        sm.purgePageBuffer();

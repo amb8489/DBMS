@@ -174,7 +174,7 @@ public class Table implements ITable{
 
         // test if fk already exists
         for(ForeignKey foreignKey :ForeignKeys){
-            if (foreignKey.getAttrName().equals(fk.getAttrName())){
+            if (foreignKey.toString().equals(fk.toString())){
                 System.err.println("Error: Cant add ForeignKey because it already exists");
                 return false;
             }

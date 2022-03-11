@@ -255,7 +255,13 @@ public class DDLParser {
             }
             // make new table
             cat.addTable(TableName, TableAttributes, primaryKey);
-            ((Table) cat.getTable(TableName)).setForeignKeys(TableForeignkeys);
+
+            Table newTab = ((Table) cat.getTable(TableName));
+            for (ForeignKey fk : TableForeignkeys) {
+                if(!newTab.addForeignKey(fk)){
+                    return false;
+                }
+            }
             ((Table) cat.getTable(TableName)).setNotNullIdxs(notNullIndexs);
 
             return true;

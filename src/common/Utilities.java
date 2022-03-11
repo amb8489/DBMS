@@ -20,7 +20,6 @@ public class Utilities {
             "values", "null").collect(Collectors.toCollection(HashSet::new));
 
 
-
     // check that a type for an atrribute is legal
     public static boolean isNotLegalType(String TypeName) {
         switch (TypeName) {
@@ -140,53 +139,45 @@ public class Utilities {
 
     public static String whatType(String s) {
 
-            if(s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false")){
-                return "Boolean";
-            }
+        if (s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false")) {
+            return "Boolean";
+        }
 
-            // is it a string?
-            if(s.contains("\"")){
+        // is it a string?
+        if (s.contains("\"")) {
+            return "String";
+        }
+
+
+        // looking for any char, no base 10 number has a char in it
+        for (int i = 0; i < s.length(); i++) {
+            if (Character.isLetter(s.charAt(i))) {
                 return "String";
             }
+        }
 
+        //number can have a . but only one
+        boolean periodSeen = false;
+        for (int i = 0; i < s.length(); i++) {
 
-            // looking for any char, no base 10 number has a char in it
-            for (int i = 0; i <s.length(); i++) {
-                if(Character.isLetter(s.charAt(i)) ) {
-                    return "String";
+            // check for only one .
+            if (s.charAt(i) == '.') {
+                if (!periodSeen) {
+                    periodSeen = true;
+                } else {
+                    return null;
                 }
+
             }
-
-            //number can have a . but only one
-            boolean periodSeen = false;
-            for (int i = 0; i <s.length(); i++) {
-
-                // check for only one .
-                if (s.charAt(i) == '.') {
-                    if (!periodSeen) {
-                        periodSeen = true;
-                    } else {
-                        return null;
-                    }
-
-                }
-            }
+        }
 
 
-            if (periodSeen) {
-                return "Double";
-            }
+        if (periodSeen) {
+            return "Double";
+        }
 
-            // if just numbers with no . then int
-            return "Integer";
-
-
-
-
-
-
-
-
+        // if just numbers with no . then int
+        return "Integer";
 
 
     }
