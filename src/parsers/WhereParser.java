@@ -135,11 +135,13 @@ public class WhereParser {
 
         // if op is a and/or then we know bothvals are truth vals (t/f)
 
-            if (! ((left.equals("true") || left.equals("false")) && (right.equals("true") || right.equals("false")))){
+        if (((left.equals("true") || left.equals("false")) || (right.equals("true") || right.equals("false")))) {
+
+            if (!((left.equals("true") || left.equals("false")) && (right.equals("true") || right.equals("false")))) {
                 System.err.println("COMPARING DIFFERENT TYPES:" + left + " with " + right);
                 return false;
             }
-
+        }
 
         switch (op.toLowerCase()) {
 

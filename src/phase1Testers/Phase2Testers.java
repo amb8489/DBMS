@@ -8,6 +8,7 @@ import common.Table;
 import parsers.DDLParser;
 import parsers.DMLParser;
 import storagemanager.AStorageManager;
+import storagemanager.StorageManager;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -167,6 +168,42 @@ public class Phase2Testers {
 
         DMLParser.parseDMLStatement("delete from student where uid >= 5 and classId > 0;");
 
+        DDLParser.parseDDLStatement("""
+                alter  
+                table   
+                student
+                add fish Double 10.0;
+                """);
+        System.out.println(studentTab.tableToString());
+
+        for(ArrayList<Object>row:StorageManager.getStorageManager().getRecords(studentTab)){
+            System.out.println(row);
+        }
+
+        DDLParser.parseDDLStatement("""
+                alter  
+                table   
+                student
+                drop fish;
+                """);
+
+        System.out.println(studentTab.tableToString());
+
+        for(ArrayList<Object>row:StorageManager.getStorageManager().getRecords(studentTab)){
+            System.out.println(row);
+        }
+
+        DDLParser.parseDDLStatement("""
+                alter  
+                table   
+                student
+                add cat Varchar(10);
+                """);
+        System.out.println(studentTab.tableToString());
+
+        for(ArrayList<Object>row:StorageManager.getStorageManager().getRecords(studentTab)){
+            System.out.println(row);
+        }
 
 
 

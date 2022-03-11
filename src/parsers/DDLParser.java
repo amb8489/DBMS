@@ -5,8 +5,6 @@ import common.*;
 import storagemanager.StorageManager;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /*
   Class for DDL parser
@@ -183,7 +181,7 @@ public class DDLParser {
                         return false;
                     }
                     // check for bad type of attribute
-                    if (!Utilities.isLegalType(AttributeSplit[1])) {
+                    if (Utilities.isNotLegalType(AttributeSplit[1])) {
                         System.err.println("bad type:" + AttributeSplit[1]);
                         return false;
                     }
@@ -374,9 +372,8 @@ public class DDLParser {
 
             // getting attribute type
             type = stmtTokens[3];
-
             // check that type is a legal type
-            if (!Utilities.isLegalType(type)) {
+            if (Utilities.isNotLegalType(type)) {
                 System.err.println("type " + type + " is not a legal type");
                 return false;
             }
@@ -388,6 +385,7 @@ public class DDLParser {
                 //check that default val type matches the type of the attribute
 
                 String t = Utilities.whatType(stmtTokens[4]);
+
                 if (t == null) {
                     System.err.println("type " + type + " is not a legal type");
                     return false;

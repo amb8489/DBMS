@@ -22,14 +22,12 @@ public class Utilities {
 
 
     // check that a type for an atrribute is legal
-    public static boolean isLegalType(String TypeName) {
+    public static boolean isNotLegalType(String TypeName) {
         switch (TypeName) {
             case "Integer":
-                return true;
             case "Double":
-                return true;
             case "Boolean":
-                return true;
+                return false;
             default:
                 if (TypeName.startsWith("Char(") || TypeName.startsWith("Varchar(")) {
                     int Lparen = TypeName.indexOf("(");
@@ -37,15 +35,15 @@ public class Utilities {
 
                     // ()
                     if (Rparen == Lparen + 1 || Rparen == -1) {
-                        return false;
+                        return true;
                     }
                     //(nums)
                     String num = TypeName.substring(Lparen + 1, Rparen);
                     // all numbers in str
-                    return num.chars().allMatch(Character::isDigit);
+                    return !num.chars().allMatch(Character::isDigit);
                 }
         }
-        return false;
+        return true;
 
     }
 
@@ -164,12 +162,16 @@ public class Utilities {
             for (int i = 0; i <s.length(); i++) {
 
                 // check for only one .
-                if(s.charAt(i) == '.' && !periodSeen) {
-                    periodSeen = true;
-                }else {
-                    return null;
+                if (s.charAt(i) == '.') {
+                    if (!periodSeen) {
+                        periodSeen = true;
+                    } else {
+                        return null;
+                    }
+
                 }
             }
+
 
             if (periodSeen) {
                 return "Double";
