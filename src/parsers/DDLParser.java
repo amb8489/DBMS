@@ -42,11 +42,12 @@ public class DDLParser {
             return dropTable(stmt);
         } else if (stmt.toLowerCase().startsWith("alter table")) {
             return alterTable(stmt);
-        }else{
-            System.err.println(stmt+" is not a DDL statement");
+        } else {
+            System.err.println(stmt + " is not a DDL statement");
             return false;
         }
     }
+
     // will create and add table to the DB given a Create table statement
     // TODO check for dups on all p attributes and pk check that table doesn't already exist
     // TODO check attributes exits when adding
@@ -322,8 +323,8 @@ public class DDLParser {
         stmtTokens = stmt.split(" ");  // ??
 
         // check for first three should  always  exist
-        if (stmtTokens.length < 3){
-            System.err.println("bad format in alter table: "+stmt);
+        if (stmtTokens.length < 3) {
+            System.err.println("bad format in alter table: " + stmt);
             return false;
         }
 
@@ -332,16 +333,16 @@ public class DDLParser {
         TableName = stmtTokens[0];
 
         // check that table exist
-        if(!Catalog.getCatalog().containsTable(TableName)){
-            System.err.println("table: "+TableName+" does not exist");
+        if (!Catalog.getCatalog().containsTable(TableName)) {
+            System.err.println("table: " + TableName + " does not exist");
             return false;
         }
 
         // getting the command can be add/drop
         command = stmtTokens[1].toLowerCase();
 
-        if(!command.equals("add") && !command.equals("drop") ){
-            System.err.println(command+" is not a command for alter table");
+        if (!command.equals("add") && !command.equals("drop")) {
+            System.err.println(command + " is not a command for alter table");
             return false;
         }
 
@@ -349,26 +350,24 @@ public class DDLParser {
         attributeName = stmtTokens[2];
 
 
-
-
         if (command.equals("add")) {
             // if were adding we need at least 4 tokens
-            if (stmtTokens.length < 4){
-                System.err.println("bad format in alter table missing arguments in statement: "+stmt);
+            if (stmtTokens.length < 4) {
+                System.err.println("bad format in alter table missing arguments in statement: " + stmt);
                 return false;
             }
             // check new name is legal
             if (Utilities.isiIllLegalName(attributeName.toLowerCase())) {
-                System.err.println("Not a legal name: "+attributeName);
+                System.err.println("Not a legal name: " + attributeName);
                 return false;
             }
 
             // check that attribute doesnt alreaady exist in table
 
 
-            for(Attribute attribute: Catalog.getCatalog().getTable(TableName).getAttributes()){
-                if(attribute.getAttributeName().equals(attributeName)){
-                    System.err.println("attribute "+attributeName+" already exists in table: "+TableName);
+            for (Attribute attribute : Catalog.getCatalog().getTable(TableName).getAttributes()) {
+                if (attribute.getAttributeName().equals(attributeName)) {
+                    System.err.println("attribute " + attributeName + " already exists in table: " + TableName);
                     return false;
                 }
             }
@@ -377,8 +376,8 @@ public class DDLParser {
             type = stmtTokens[3];
 
             // check that type is a legal type
-            if(!Utilities.isLegalType(type)){
-                System.err.println("type "+type+" is not a legal type");
+            if (!Utilities.isLegalType(type)) {
+                System.err.println("type " + type + " is not a legal type");
                 return false;
             }
 
@@ -389,16 +388,15 @@ public class DDLParser {
                 //check that default val type matches the type of the attribute
 
                 String t = Utilities.whatType(stmtTokens[4]);
-                if(t == null){
-                    System.err.println("type "+type+" is not a legal type");
+                if (t == null) {
+                    System.err.println("type " + type + " is not a legal type");
                     return false;
-                }
-                else{
-                    if(!t.equals(type)){
+                } else {
+                    if (!t.equals(type)) {
 
-                        if(!(t.equals("String") && (type.startsWith("Char") || type.startsWith("VarChar")))){
-                        System.err.println("types for new attribute and default value dont match: "+type+" with "+t);
-                        return false;
+                        if (!(t.equals("String") && (type.startsWith("Char") || type.startsWith("VarChar")))) {
+                            System.err.println("types for new attribute and default value dont match: " + type + " with " + t);
+                            return false;
                         }
                     }
                 }
@@ -406,9 +404,9 @@ public class DDLParser {
             }
 
             //add atrribute
-            if (Catalog.getCatalog().getTable(TableName).addAttribute(attributeName,type)) {
+            if (Catalog.getCatalog().getTable(TableName).addAttribute(attributeName, type)) {
                 // add default val
-                StorageManager.getStorageManager().addAttributeValue(Catalog.getCatalog().getTable(TableName),defaultValue);
+                StorageManager.getStorageManager().addAttributeValue(Catalog.getCatalog().getTable(TableName), defaultValue);
                 return true;
             }
             return false;
@@ -420,14 +418,14 @@ public class DDLParser {
             int attribIdx = 0;
             ITable table = Catalog.getCatalog().getTable(TableName);
 
-            for(Attribute attribute: table.getAttributes()){
-                if(attribute.getAttributeName().equals(attributeName)){
-                    return StorageManager.getStorageManager().dropAttributeValue(table,attribIdx);
+            for (Attribute attribute : table.getAttributes()) {
+                if (attribute.getAttributeName().equals(attributeName)) {
+                    return StorageManager.getStorageManager().dropAttributeValue(table, attribIdx);
                 }
                 attribIdx++;
             }
             // attribute could not be found in the table
-            System.err.println("attribute "+attributeName+" does not exists in table: "+TableName);
+            System.err.println("attribute " + attributeName + " does not exists in table: " + TableName);
             return false;
         }
 
@@ -447,13 +445,13 @@ public class DDLParser {
 
         DDLParser.parseDDLStatement("""
                 alter    
-                
+                                
                 table   
                 bigfooman99          
-                
-                
-                
-                add fish String;
+                                
+                                
+                                
+                add fish VarChar(8);
                 """);
     }
 }

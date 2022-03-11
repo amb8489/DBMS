@@ -204,7 +204,7 @@ public class StorageManager extends AStorageManager {
         return true;
     }
 
-
+    //TODO testing
     public boolean deleteRecordWhere(ITable table, String where, Boolean removeAllRecords) {
 
         // page name for head is always at idx zero
@@ -320,7 +320,7 @@ public class StorageManager extends AStorageManager {
     }
 
 
-
+    //TODO testing
     // add val to the end of each row in the table
     @Override
     public boolean addAttributeValue(ITable table, Object defaultValue) {

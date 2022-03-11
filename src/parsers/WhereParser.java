@@ -17,6 +17,7 @@ public class WhereParser {
     // used in the shunting yard algo list of operators and their precedence
     private static final Map<String, Integer> precedence = Map.ofEntries(
             entry("and", 1), entry("or", 2),
+            entry("AND", 1), entry("OR", 2),
             entry("=", 3), entry("!=", 3),
             entry("<", 3), entry(">", 3),
             entry("<=", 3), entry(">=", 3));
@@ -133,7 +134,15 @@ public class WhereParser {
         String op = oplexp.toString();
 
         // if op is a and/or then we know bothvals are truth vals (t/f)
-        switch (op) {
+
+            if (! ((left.equals("true") || left.equals("false")) && (right.equals("true") || right.equals("false")))){
+                System.err.println("COMPARING DIFFERENT TYPES:" + left + " with " + right);
+                return false;
+            }
+
+
+        switch (op.toLowerCase()) {
+
             case "and":
                 return left.equals("true") && right.equals("true");
             case "or":
@@ -271,8 +280,6 @@ public class WhereParser {
             // loop though tokens
             int tokenIdx = 0;
 
-            //todo make sure attribute is actally in the table if its on the right or left of operator like bazzel in write up
-
             // what we are looking for is the token to match with the attribute name
             // if it does then we replace it with the value in the row at that idx
             // this is what is being cached
@@ -374,8 +381,8 @@ public class WhereParser {
         // STMT
         long startTime = System.currentTimeMillis();
 
-        for (int i = 0; i < 10; i++) {
-            String s = "delete from foo where gpa < 1 or fName = \"berg\"";
+        for (int i = 0; i < 1; i++) {
+            String s = "delete from foo where true != false";
 
             boolean res = parser.whereIsTrue(s, r, attrs);
             System.out.println("STMT: " + res);
