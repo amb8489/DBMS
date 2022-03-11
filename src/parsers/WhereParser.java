@@ -10,19 +10,13 @@ import static java.util.Map.entry;
 
 public class WhereParser {
 
-    private Pattern pattern = Pattern.compile("-?\\d+(\\.\\d+)?");
-
-    private static HashMap<String, Tuple<List<String>, ArrayList<Tuple<Integer,Integer>>>> CacheWhereStmtPlacementPattern = new HashMap<>();
+    private static HashMap<String, Tuple<List<String>, ArrayList<Tuple<Integer, Integer>>>> CacheWhereStmtPlacementPattern = new HashMap<>();
 
     private static final Map<String, Integer> precedence = Map.ofEntries(
-            entry("and", 1),
-            entry("or", 2),
-            entry("=", 3),
-            entry("!=", 3),
-            entry("<", 3),
-            entry(">", 3),
-            entry("<=", 3),
-            entry(">=", 3));
+            entry("and", 1), entry("or", 2),
+            entry("=", 3), entry("!=", 3),
+            entry("<", 3), entry(">", 3),
+            entry("<=", 3), entry(">=", 3));
 
     private static final Set operators = precedence.keySet();
 
@@ -30,12 +24,11 @@ public class WhereParser {
     private static boolean Validate(List<String> tokens, List<Object> row) {
 
 
-
         try {
             // making stacks for shunting yard algo
 
-            Stack<String> stack = new Stack<String>();
-            List<Object> Output = new ArrayList<Object>();
+            Stack<String> stack = new Stack<>();
+            List<Object> Output = new ArrayList<>();
 
             // look through each char
             for (String token : tokens) {
@@ -59,11 +52,11 @@ public class WhereParser {
 
                             String t = stack.pop();
                             Output.add(t);
+
                             if (Output.size() >= 3 && operators.contains(t)) {
-                                List<Object> nd = Output.subList(Output.size() - 3, Output.size());
+                                Object val = eval(Output.get(Output.size() - 3), Output.get(Output.size() - 2), Output.get(Output.size() - 1));
                                 Output = Output.subList(0, Output.size() - 3);
-                                Output.add(eval(nd));
-//                                System.out.println("  " + Output.get(Output.size() - 1));
+                                Output.add(val);
 
                             }
 
@@ -84,13 +77,9 @@ public class WhereParser {
                         String t = stack.pop();
                         Output.add(t);
                         if (Output.size() >= 3 && operators.contains(t)) {
-                            List<Object> nd = Output.subList(Output.size() - 3, Output.size());
+                            Object val = eval(Output.get(Output.size() - 3), Output.get(Output.size() - 2), Output.get(Output.size() - 1));
                             Output = Output.subList(0, Output.size() - 3);
-
-                            Output.add(eval(nd));
-
-//                            System.out.println("  " + Output.get(Output.size() - 1));
-
+                            Output.add(val);
                         }
                     }
 
@@ -104,15 +93,11 @@ public class WhereParser {
             while (!stack.isEmpty()) {
                 String t = stack.pop();
                 Output.add(t);
+
                 if (Output.size() >= 3 && operators.contains(t)) {
-                    List<Object> nd = Output.subList(Output.size() - 3, Output.size());
+                    Object val = eval(Output.get(Output.size() - 3), Output.get(Output.size() - 2), Output.get(Output.size() - 1));
                     Output = Output.subList(0, Output.size() - 3);
-
-                    Output.add(eval(nd));
-
-
-
-//                    System.out.println("  " + Output.get(Output.size() - 1));
+                    Output.add(val);
                 }
             }
             return (boolean) Output.get(Output.size() - 1);
@@ -123,19 +108,11 @@ public class WhereParser {
     }
 
 
-    /*
+    private static Object eval(Object lexp, Object rexp, Object oplexp) throws Exception {
 
-
-    TODO refactor this junk using the types given in the attribs in fillString
-     */
-    private static Object eval(List<Object> nd) throws Exception {
-
-
-//        System.out.print("eval: " + nd);
-
-        String left = nd.get(0).toString();
-        String right = nd.get(1).toString();
-        String op = nd.get(2).toString();
+        String left = lexp.toString();
+        String right = rexp.toString();
+        String op = oplexp.toString();
 
 
         switch (op) {
@@ -147,7 +124,39 @@ public class WhereParser {
                 break;
         }
 
-        if (left.matches("^.*[A-Za-z].*$") && right.matches("^.*[A-Za-z].*$")) {
+
+        boolean leftMatch = false;
+        boolean rightMatch = false;
+
+        Double numLeft = 0.0;
+        Double numRight = 0.0;
+
+        if (left.startsWith("\"") ) {
+            leftMatch = true;
+
+        } else {
+
+            try {
+                Double.parseDouble(left);
+            }catch (Exception e){
+                leftMatch = true;
+            }
+        }
+
+        if (right.startsWith("\"")) {
+            rightMatch = true;
+
+        } else {
+
+            try {
+                Double.parseDouble(right);
+            }catch (Exception e){
+                rightMatch = true;
+            }
+        }
+
+        if (leftMatch && rightMatch) {
+
             return switch (op) {
                 case "=" -> left.compareTo(right) == 0;
                 case "!=" -> left.compareTo(right) != 0;
@@ -157,65 +166,55 @@ public class WhereParser {
                 case ">=" -> left.compareTo(right) >= 0;
                 default -> null;
             };
-        } else if (!left.matches(".*[A-Za-z].*$") && !right.matches("^.*[A-Za-z].*$")) {
-
-            Double numLeft = Double.parseDouble(left);
-            Double numRight = Double.parseDouble(right);
+        } else if (!leftMatch && !rightMatch) {
+            numLeft = Double.parseDouble(left);
+            numRight = Double.parseDouble(right);
 
             return switch (op) {
-                case "=" -> numLeft.compareTo(numRight) == 0;
-                case "!=" -> numLeft.compareTo(numRight) != 0;
-                case "<" -> numLeft.compareTo(numRight) < 0;
-                case ">" -> numLeft.compareTo(numRight) > 0;
-                case "<=" -> numLeft.compareTo(numRight) <= 0;
-                case ">=" -> numLeft.compareTo(numRight) >= 0;
+                case "=" -> numLeft.equals(numRight);
+                case "!=" -> !numLeft.equals(numRight);
+                case "<" -> numLeft < numRight;
+                case ">" -> numLeft > numRight;
+                case "<=" -> numLeft <= numRight;
+                case ">=" -> numLeft >= numRight;
                 default -> null;
             };
         }
-        throw new Exception("\"COMPARING DIFFERENT TYPES:\" + left + \" with \" + right");
+        throw new Exception("COMPARING DIFFERENT TYPES:" + left + " with " + right);
 
     }
 
+    // TODO check attributes exits when adding
 
-    /*
-
-
-
-
-     */
     private static List<String> fillString(String s, List<Object> r, ArrayList<Attribute> attrs) {
 
-        if(!CacheWhereStmtPlacementPattern.containsKey(s)) {
+        if (!CacheWhereStmtPlacementPattern.containsKey(s)) {
 
             String stmt = s;
 
             s = s.replace("(", " ( ");
             s = s.replace(")", " ) ");
-            s = s.replace("=", " = ");
-            s = s.replace("!=", " != ");
+
+            s = s.replace("!", " !");
             s = s.replace("<", " < ");
             s = s.replace(">", " > ");
-            s = s.replace("<=", " <= ");
-            s = s.replace(">=", " >= ");
+            s = s.replace("=", " = ");
+
+            s = s.replace("<  =", " <= ");
+            s = s.replace(">  =", " >= ");
+            s = s.replace("! =", " != ");
 
 
-
-
-            List<String> tokens = new ArrayList<>(List.of(s.split(" ")));
-            tokens.removeIf(String::isBlank);
+            List<String>tokens = StringFormatter.mkTokensFromStr(s);
 
             int whereIdx = 1;
             for (String t : tokens) {
-                if (t.equalsIgnoreCase("where")){
-                    tokens = tokens.subList(whereIdx,tokens.size());
+                if (t.equalsIgnoreCase("where")) {
+                    tokens = tokens.subList(whereIdx, tokens.size());
                     break;
                 }
                 whereIdx++;
             }
-
-            System.out.println(tokens);
-
-
 
 
             HashMap<String, Integer> AttribNames = new HashMap<>();
@@ -227,6 +226,8 @@ public class WhereParser {
             // loop though tokens
 
             int tokenIdx = 0;
+
+            //todo make sure attribute is actally in the table if its on the right or left of operator like bazzel in write up
             ArrayList<Tuple<Integer, Integer>> IdxsToReplace = new ArrayList<>();
             for (String t : tokens) {
                 // if that token is a column name in the table, (aka an attribute name)
@@ -234,24 +235,23 @@ public class WhereParser {
                     // set that token to the value from the given row at the idx of the col name
                     Integer attribIdx = AttribNames.get(t);
 
-                    IdxsToReplace.add(new Tuple<>(tokenIdx,attribIdx));
+                    IdxsToReplace.add(new Tuple<>(tokenIdx, attribIdx));
 
                     tokens.set(tokenIdx, r.get(attribIdx).toString());
                 }
                 tokenIdx++;
             }
-            Tuple<List<String>,ArrayList<Tuple<Integer,Integer>>> tup = new Tuple<>(tokens,IdxsToReplace);
-            CacheWhereStmtPlacementPattern.put(stmt,tup);
+            Tuple<List<String>, ArrayList<Tuple<Integer, Integer>>> tup = new Tuple<>(tokens, IdxsToReplace);
+            CacheWhereStmtPlacementPattern.put(stmt, tup);
             return tokens;
         }
 
 
         Tuple<List<String>, ArrayList<Tuple<Integer, Integer>>> cached = CacheWhereStmtPlacementPattern.get(s);
-        List<String>tokens = cached.x;
-        ArrayList<Tuple<Integer, Integer>>replaceAt = cached.y;
-
-        for(Tuple<Integer,Integer> t:replaceAt){
-            tokens.set(t.x, r.get(t.y).toString() );
+        List<String> tokens = cached.x;
+        ArrayList<Tuple<Integer, Integer>> replaceAt = cached.y;
+        for (Tuple<Integer, Integer> t : replaceAt) {
+            tokens.set(t.x, r.get(t.y).toString());
         }
 
         return tokens;
@@ -278,31 +278,16 @@ public class WhereParser {
     3) the attribs for that table (Fname,Lname,Gpa,HeightI,Age)
 
     ...
+
+
     if (whereIsTrue(stmt, row attribs)){
         delete record
     }
     ...
-
-    //TODO
-       - ASK about () in stmts
-       - ASK about "" for strings
-       - possible refactor of this entire thing to better accommodate eval function
-     */
+            */
     public boolean whereIsTrue(String stmt, List<Object> row, ArrayList<Attribute> attrs) {
-
-        long startTime = System.currentTimeMillis();
         List<String> tokens = fillString(stmt, row, attrs);
-        long endTime = System.currentTimeMillis();
-        System.out.println(endTime - startTime);
-
-
-        startTime = System.currentTimeMillis();
-        boolean res =  Validate(tokens, row);
-        endTime = System.currentTimeMillis();
-        System.out.println(endTime - startTime);
-        System.out.println("-----------------------------");
-
-        return res;
+        return Validate(tokens, row);
     }
 
 
@@ -311,8 +296,6 @@ public class WhereParser {
 
 
         WhereParser parser = new WhereParser();
-
-
 
 
         // TALE ATTRIBUTES
@@ -337,11 +320,11 @@ public class WhereParser {
         long startTime = System.currentTimeMillis();
 
         for (int i = 0; i < 1; i++) {
-            String s = "delete from foo where (fName=\"AArON\" or gpa>2.0) and (lName=berg or 2<2) or gpa>1";
+            String s = "delete from foo where gpa < 1 or fName = \"berg\"";
 
             boolean res = parser.whereIsTrue(s, r, attrs);
 //            System.out.println("STMT IS :" + res);
-            r.set(3,i);
+            r.set(3, i);
         }
 
         long endTime = System.currentTimeMillis();
@@ -351,11 +334,12 @@ public class WhereParser {
     }
 
     /**
+     * author kyle f
      *
      * @param <X> element of type X
      * @param <Y> element of type Y
      */
-    public static class Tuple<X,Y>{
+    public static class Tuple<X, Y> {
         public X x;  //element 1
         public Y y;  //element 2
 
@@ -366,7 +350,7 @@ public class WhereParser {
 
         @Override
         public String toString() {
-            return x + " "+y;
+            return x + " " + y;
         }
     }
 }
