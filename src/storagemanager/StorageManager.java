@@ -344,7 +344,7 @@ public class StorageManager extends AStorageManager {
                 // delete that col from all recs
 
                 headPage.getPageRecords().forEach(r -> r.add(defaultValue));
-
+                headPage.wasChanged = true;
                 // next page
                 headPtr = headPage.getPtrToNextPage();
             }
