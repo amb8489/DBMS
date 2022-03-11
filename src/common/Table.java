@@ -130,8 +130,6 @@ public class Table implements ITable{
             }
         }
         this.Attributes.add( new Attribute(name,type));
-        // TODO tell the storage manager to add the attribute to the data stored in the table.
-
         return true;
     }
 
@@ -163,7 +161,6 @@ public class Table implements ITable{
         for(Attribute attribute:Attributes){
             if (attribute.attributeName().equals(name)){
                 this.Attributes.remove(idx);
-                // TODO tell the storage manager to drop the attribute from the data stored in the table.
                 return true;
             }
             idx++;

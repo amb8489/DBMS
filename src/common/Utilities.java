@@ -14,8 +14,6 @@ public class Utilities {
 // list of key words not allowed for use for table/ column names
 
     //TODO add types
-    // possible move
-    // split(,#)
     private static Set<String> KEYWORDS = Stream.of(
             "create", "table", "drop", "insert", "into", "delete", "from", "where", "update",
             "notnull", "primarykey", "foreignkey", "references", "add", "default", "set",
@@ -142,4 +140,52 @@ public class Utilities {
     }
 
 
+    public static String whatType(String s) {
+
+            if(s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false")){
+                return "Boolean";
+            }
+
+            // is it a string?
+            if(s.contains("\"")){
+                return "String";
+            }
+
+
+            // looking for any char, no base 10 number has a char in it
+            for (int i = 0; i <s.length(); i++) {
+                if(Character.isLetter(s.charAt(i)) ) {
+                    return "String";
+                }
+            }
+
+            //number can have a . but only one
+            boolean periodSeen = false;
+            for (int i = 0; i <s.length(); i++) {
+
+                // check for only one .
+                if(s.charAt(i) == '.' && !periodSeen) {
+                    periodSeen = true;
+                }else {
+                    return null;
+                }
+            }
+
+            if (periodSeen) {
+                return "Double";
+            }
+
+            // if just numbers with no . then int
+            return "Integer";
+
+
+
+
+
+
+
+
+
+
+    }
 }

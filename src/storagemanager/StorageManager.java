@@ -319,20 +319,15 @@ public class StorageManager extends AStorageManager {
         pb.PurgeBuffer();
     }
 
-    //TODO TEST how do we know what the defaultValue type is????
-    // how do we update the attribute array in table????
 
 
-    // is alwats at the end in attribute array?
+    // add val to the end of each row in the table
     @Override
     public boolean addAttributeValue(ITable table, Object defaultValue) {
 
         try {
 
 
-            // TODO need to do this first or at some point before
-            //  Attribute newAttrib = new Attribute(...);
-            //  Catalog.getCatalog().getTable(table.getTableName()).getAttributes().add(newAttrib);
 
             // page name for head is always at idx zero
             int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
@@ -341,9 +336,9 @@ public class StorageManager extends AStorageManager {
             while (headPtr != -1) {
 
                 Page headPage = pb.getPageFromBuffer("" + headPtr, table);
-                // delete that col from all recs
 
-                headPage.getPageRecords().forEach(r -> r.add(defaultValue));
+                // for each row in page records append defult val
+                headPage.getPageRecords().forEach(row -> row.add(defaultValue));
                 headPage.wasChanged = true;
                 // next page
                 headPtr = headPage.getPtrToNextPage();

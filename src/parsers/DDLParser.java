@@ -309,7 +309,7 @@ public class DDLParser {
         String attributeName;
         String type;
         String[] stmtTokens;
-        String defaultValue;
+        String defaultValue = null;
 
         //-----------------find the table name key-----------------
 
@@ -365,6 +365,7 @@ public class DDLParser {
 
             // check that attribute doesnt alreaady exist in table
 
+
             for(Attribute attribute: Catalog.getCatalog().getTable(TableName).getAttributes()){
                 if(attribute.getAttributeName().equals(attributeName)){
                     System.err.println("attribute "+attributeName+" already exists in table: "+TableName);
@@ -381,14 +382,37 @@ public class DDLParser {
                 return false;
             }
 
-            // we have a default val
-            if (stmtTokens.length > 4) {
 
-                //TODO check that default val type matches the type of the attribute
+            // we have a default val
+
+            if (stmtTokens.length > 4) {
+                //check that default val type matches the type of the attribute
+
+                String t = Utilities.whatType(stmtTokens[4]);
+                if(t == null){
+                    System.err.println("type "+type+" is not a legal type");
+                    return false;
+                }
+                else{
+                    if(!t.equals(type)){
+
+                        if(!(t.equals("String") && (type.startsWith("Char") || type.startsWith("VarChar")))){
+                        System.err.println("types for new attribute and default value dont match: "+type+" with "+t);
+                        return false;
+                        }
+                    }
+                }
                 defaultValue = stmtTokens[4];
-                //TODO: add the attribute
             }
-            //TODO: add the attribute
+
+            //add atrribute
+            if (Catalog.getCatalog().getTable(TableName).addAttribute(attributeName,type)) {
+                // add default val
+                StorageManager.getStorageManager().addAttributeValue(Catalog.getCatalog().getTable(TableName),defaultValue);
+                return true;
+            }
+            return false;
+
 
         } else {
             // dropping attribute if it exist in the table
@@ -407,7 +431,6 @@ public class DDLParser {
             return false;
         }
 
-        return false;
     }
 
     public static void main(String[] args) {
