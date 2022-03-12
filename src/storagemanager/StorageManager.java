@@ -135,48 +135,41 @@ public class StorageManager extends AStorageManager {
                     String pk_type = table.getAttributes().get(pkid).getAttributeType();
 
                     switch (pk_type.charAt(0)) {
-                        case 'I':
+                        case 'I' -> {
                             int resI = ((Integer) record.get(pkidx)).compareTo((Integer) row.get(pkidx));
                             if (resI == 0) {
                                 return false;
                             }
-
                             if (resI < 0) {
 
                                 headPage.getPageRecords().add(idx, record);
                                 headPage.wasChanged = true;
                                 return true;
                             }
-                            break;
-                        case 'D':
-
+                        }
+                        case 'D' -> {
                             int resD = ((Double) record.get(pkidx)).compareTo((Double) row.get(pkidx));
                             if (resD == 0) {
                                 return false;
                             }
-
                             if (resD < 0) {
                                 headPage.getPageRecords().add(idx, record);
                                 headPage.wasChanged = true;
                                 return true;
                             }
-                            break;
-
-                        case 'B':
-
+                        }
+                        case 'B' -> {
                             int resB = ((Boolean) record.get(pkidx)).compareTo((Boolean) row.get(pkidx));
                             if (resB == 0) {
                                 return false;
                             }
-
                             if (resB < 0) {
                                 headPage.getPageRecords().add(idx, record);
                                 headPage.wasChanged = true;
                                 return true;
                             }
-                            break;
-
-                        default:
+                        }
+                        default -> {
                             int resS = ((record.get(pkidx).toString()).compareTo(row.get(pkidx).toString()));
                             if (resS == 0) {
                                 return false;
@@ -186,7 +179,7 @@ public class StorageManager extends AStorageManager {
                                 headPage.wasChanged = true;
                                 return true;
                             }
-                            break;
+                        }
                     }
 
                     idx++;
@@ -202,7 +195,7 @@ public class StorageManager extends AStorageManager {
 
 
             return true;
-        }catch (Exception e){
+        } catch (Exception e) {
             System.err.println("Storage manager(insertRecord): error in inserting");
             return false;
         }
@@ -330,7 +323,6 @@ public class StorageManager extends AStorageManager {
     public boolean addAttributeValue(ITable table, Object defaultValue) {
 
         try {
-
 
 
             // page name for head is always at idx zero

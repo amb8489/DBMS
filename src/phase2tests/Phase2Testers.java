@@ -158,6 +158,7 @@ public class Phase2Testers {
         System.out.println("----------where uid >= 5 and classId > 0----------------\n\n");
 
         DMLParser.parseDMLStatement("delete from student where uid >= 5 and classId > 0;");
+//        DMLParser.parseDMLStatement("delete from student;");
 
 
 
@@ -178,8 +179,8 @@ public class Phase2Testers {
         for (ArrayList<Object> row : StorageManager.getStorageManager().getRecords(studentTab)) {
             System.out.println(row);
         }
-        System.out.println("\n\n----------------------------------------------------");
-        System.out.println("-------------altering table droping-fish----------------");
+        System.out.println("\n\n-----------------------------------------------------");
+        System.out.println("-------------altering table droping-fish-----------------");
         System.out.println("---------------------------------------------------------\n\n");
         DDLParser.parseDDLStatement("""
                 alter  
@@ -203,12 +204,14 @@ public class Phase2Testers {
         DDLParser.parseDDLStatement("""
                 alter  
                 table   
-                class
+                student
                 add time Integer;
                 """);
 
-        System.out.println(classTab.tableToString());
-
+        System.out.println(studentTab.tableToString());
+        for (ArrayList<Object> row : StorageManager.getStorageManager().getRecords(studentTab)) {
+            System.out.println(row);
+        }
 
 
 

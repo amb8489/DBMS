@@ -17,7 +17,7 @@ public class Utilities {
     private static Set<String> KEYWORDS = Stream.of(
             "create", "table", "drop", "insert", "into", "delete", "from", "where", "update",
             "notnull", "primarykey", "foreignkey", "references", "add", "default", "set",
-            "values", "null","Integer","Double","Boolean","Varchar","Char").collect(Collectors.toCollection(HashSet::new));
+            "values", "null", "Integer", "Double", "Boolean", "Varchar", "Char").collect(Collectors.toCollection(HashSet::new));
 
 
     // check that a type for an atrribute is legal
@@ -136,6 +136,20 @@ public class Utilities {
         return tokens;
     }
 
+    public static String whatType(String s,boolean simplifyTypes) {
+
+            String type =  whatType(s);
+
+            if(type == null){
+                return null;
+            }
+
+            return switch (type) {
+                case "Double", "Integer" -> "Numeric";
+                default -> type;
+            };
+
+    }
 
     public static String whatType(String s) {
 

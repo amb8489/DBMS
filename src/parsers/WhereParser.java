@@ -160,42 +160,19 @@ public class WhereParser {
         // check if vals are strings or numeric
 
         // check if string by looking for a " or trying to parse into a double
-        boolean leftIsStr = false;
-        boolean rightIsStr = false;
-
-        Double numLeft = 0.0;
-        Double numRight = 0.0;
 
 
-        // checking left val type
-        if (left.startsWith("\"")) {
-            leftIsStr = true;
+        String typeL = Utilities.whatType(left,true);
+        String typeR = Utilities.whatType(right,true);
 
-        } else {
 
-            try {
-                Double.parseDouble(left);
-            } catch (Exception e) {
-                leftIsStr = true;
-            }
+        if (typeL == null || !typeL.equals(typeR)){
+            throw new Exception("COMPARING DIFFERENT TYPES:" + typeL + " with " + typeR);
         }
 
-
-        // checking right val type
-        if (right.startsWith("\"")) {
-            rightIsStr = true;
-
-        } else {
-
-            try {
-                Double.parseDouble(right);
-            } catch (Exception e) {
-                rightIsStr = true;
-            }
-        }
 
         // if both vals are strings
-        if (leftIsStr && rightIsStr) {
+        if (typeL.equals("String")) {
 
             return switch (op) {
                 case "=" -> left.compareTo(right) == 0;
@@ -208,9 +185,9 @@ public class WhereParser {
             };
 
             // both are numeric
-        } else if (!rightIsStr && !leftIsStr) {
-            numLeft = Double.parseDouble(left);
-            numRight = Double.parseDouble(right);
+        } else {
+            Double numLeft = Double.parseDouble(left);
+            Double numRight = Double.parseDouble(right);
 
             return switch (op) {
                 case "=" -> numLeft.equals(numRight);
@@ -224,7 +201,7 @@ public class WhereParser {
         }
 
         // types don't match
-        throw new Exception("COMPARING DIFFERENT TYPES:" + left + " with " + right);
+//        throw new Exception("COMPARING DIFFERENT TYPES:" + left + " with " + right);
 
     }
 
@@ -384,7 +361,7 @@ public class WhereParser {
         long startTime = System.currentTimeMillis();
 
         for (int i = 0; i < 1; i++) {
-            String s = "delete from foo where true != false";
+            String s = "delete from foo where 1 != 1.0001";
 
             boolean res = parser.whereIsTrue(s, r, attrs);
             System.out.println("STMT: " + res);
