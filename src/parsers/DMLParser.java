@@ -42,12 +42,118 @@ public class DMLParser {
         return true;
     }
 
-    private static Object convertAttributeType (String attributeType, String attribute) {
+    /**
+     * This function evaluates the mathematical result of a given 'set' expression of an update statement
+     * @param attributeType
+     * @param statement1 statement to the left of the operator
+     * @param operator math operator
+     * @param statement2 statement to the right of the operator
+     * @param attributesList
+     * @param row the row from the table that meets the 'where' condition
+     * @return
+     */
+    private static Object evalSetMath (String attributeType, String statement1, String operator, String statement2,
+                                       ArrayList<Attribute> attributesList, ArrayList<Object> row) {
         switch (attributeType) {
             case "Integer":
-                return Integer.parseInt(attribute);
+                int attr1Int = 0;
+                boolean attr1IntChanged = false;
+                int attr2Int = 0;
+                boolean attr2IntChanged = false;
+                // check if the statements are placeholder variables
+                for (int i = 0; i < attributesList.size(); i++) {
+                    if (attributesList.get(i).getAttributeName().equals(statement1)) {
+                        attr1Int = (int) row.get(i);
+                        attr1IntChanged = true;
+                    }
+                    if (attributesList.get(i).getAttributeName().equals(statement2)) {
+                        attr2Int = (int) row.get(i);
+                        attr2IntChanged = true;
+                    }
+                }
+                // if the statements are not placeholder variables, set them as literal int values
+                if (!attr1IntChanged) {
+                    attr1Int = Integer.parseInt(statement1);
+                }
+                if (!attr2IntChanged) {
+                    attr2Int = Integer.parseInt(statement2);
+                }
+                // perform math on the statements
+                switch (operator) {
+                    case "+":
+                        return attr1Int + attr2Int;
+                    case "-":
+                        return attr1Int - attr2Int;
+                    case "*":
+                        return attr1Int * attr2Int;
+                    case "/":
+                        return attr1Int / attr2Int;
+                }
             case "Double":
-                return Double.parseDouble(attribute);
+                double attr1Double = 0;
+                boolean attr1DoubleChanged = false;
+                double attr2Double = 0;
+                boolean attr2DoubleChanged = false;
+                // check if the statements are placeholder variables
+                for (int i = 0; i < attributesList.size(); i++) {
+                    if (attributesList.get(i).getAttributeName().equals(statement1)) {
+                        attr1Double = (double) row.get(i);
+                        attr1DoubleChanged = true;
+                    }
+                    if (attributesList.get(i).getAttributeName().equals(statement2)) {
+                        attr2Double = (double) row.get(i);
+                        attr2DoubleChanged = true;
+                    }
+                }
+                // if the statements are not placeholder variables, set them as literal double values
+                if (!attr1DoubleChanged) {
+                    attr1Double = Double.parseDouble(statement1);
+                }
+                if (!attr2DoubleChanged) {
+                    attr2Double = Double.parseDouble(statement2);
+                }
+                // perform math on the statements
+                switch (operator) {
+                    case "+":
+                        return attr1Double + attr2Double;
+                    case "-":
+                        return attr1Double - attr2Double;
+                    case "*":
+                        return attr1Double * attr2Double;
+                    case "/":
+                        return attr1Double / attr2Double;
+                }
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * This function converts an attribute to the given attributeType. The attribute given can be a mathematical expression.
+     * @param attributeType
+     * @param attribute
+     * @param attributesList
+     * @param row the row from the table that meets the 'where' condition
+     * @return
+     */
+    private static Object convertAttributeType (String attributeType, String attribute, ArrayList<Attribute> attributesList,
+                                                ArrayList<Object> row) {
+        String[] expression = attribute.split(" ");
+        switch (attributeType) {
+            case "Integer":
+                if (expression.length == 1) {
+                    return Integer.parseInt(attribute);
+                }
+                else {
+                    return evalSetMath(attributeType, expression[0], expression[1], expression[2], attributesList, row);
+                }
+            case "Double":
+                if (expression.length == 1) {
+                    return Double.parseDouble(attribute);
+                }
+                else {
+                    return evalSetMath(attributeType, expression[0], expression[1], expression[2], attributesList, row);
+                }
             case "Boolean":
                 return Boolean.parseBoolean(attribute);
             default:
@@ -66,7 +172,7 @@ public class DMLParser {
 
             String tableName = tokens.get(2);
 
-            // check table exists
+            // check if table exists; get table
             if (!Catalog.getCatalog().containsTable(tableName)) {
                 System.err.println("The catalog does not contain the table: " + tableName);
                 return;
@@ -88,15 +194,15 @@ public class DMLParser {
                     }
 
                     record.add(convertAttributeType(attributes.get(i-(4 + (attributes.size() * numberOfInserts)))
-                            .getAttributeType(), tokens.get(i).substring(1)));
+                            .getAttributeType(), tokens.get(i).substring(1), null, null));
                     i++;
                     while (!tokens.get(i).endsWith(")")) {
                         record.add(convertAttributeType(attributes.get(i-(4 + (attributes.size() * numberOfInserts)))
-                                .getAttributeType(), tokens.get(i)));
+                                .getAttributeType(), tokens.get(i), null, null));
                         i++;
                     }
                     record.add(convertAttributeType(attributes.get(i-(4 + (attributes.size() * numberOfInserts)))
-                            .getAttributeType(), tokens.get(i).substring(0, tokens.get(i).length()-1)));
+                            .getAttributeType(), tokens.get(i).substring(0, tokens.get(i).length()-1), null, null));
 
                     System.out.println(record);
 
@@ -129,7 +235,7 @@ public class DMLParser {
 
             String tableName = tokens.get(1);
 
-            // check table exists
+            // check if table exists; get table
             if (!Catalog.getCatalog().containsTable(tableName)) {
                 System.err.println("The catalog does not contain the table: " + tableName);
                 return;
@@ -149,8 +255,29 @@ public class DMLParser {
                         if (tokens.get(2).equalsIgnoreCase("set")) {
                             ArrayList<Object> newRow = new ArrayList<>();
                             for (int i = 0; i < attributes.size(); i++) {
-                                if (attributes.get(i).getAttributeName().equals(tokens.get(6))) {
-                                    newRow.add(convertAttributeType(attributes.get(i).getAttributeType(), tokens.get(5)));
+                                if (attributes.get(i).getAttributeName().equals(tokens.get(3))) {
+                                    newRow.add(convertAttributeType(attributes.get(i).getAttributeType(), tokens.get(5), attributes, row));
+                                }
+                                else {
+                                    newRow.add(row.get(i));
+                                }
+                            }
+                            boolean updateSuccess = StorageManager.getStorageManager().updateRecord(table, row, newRow);
+                            System.out.println("update success:" + updateSuccess);
+                        }
+                    }
+                }
+            }
+            else if (tokens.size() > 10 && tokens.get(8).equalsIgnoreCase("where")) {
+                WhereParser wp = new WhereParser();
+                for (ArrayList<Object> row: records) {
+                    if (wp.whereIsTrue(stmt, row, attributes)) {
+                        if (tokens.get(2).equalsIgnoreCase("set")) {
+                            ArrayList<Object> newRow = new ArrayList<>();
+                            for (int i = 0; i < attributes.size(); i++) {
+                                if (attributes.get(i).getAttributeName().equals(tokens.get(3))) {
+                                    newRow.add(convertAttributeType(attributes.get(i).getAttributeType(), tokens.get(5)
+                                            + " " + tokens.get(6) + " " + tokens.get(7), attributes, row));
                                 }
                                 else {
                                     newRow.add(row.get(i));
@@ -169,45 +296,6 @@ public class DMLParser {
         }
     }
 
-//    // delete from <name> where <condition>
-//    private static void deleteFromTable(String stmt) {
-//
-//
-//        try {
-//
-//
-//            // removes redundant spaces and new lines
-//            stmt = stmt.replace(";","");
-//            List<String> tokens = StringFormatter.mkTokensFromStr(stmt);
-//            System.out.println(tokens);
-//
-//            String tableName = tokens.get(2);
-//
-//            System.out.println("deleting from table name:" + tableName);
-//
-//            // cehck table exists
-//            ITable table = Catalog.getCatalog().getTable(tableName);
-//
-//            boolean removeEverything = tokens.size() == 3;
-//            if (removeEverything) {
-//                VerbosePrint.print("removing everyting from table : " + tableName);
-//                ((StorageManager) StorageManager.getStorageManager()).deleteRecordWhere(table, "", removeEverything);
-//                return;
-//            }
-//            //WHERE CLAUSE
-//            String Where = String.join(" ", tokens.subList(4, tokens.size())).replace(";", "");
-//            System.out.println("where{" + Where + "}");
-//            // deleteing where
-//            ((StorageManager) StorageManager.getStorageManager()).deleteRecordWhere(table, Where, removeEverything);
-//
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            System.err.println("error in removing in DML");
-//        }
-//
-//
-//    }
 
     /**
      * This function will parse and execute DML statements (select)
@@ -237,10 +325,12 @@ public class DMLParser {
         ITable table1 = catalog.addTable("goalScorers", attributes, pk);
 
         // test insert
-        DMLParser.parseDMLStatement("insert into goalScorers \n values \n (1, \"Karim Benzema\", 3)," +
+        DMLParser.parseDMLStatement("insert into goalScorers \n values \n (1, \"Karim Benzema\", 7)," +
                 "(2, \"Kylian Mbappe\", 1)");
         DMLParser.parseDMLStatement("insert into goalScorers \n values \n (1, \"Thomas Muller\", 1)");
         // test update
-        DMLParser.parseDMLStatement("update goalScorers \n set Name = \"Robert Lewandowski\" \n where ID = 1");
+        System.out.println("Before update call: " + sm.getRecords(table1));
+        DMLParser.parseDMLStatement("update goalScorers \n set Goals = ID + 2 \n where ID = 1");
+        System.out.println("After update call: " + sm.getRecords(table1));
     }
 }
