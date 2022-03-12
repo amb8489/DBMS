@@ -1,4 +1,4 @@
-package phase1Testers;
+package phase2tests;
 
 import catalog.Catalog;
 import common.ITable;
@@ -358,15 +358,13 @@ public class Phase2Tester {
 
         if(!createVeryLargeTable()){
             System.err.println("Large table test failed.");
-        }
-        else {
+        } else {
             System.out.println("Large table test passed.");
         }
 
         if(!testConstraints()){
             System.err.println("Constraints test failed");
-        }
-        else {
+        } else {
             System.out.println("Constraints test passed.");
         }
     }

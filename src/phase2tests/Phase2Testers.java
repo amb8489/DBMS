@@ -103,7 +103,7 @@ public class Phase2Testers {
 
         System.out.println("\n\n----------------------------------------------------");
         System.out.println("----------TESTING CREATING TABLE: class-----------------");
-        System.out.println("----------------------------------------------------\n\n");        DDLParser.parseDDLStatement("""
+        System.out.println("--------------------------------------------------------\n\n");        DDLParser.parseDDLStatement("""
                  create table class(
                          name Varchar(10) notnull,
                          uid Integer primarykey,
@@ -115,8 +115,8 @@ public class Phase2Testers {
         System.out.println("created table class:" + tableMade);
 
         System.out.println("\n\n----------------------------------------------------");
-        System.out.println("----------TESTING CREATING TABLE: student-----------");
-        System.out.println("----------------------------------------------------\n\n");
+        System.out.println("----------TESTING CREATING TABLE: student---------------");
+        System.out.println("--------------------------------------------------------\n\n");
 
         DDLParser.parseDDLStatement("""
                 create table student(
@@ -127,9 +127,8 @@ public class Phase2Testers {
                         gpa Double,
                         classId Integer,
                         primarykey( uid ),
-                        foreignkey( classId ) references class( uid ),
                         foreignkey( classId ) references class( uid )
-
+                       
                 );"""
         );
 
@@ -139,7 +138,7 @@ public class Phase2Testers {
 
         System.out.println("\n\n----------------------------------------------------");
         System.out.println("-------------adding to student rows---------------------");
-        System.out.println("----------------------------------------------------\n\n");
+        System.out.println("--------------------------------------------------------\n\n");
 
 
         int numberOfRows = 10;

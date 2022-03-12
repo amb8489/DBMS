@@ -34,7 +34,8 @@ public class DMLParser {
         if (stmt.toUpperCase().startsWith("DELETE")) {
             deleteFromTable(stmt);
         }
-        return true;
+
+        return false;
     }
 
     // delete from <tableName> where <condition>

@@ -35,13 +35,13 @@ public class DDLParser {
         System.out.println(stmt);
 
         if (stmt.toLowerCase().startsWith("create table")) {
+
             return CreateTable(stmt);
         } else if (stmt.toLowerCase().startsWith("drop table")) {
             return dropTable(stmt);
         } else if (stmt.toLowerCase().startsWith("alter table")) {
             return alterTable(stmt);
         } else {
-            System.err.println(stmt + " is not a DDL statement");
             return false;
         }
     }

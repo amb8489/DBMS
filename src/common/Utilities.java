@@ -2,10 +2,7 @@ package common;
 
 // a class for helpul utilities
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -22,13 +19,13 @@ public class Utilities {
 
     // check that a type for an atrribute is legal
     public static boolean isNotLegalType(String TypeName) {
-        switch (TypeName) {
-            case "Integer":
-            case "Double":
-            case "Boolean":
+        switch (TypeName.toLowerCase()) {
+            case "integer":
+            case "double":
+            case "boolean":
                 return false;
             default:
-                if (TypeName.startsWith("Char(") || TypeName.startsWith("Varchar(")) {
+                if (TypeName.startsWith("char(") || TypeName.startsWith("varchar(")) {
                     int Lparen = TypeName.indexOf("(");
                     int Rparen = TypeName.indexOf(")");
 
@@ -144,8 +141,8 @@ public class Utilities {
                 return null;
             }
 
-            return switch (type) {
-                case "Double", "Integer" -> "Numeric";
+            return switch (type.toLowerCase()) {
+                case "double", "integer" -> "Numeric";
                 default -> type;
             };
 
