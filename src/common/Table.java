@@ -5,6 +5,10 @@ import catalog.Catalog;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+
 import filesystem.FileSystem;
 
 /*
@@ -22,8 +26,7 @@ public class Table implements ITable{
     private Attribute PrimaryKey;
     private ArrayList<Attribute> Attributes;
 
-    //TODO save to disk
-    private ArrayList<Integer>indicesOfNotNullAttributes;
+    public HashSet<Integer> indicesOfNotNullAttributes = new HashSet<>();
 
     private int pkeyIdx = -1;
     private ArrayList<ForeignKey> ForeignKeys= new ArrayList<>();
@@ -46,6 +49,8 @@ public class Table implements ITable{
 
     }
 
+
+    // gets the index of the pk attribute in Table attributes
     public int pkIdx(){
         if (pkeyIdx<0) {
             int idx = 0;
@@ -63,7 +68,6 @@ public class Table implements ITable{
     public Table(String tableName, ArrayList<Attribute> tableAttributes, Attribute pk, ArrayList<Integer> belongToMe) {
 
         ID = numTables;
-//        numTables++;
         this.Attributes = tableAttributes;
         this.TableName = tableName;
         this.PrimaryKey = pk;
@@ -126,8 +130,6 @@ public class Table implements ITable{
             }
         }
         this.Attributes.add( new Attribute(name,type));
-        // TODO tell the storage manager to add the attribute to the data stored in the table. (later phase)
-
         return true;
     }
 
@@ -159,7 +161,6 @@ public class Table implements ITable{
         for(Attribute attribute:Attributes){
             if (attribute.attributeName().equals(name)){
                 this.Attributes.remove(idx);
-                // TODO tell the storage manager to drop the attribute from the data stored in the table. (later phase)
                 return true;
             }
             idx++;
@@ -173,7 +174,7 @@ public class Table implements ITable{
 
         // test if fk already exists
         for(ForeignKey foreignKey :ForeignKeys){
-            if (foreignKey.getAttrName().equals(fk.getAttrName())){
+            if (foreignKey.toString().equals(fk.toString())){
                 System.err.println("Error: Cant add ForeignKey because it already exists");
                 return false;
             }
@@ -211,8 +212,19 @@ public class Table implements ITable{
 
             // total number of tables.txt
             outputStream.write(ByteBuffer.allocate(4).putInt(((Catalog)Catalog.getCatalog()).getNumberOFtables()).array());
-            System.out.println(((Catalog) Catalog.getCatalog()).getNumberOFtables());
+
             VerbosePrint.print(numTables);
+
+
+            // write out the indicesOfNotNullAttributes
+
+            // the number of indices stored
+            outputStream.write(ByteBuffer.allocate(4).putInt(indicesOfNotNullAttributes.size()).array());
+            // storing of the indices
+            for (Integer index:indicesOfNotNullAttributes) {
+                outputStream.write(ByteBuffer.allocate(4).putInt(index).array());
+            }
+
 
             // tables.txt name len
             outputStream.write(ByteBuffer.allocate(4).putInt(this.TableName.length()).array());
@@ -306,10 +318,20 @@ public class Table implements ITable{
                 return null;
             }
             Table.numTables = numTables;
-//            System.exit(1);
 
+            // all tabls in the DB
             ArrayList<ITable> tables = new ArrayList<>();
             for (int tn = 0; tn < numTables; tn++) {
+
+                // the number of indices stored for not null indices
+                int numberOfIdxs = dataInputStr.readInt();
+                // storing of the indices
+                Set<Integer> indices = new HashSet<>();
+
+                for (int ni = 0; ni < numberOfIdxs; ni++) {
+                    indices.add(dataInputStr.readInt());
+                }
+
                 int tableNameLength = dataInputStr.readInt();
                 String tableName = new String(dataInputStr.readNBytes(tableNameLength));
                 int tableID = dataInputStr.readInt();
@@ -368,6 +390,7 @@ public class Table implements ITable{
 
                 Table DiskTable = new Table(tableName,tableAttributes,PK,BelongToMe);
                 DiskTable.setForeignKeys(ForeignKeys);
+                DiskTable.setNotNullIdxs(indices);
                 DiskTable.setID(tableID);
                 tables.add(DiskTable);
 
@@ -386,5 +409,13 @@ public class Table implements ITable{
             System.err.println("IO Error reading table from disk");
             return null;
         }
+    }
+
+
+    // indexs in schema that cant be null
+
+
+    public void setNotNullIdxs(Set<Integer> notNullIndexs) {
+        this.indicesOfNotNullAttributes = (HashSet<Integer>) notNullIndexs;
     }
 }
