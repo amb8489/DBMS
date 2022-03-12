@@ -100,7 +100,7 @@ public class Database {
             System.out.println("ddl");
             return true;
         }
-        else return DMLParser.parseDDLStatement(stmt);
+        else return DMLParser.parseDMLStatement(stmt);
     }
 
     /**
