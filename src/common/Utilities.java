@@ -17,7 +17,7 @@ public class Utilities {
     private static Set<String> KEYWORDS = Stream.of(
             "create", "table", "drop", "insert", "into", "delete", "from", "where", "update",
             "notnull", "primarykey", "foreignkey", "references", "add", "default", "set",
-            "values", "null").collect(Collectors.toCollection(HashSet::new));
+            "values", "null","Integer","Double","Boolean","Varchar","Char").collect(Collectors.toCollection(HashSet::new));
 
 
     // check that a type for an atrribute is legal
@@ -103,7 +103,7 @@ public class Utilities {
         return str.toString();
     }
 
-
+    // will make a token list by splitting on spaces after removing all redundant spaces and newlines
     public static List<String> mkTokensFromStr(String stmt) {
         stmt = format(stmt);
         List<String> tokens = new ArrayList<>();
@@ -165,6 +165,7 @@ public class Utilities {
                 if (!periodSeen) {
                     periodSeen = true;
                 } else {
+                    // not a type
                     return null;
                 }
 

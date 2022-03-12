@@ -1,4 +1,4 @@
-package phase1Testers;
+package phase2tests;
 
 import catalog.ACatalog;
 import catalog.Catalog;
@@ -99,11 +99,11 @@ public class Phase2Testers {
 
         if (cat.containsTable("student")) {
             System.out.println(((Table) cat.getTable("student")).indicesOfNotNullAttributes);
-
         }
 
-
-        DDLParser.parseDDLStatement("""
+        System.out.println("\n\n----------------------------------------------------");
+        System.out.println("----------TESTING CREATING TABLE: class-----------------");
+        System.out.println("----------------------------------------------------\n\n");        DDLParser.parseDDLStatement("""
                  create table class(
                          name Varchar(10) notnull,
                          uid Integer primarykey,
@@ -114,8 +114,9 @@ public class Phase2Testers {
         System.out.println(cat.getTable("class").tableToString());
         System.out.println("created table class:" + tableMade);
 
-
-        System.out.println("----------------------------------------------");
+        System.out.println("\n\n----------------------------------------------------");
+        System.out.println("----------TESTING CREATING TABLE: student-----------");
+        System.out.println("----------------------------------------------------\n\n");
 
         DDLParser.parseDDLStatement("""
                 create table student(
@@ -136,8 +137,9 @@ public class Phase2Testers {
         System.out.println(cat.getTable("student").tableToString());
         System.out.println("created table student:" + tableMade);
 
-        System.out.println("----------------------------------------------");
-        System.out.println("----------------------------------------------");
+        System.out.println("\n\n----------------------------------------------------");
+        System.out.println("-------------adding to student rows---------------------");
+        System.out.println("----------------------------------------------------\n\n");
 
 
         int numberOfRows = 10;
@@ -151,10 +153,19 @@ public class Phase2Testers {
             sm.insertRecord(studentTab, row);
         }
 
-        ///////////////////////////////////////////////////
-
+        System.out.println("\n\n----------------------------------------------------");
+        System.out.println("----------TESTING deleting from student-----------------");
+        System.out.println("----------where uid >= 5 and classId > 0----------------\n\n");
 
         DMLParser.parseDMLStatement("delete from student where uid >= 5 and classId > 0;");
+
+
+
+
+        System.out.println("\n\n----------------------------------------------------");
+        System.out.println("-------------altering table adding----------------------");
+        System.out.println("-------------fish double default 10.0-------------------\n\n");
+
 
         DDLParser.parseDDLStatement("""
                 alter  
@@ -167,7 +178,9 @@ public class Phase2Testers {
         for (ArrayList<Object> row : StorageManager.getStorageManager().getRecords(studentTab)) {
             System.out.println(row);
         }
-
+        System.out.println("\n\n----------------------------------------------------");
+        System.out.println("-------------altering table droping-fish----------------");
+        System.out.println("---------------------------------------------------------\n\n");
         DDLParser.parseDDLStatement("""
                 alter  
                 table   
@@ -181,17 +194,22 @@ public class Phase2Testers {
             System.out.println(row);
         }
 
+        System.out.println("\n\n-----------------------------------------------------");
+        System.out.println("-------------altering table adding time------------------");
+        System.out.println("---------------------No default--------------------------\n\n");
+
+        ITable classTab = cat.getTable("class");
+
         DDLParser.parseDDLStatement("""
                 alter  
                 table   
-                student
-                add cat Varchar(10);
+                class
+                add time Integer;
                 """);
-        System.out.println(studentTab.tableToString());
 
-        for (ArrayList<Object> row : StorageManager.getStorageManager().getRecords(studentTab)) {
-            System.out.println(row);
-        }
+        System.out.println(classTab.tableToString());
+
+
 
 
 //        sm.purgePageBuffer();

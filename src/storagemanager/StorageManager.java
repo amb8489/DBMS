@@ -94,114 +94,118 @@ public class StorageManager extends AStorageManager {
 
     @Override
     public boolean insertRecord(ITable table, ArrayList<Object> record) {
-
-        // page name for head is always at idx zero
-        int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
+        try {
+            // page name for head is always at idx zero
+            int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
 //        VerbosePrint.print("head page: "+headPtr);
-        // where in a row the pk is
-        int pkidx = ((Table) table).pkIdx();
+            // where in a row the pk is
+            int pkidx = ((Table) table).pkIdx();
 
-        // loop though all the tables pages in order
-        Page headPage = null;
+            // loop though all the tables pages in order
+            Page headPage = null;
 
-        while (headPtr != -1) {
+            while (headPtr != -1) {
 
 
 //            VerbosePrint.print("inside: "+headPtr);
 //            VerbosePrint.print(((Table) table).getPagesThatBelongToMe());
 
-            headPage = pb.getPageFromBuffer("" + headPtr, table);
-            // look though all record for that page
+                headPage = pb.getPageFromBuffer("" + headPtr, table);
+                // look though all record for that page
 //            VerbosePrint.print("got: "+headPtr);
 //            VerbosePrint.print(headPage.getPageRecords());
 
 
-            int idx = 0;
+                int idx = 0;
 
-            if (headPage.getPageRecords().size() == 0) {
+                if (headPage.getPageRecords().size() == 0) {
 //                VerbosePrint.print("head page size 0: "+headPtr);
 
-                headPage.getPageRecords().add(record);
-                headPage.wasChanged = true;
-                return true;
-            }
+                    headPage.getPageRecords().add(record);
+                    headPage.wasChanged = true;
+                    return true;
+                }
 //            VerbosePrint.print("here 1: "+headPtr);
 
-            for (ArrayList<Object> row : headPage.getPageRecords()) {
+                for (ArrayList<Object> row : headPage.getPageRecords()) {
 //                VerbosePrint.print("here 2: "+headPtr+ " with "+record);
 
 
-                int pkid = ((Table) table).pkIdx();
-                String pk_type = table.getAttributes().get(pkid).getAttributeType();
+                    int pkid = ((Table) table).pkIdx();
+                    String pk_type = table.getAttributes().get(pkid).getAttributeType();
 
-                switch (pk_type.charAt(0)) {
-                    case 'I':
-                        int resI = ((Integer) record.get(pkidx)).compareTo((Integer) row.get(pkidx));
-                        if (resI == 0) {
-                            return false;
-                        }
+                    switch (pk_type.charAt(0)) {
+                        case 'I':
+                            int resI = ((Integer) record.get(pkidx)).compareTo((Integer) row.get(pkidx));
+                            if (resI == 0) {
+                                return false;
+                            }
 
-                        if (resI < 0) {
+                            if (resI < 0) {
 
-                            headPage.getPageRecords().add(idx, record);
-                            headPage.wasChanged = true;
-                            return true;
-                        }
-                        break;
-                    case 'D':
+                                headPage.getPageRecords().add(idx, record);
+                                headPage.wasChanged = true;
+                                return true;
+                            }
+                            break;
+                        case 'D':
 
-                        int resD = ((Double) record.get(pkidx)).compareTo((Double) row.get(pkidx));
-                        if (resD == 0) {
-                            return false;
-                        }
+                            int resD = ((Double) record.get(pkidx)).compareTo((Double) row.get(pkidx));
+                            if (resD == 0) {
+                                return false;
+                            }
 
-                        if (resD < 0) {
-                            headPage.getPageRecords().add(idx, record);
-                            headPage.wasChanged = true;
-                            return true;
-                        }
-                        break;
+                            if (resD < 0) {
+                                headPage.getPageRecords().add(idx, record);
+                                headPage.wasChanged = true;
+                                return true;
+                            }
+                            break;
 
-                    case 'B':
+                        case 'B':
 
-                        int resB = ((Boolean) record.get(pkidx)).compareTo((Boolean) row.get(pkidx));
-                        if (resB == 0) {
-                            return false;
-                        }
+                            int resB = ((Boolean) record.get(pkidx)).compareTo((Boolean) row.get(pkidx));
+                            if (resB == 0) {
+                                return false;
+                            }
 
-                        if (resB < 0) {
-                            headPage.getPageRecords().add(idx, record);
-                            headPage.wasChanged = true;
-                            return true;
-                        }
-                        break;
+                            if (resB < 0) {
+                                headPage.getPageRecords().add(idx, record);
+                                headPage.wasChanged = true;
+                                return true;
+                            }
+                            break;
 
-                    default:
-                        int resS = ((record.get(pkidx).toString()).compareTo(row.get(pkidx).toString()));
-                        if (resS == 0) {
-                            return false;
-                        }
-                        if (resS < 0) {
-                            headPage.getPageRecords().add(idx, record);
-                            headPage.wasChanged = true;
-                            return true;
-                        }
-                        break;
+                        default:
+                            int resS = ((record.get(pkidx).toString()).compareTo(row.get(pkidx).toString()));
+                            if (resS == 0) {
+                                return false;
+                            }
+                            if (resS < 0) {
+                                headPage.getPageRecords().add(idx, record);
+                                headPage.wasChanged = true;
+                                return true;
+                            }
+                            break;
+                    }
+
+                    idx++;
                 }
+                // next page
 
-                idx++;
+                headPtr = headPage.getPtrToNextPage();
+
             }
-            // next page
+            // add to last spot in page in table
+            headPage.getPageRecords().add(record);
+            headPage.wasChanged = true;
 
-            headPtr = headPage.getPtrToNextPage();
 
+            return true;
+        }catch (Exception e){
+            System.err.println("Storage manager(insertRecord): error in inserting");
+            return false;
         }
-        // add to last spot in page in table
-        headPage.getPageRecords().add(record);
-        headPage.wasChanged = true;
-
-
-        return true;
     }
 
     //TODO testing
