@@ -259,11 +259,6 @@ public class DMLParser {
 
                     System.out.println(record+"<-------n"+ tokens);
 
-//                    if (tokens.get(tokens.size()-1).equals(")")){
-//                        tokens.set(tokens.size()-2,tokens.get(tokens.size()-2)+")");
-//                        tokens.remove(tokens.size()-1);
-//                    }
-
                     while (!tokens.get(i).endsWith(")")) {
                         record.add(convertAttributeType(attributes.get(i-(4 + (attributes.size() * numberOfInserts)))
                                 .getAttributeType(), tokens.get(i), null, null));
