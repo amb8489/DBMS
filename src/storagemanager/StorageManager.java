@@ -95,11 +95,21 @@ public class StorageManager extends AStorageManager {
     @Override
     public boolean insertRecord(ITable table, ArrayList<Object> record) {
         try {
+
+
             // page name for head is always at idx zero
             int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
 //        VerbosePrint.print("head page: "+headPtr);
             // where in a row the pk is
             int pkidx = ((Table) table).pkIdx();
+
+
+            for (Integer i : ((Table) table).indicesOfNotNullAttributes) {
+                if( record.get(i) == null){
+                    System.err.println("attribute: "+table.getAttributes().get(i).getAttributeName()+" cant be null");
+                    return false;
+                }
+            }
 
             // loop though all the tables pages in order
             Page headPage = null;

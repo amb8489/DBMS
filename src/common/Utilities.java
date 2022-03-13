@@ -19,7 +19,8 @@ public class Utilities {
 
     // check that a type for an atrribute is legal
     public static boolean isNotLegalType(String TypeName) {
-        switch (TypeName.toLowerCase()) {
+        TypeName = TypeName.toLowerCase();
+        switch (TypeName) {
             case "integer":
             case "double":
             case "boolean":
@@ -135,6 +136,11 @@ public class Utilities {
 
     public static String whatType(String s,boolean simplifyTypes) {
 
+
+            if (!simplifyTypes){
+                return whatType(s);
+            }
+
             String type =  whatType(s);
 
             if(type == null){
@@ -145,6 +151,8 @@ public class Utilities {
                 case "double", "integer" -> "Numeric";
                 default -> type;
             };
+
+
 
     }
 

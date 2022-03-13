@@ -160,6 +160,10 @@ public class Phase2Testers {
 //        DMLParser.parseDMLStatement("delete from student;");
 
 
+        //bad null test
+        ArrayList<Object> rowNull = mkRandomRec((Table) studentTab);
+        rowNull.set(0,null);
+        sm.insertRecord(studentTab, rowNull);
 
 
         System.out.println("\n\n----------------------------------------------------");
