@@ -231,35 +231,41 @@ public class StorageManager extends AStorageManager {
 
     //TODO testing
     public boolean deleteRecordWhere(ITable table, String where, Boolean removeAllRecords) {
+        try {
 
-        // page name for head is always at idx zero
-        int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
 
-        ArrayList<Attribute> attributes = table.getAttributes();
-        // loop though all the tables pages in order
-        while (headPtr != -1) {
+            // page name for head is always at idx zero
+            int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
 
-            Page headPage = pb.getPageFromBuffer("" + headPtr, table);
-            // look though all record for that page
+            ArrayList<Attribute> attributes = table.getAttributes();
+            // loop though all the tables pages in order
+            while (headPtr != -1) {
 
-            int recSize = headPage.getPageRecords().size();
+                Page headPage = pb.getPageFromBuffer("" + headPtr, table);
+                // look though all record for that page
 
-            for (int i = recSize - 1; i > -1; i--) {
-                ArrayList<Object> row = headPage.getPageRecords().get(i);
-                if (removeAllRecords || wp.whereIsTrue(where, row, attributes)) {
-                    VerbosePrint.Verbose = true;
-                    VerbosePrint.print("REMOVING" + row);
-                    VerbosePrint.Verbose = false;
+                int recSize = headPage.getPageRecords().size();
 
-                    headPage.getPageRecords().remove(i);
-                    headPage.wasChanged = true;
+                for (int i = recSize - 1; i > -1; i--) {
+                    ArrayList<Object> row = headPage.getPageRecords().get(i);
+                    if (removeAllRecords || wp.whereIsTrue(where, row, attributes)) {
+                        VerbosePrint.Verbose = true;
+                        VerbosePrint.print("REMOVING" + row);
+                        VerbosePrint.Verbose = false;
+
+                        headPage.getPageRecords().remove(i);
+                        headPage.wasChanged = true;
+                    }
                 }
-            }
 
-            // next page
-            headPtr = headPage.getPtrToNextPage();
+                // next page
+                headPtr = headPage.getPtrToNextPage();
+            }
+            return true;
+        }catch (Exception e){
+            System.err.println("error removing in remove where in sm");
+            return false;
         }
-        return false;
     }
 
 

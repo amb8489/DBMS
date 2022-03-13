@@ -40,10 +40,10 @@ public class DMLParser {
     public static boolean parseDMLStatement(String stmt){
       
         if (stmt.toUpperCase().startsWith("DELETE")) {
-            deleteFromTable(stmt);
+            return deleteFromTable(stmt);
         }
         if (stmt.toUpperCase().startsWith("INSERT")) {
-            insertTable(stmt);
+            return insertTable(stmt);
         }
         if (stmt.toUpperCase().startsWith("UPDATE")) {
             updateTable(stmt);
@@ -150,30 +150,34 @@ public class DMLParser {
                                                 ArrayList<Object> row) {
         String[] expression = attribute.split(" ");
         attributeType = attributeType.toLowerCase();
-        switch (attributeType) {
-            case "integer":
-                if (expression.length == 1) {
-                    return Integer.parseInt(attribute);
-                }
-                else {
-                    return evalSetMath(attributeType, expression[0], expression[1], expression[2], attributesList, row);
-                }
-            case "double":
-                if (expression.length == 1) {
-                    return Double.parseDouble(attribute);
-                }
-                else {
-                    return evalSetMath(attributeType, expression[0], expression[1], expression[2], attributesList, row);
-                }
-            case "boolean":
-                return Boolean.parseBoolean(attribute);
-            default:
-                return attribute;
+        try {
+            switch (attributeType) {
+
+
+                case "integer":
+                    if (expression.length == 1) {
+                        return Integer.parseInt(attribute);
+                    } else {
+                        return evalSetMath(attributeType, expression[0], expression[1], expression[2], attributesList, row);
+                    }
+                case "double":
+                    if (expression.length == 1) {
+                        return Double.parseDouble(attribute);
+                    } else {
+                        return evalSetMath(attributeType, expression[0], expression[1], expression[2], attributesList, row);
+                    }
+                case "boolean":
+                    return Boolean.parseBoolean(attribute);
+                default:
+                    return attribute;
+            }
+        }catch (Exception e){
+            return null;
         }
     }
   
   // delete from <tableName> where <condition>
-    private static void deleteFromTable(String stmt) {
+    private static boolean deleteFromTable(String stmt) {
 
         try {
 
@@ -194,42 +198,43 @@ public class DMLParser {
             boolean removeEverything = tokens.size() == 3;
             if (removeEverything) {
                 VerbosePrint.print("removing everyting from table : " + tableName);
-                ((StorageManager) StorageManager.getStorageManager()).deleteRecordWhere(table, "", true);
-                return;
+                return ((StorageManager) StorageManager.getStorageManager()).deleteRecordWhere(table, "", true);
+
             }
             //WHERE CLAUSE found
             String Where = String.join(" ", tokens.subList(4, tokens.size())).replace(";", "");
             System.out.println("where{" + Where + "}");
             // deleteing where is true
-            ((StorageManager) StorageManager.getStorageManager()).deleteRecordWhere(table, Where, false);
+            return ((StorageManager) StorageManager.getStorageManager()).deleteRecordWhere(table, Where, false);
 
 
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("error in removing in DML");
+            return false;
         }
 
 
     }
 
     // insert into <name> values <tuples>
-    private static void insertTable(String stmt) {
+    private static boolean insertTable(String stmt) {
         try{
             // removes redundant spaces and new lines
             stmt = stmt.replace(","," ");
             stmt = stmt.replace(";","");
             List<String> tokens = Utilities.mkTokensFromStr(stmt);
-            System.out.println(tokens);
+            VerbosePrint.print(tokens);
 
             String tableName = tokens.get(2);
 
             // check if table exists; get table
             if (!Catalog.getCatalog().containsTable(tableName)) {
                 System.err.println("The catalog does not contain the table: " + tableName);
-                return;
+                return false;
             }
 
-            System.out.println("inserting to table: " + tableName);
+            VerbosePrint.print("inserting to table: " + tableName);
 
             ITable table = Catalog.getCatalog().getTable(tableName);
             ArrayList<Attribute> attributes = table.getAttributes();
@@ -241,17 +246,29 @@ public class DMLParser {
                     if (!tokens.get(i).startsWith("(")) {
                         System.err.println("The tuples in the insert statement are not in the correct format; " +
                                 "misplaced/missing opening parenthesis");
-                        return;
+                        return false;
                     }
 
                     record.add(convertAttributeType(attributes.get(i-(4 + (attributes.size() * numberOfInserts)))
                             .getAttributeType(), tokens.get(i).substring(1), null, null));
                     i++;
+
+                    System.out.println(record+"<-------n"+ tokens);
+
+                    if (tokens.get(tokens.size()-1).equals(")")){
+                        tokens.set(tokens.size()-2,tokens.get(tokens.size()-2)+")");
+                        tokens.remove(tokens.size()-1);
+                    }
+
                     while (!tokens.get(i).endsWith(")")) {
+
+
                         record.add(convertAttributeType(attributes.get(i-(4 + (attributes.size() * numberOfInserts)))
                                 .getAttributeType(), tokens.get(i), null, null));
                         i++;
                     }
+
+
                     record.add(convertAttributeType(attributes.get(i-(4 + (attributes.size() * numberOfInserts)))
                             .getAttributeType(), tokens.get(i).substring(0, tokens.get(i).length()-1), null, null));
 
@@ -260,11 +277,15 @@ public class DMLParser {
                     if (record.size() == attributes.size()) {
                         boolean insertSuccess = StorageManager.getStorageManager().insertRecord(table, record);
                         System.out.println("insert success: " + insertSuccess);
+                        if (!insertSuccess){
+                            return false;
+                        }
                     }
                     else {
                         System.err.println("The tuples in the insert statement are not in the correct format; " +
                                 "incorrect number of attributes");
-                        return;
+                        return false;
+
                     }
                     numberOfInserts++;
                 }
@@ -273,7 +294,10 @@ public class DMLParser {
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("error in inserting using DML");
+            return false;
+
         }
+        return true;////////////
     }
 
     // update <name> set <column_1> = value where <condition>;

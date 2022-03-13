@@ -189,6 +189,18 @@ public class Phase2Tester {
         return true;
     }
 
+
+
+
+
+
+    ////////////////////////////////////////////
+
+    ////////////////////////////////////////////
+
+    ////////////////////////////////////////////
+
+    ////////////////////////////////////////////
     private static boolean testConstraints(){
         String createTable = "create table table1( attr1 integer, attr2 double notnull, attr3 char(5), primarykey( attr1 ) );";
         System.out.println("Create table stmt:\n" + createTable);
@@ -221,7 +233,7 @@ public class Phase2Tester {
 
         System.out.println("Stmt: " + insertStmt);
 
-        if(DMLParser.parseDMLStatement(insertStmt)){
+        if(DMLParser.parseDMLStatement(insertStmt)){ //<----------------------
             System.err.println("Something went wrong inserting null in notnull attr");
            return false;
         }
@@ -356,11 +368,15 @@ public class Phase2Tester {
         Catalog.createCatalog(args[0], Integer.parseInt(args[1]), Integer.parseInt(args[2]));
         StorageManager.createStorageManager();
 
-        if(!createVeryLargeTable()){
-            System.err.println("Large table test failed.");
-        } else {
-            System.out.println("Large table test passed.");
-        }
+//        if(!createVeryLargeTable()){
+//            System.err.println("Large table test failed.");
+//        } else {
+//            System.out.println("Large table test passed.");
+//        }
+        System.out.println("------------------------------------------------");
+        System.out.println("------------------------------------------------");
+        System.out.println("------------------------------------------------");
+        System.out.println("------------------------------------------------");
 
         if(!testConstraints()){
             System.err.println("Constraints test failed");
