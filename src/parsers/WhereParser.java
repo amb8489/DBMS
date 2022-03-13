@@ -139,7 +139,6 @@ public class WhereParser {
 
 
         // if op is a and/or then we know bothvals are truth vals (t/f)
-        System.out.println(left+" "+right);
         if (((left.equals("true") || left.equals("false")) || (right.equals("true") || right.equals("false")))) {
 
             if (!((left.equals("true") || left.equals("false")) && (right.equals("true") || right.equals("false")))) {

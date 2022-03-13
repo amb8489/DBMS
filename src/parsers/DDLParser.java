@@ -388,22 +388,24 @@ public class DDLParser {
 
             if (stmtTokens.length > 4) {
                 //check that default val type matches the type of the attribute
+                defaultValue = stmtTokens[5];
 
-                String t = Utilities.whatType(stmtTokens[4]);
+                String t = Utilities.whatType(defaultValue);
 
                 if (t == null) {
                     System.err.println("type " + type + " is not a legal type");
                     return false;
                 } else {
-                    if (!t.equals(type)) {
+
+                    if (!t.equalsIgnoreCase(type)) {
 
                         if (!(t.equals("String") && (type.startsWith("Char") || type.startsWith("VarChar")))) {
-                            System.err.println("types for new attribute and default value dont match: " + type + " with " + t);
+                            System.err.println("types for new attribute and default value dont match: " + type + " with " + t + " | default val:"+defaultValue);
                             return false;
                         }
                     }
                 }
-                defaultValue = stmtTokens[4];
+
             }
 
             //add atrribute

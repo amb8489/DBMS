@@ -175,7 +175,7 @@ public class Phase2Testers {
                 alter  
                 table   
                 student
-                add fish Double 10.0;
+                add fish Double default 10.0;
                 """);
         System.out.println(studentTab.tableToString());
 
