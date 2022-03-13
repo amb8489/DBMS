@@ -148,22 +148,23 @@ public class DMLParser {
     private static Object convertAttributeType (String attributeType, String attribute, ArrayList<Attribute> attributesList,
                                                 ArrayList<Object> row) {
         String[] expression = attribute.split(" ");
+        attributeType = attributeType.toLowerCase();
         switch (attributeType) {
-            case "Integer":
+            case "integer":
                 if (expression.length == 1) {
                     return Integer.parseInt(attribute);
                 }
                 else {
                     return evalSetMath(attributeType, expression[0], expression[1], expression[2], attributesList, row);
                 }
-            case "Double":
+            case "double":
                 if (expression.length == 1) {
                     return Double.parseDouble(attribute);
                 }
                 else {
                     return evalSetMath(attributeType, expression[0], expression[1], expression[2], attributesList, row);
                 }
-            case "Boolean":
+            case "boolean":
                 return Boolean.parseBoolean(attribute);
             default:
                 return attribute;

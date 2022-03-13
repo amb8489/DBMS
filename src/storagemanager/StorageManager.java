@@ -142,7 +142,7 @@ public class StorageManager extends AStorageManager {
 
 
                     int pkid = ((Table) table).pkIdx();
-                    String pk_type = table.getAttributes().get(pkid).getAttributeType();
+                    String pk_type = table.getAttributes().get(pkid).getAttributeType().toUpperCase();
 
                     switch (pk_type.charAt(0)) {
                         case 'I' -> {
@@ -150,6 +150,7 @@ public class StorageManager extends AStorageManager {
                             if (resI == 0) {
                                 return false;
                             }
+
                             if (resI < 0) {
 
                                 headPage.getPageRecords().add(idx, record);
@@ -159,6 +160,7 @@ public class StorageManager extends AStorageManager {
                         }
                         case 'D' -> {
                             int resD = ((Double) record.get(pkidx)).compareTo((Double) row.get(pkidx));
+
                             if (resD == 0) {
                                 return false;
                             }
@@ -181,6 +183,7 @@ public class StorageManager extends AStorageManager {
                         }
                         default -> {
                             int resS = ((record.get(pkidx).toString()).compareTo(row.get(pkidx).toString()));
+
                             if (resS == 0) {
                                 return false;
                             }

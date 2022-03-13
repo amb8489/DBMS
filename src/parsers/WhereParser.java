@@ -139,7 +139,7 @@ public class WhereParser {
 
 
         // if op is a and/or then we know bothvals are truth vals (t/f)
-
+        System.out.println(left+" "+right);
         if (((left.equals("true") || left.equals("false")) || (right.equals("true") || right.equals("false")))) {
 
             if (!((left.equals("true") || left.equals("false")) && (right.equals("true") || right.equals("false")))) {
@@ -178,7 +178,7 @@ public class WhereParser {
 
 
         // if both vals are strings
-        if (typeL.equals("String")) {
+        if (typeL.equals("String") || typeL.equals("Boolean")) {
 
             return switch (op) {
                 case "=" -> left.compareTo(right) == 0;
@@ -358,17 +358,18 @@ public class WhereParser {
         attrs.add(new Attribute("fName", "Varchar(10)"));
         attrs.add(new Attribute("lName", "Varchar(10)"));
         attrs.add(new Attribute("age", "Integer"));
-        attrs.add(new Attribute("gpa", "Double"));
+        attrs.add(new Attribute("gpa", "Boolean"));
         attrs.add(new Attribute("ID", "Integer"));
         Attribute pk = attrs.get(4);
 
+        boolean boolval = false;
 
         // ROW VALS
         List<Object> r = new ArrayList<>();
         r.add("\"Aaron\"");
         r.add("Berghash");
         r.add(23);
-        r.add(3.4);
+        r.add(boolval);
         r.add(1);
 
         // STMT
@@ -376,11 +377,10 @@ public class WhereParser {
 
         for (int i = 0; i < 1; i++) {
 
-            String s = "delete from foo where 1 != 1.0001";
+            String s = "delete from foo where gpa != true";
 
             boolean res = parser.whereIsTrue(s, r, attrs);
             System.out.println("STMT: " + res);
-            r.set(3, i);
         }
 
         long endTime = System.currentTimeMillis();
