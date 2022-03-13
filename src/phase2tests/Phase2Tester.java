@@ -270,8 +270,7 @@ public class Phase2Tester {
             System.err.println("Something went wrong inserting to large of a string in the table");
             return false;
         }
-        System.out.println("+++++++++=");
-        System.exit(0);
+
 
         //should fail, setting not null to null
         String updateStmt = "update table1 set attr2 = null where attr1 < 10;";
