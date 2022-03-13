@@ -6,6 +6,11 @@ import common.Attribute;
 import common.ITable;
 import storagemanager.AStorageManager;
 import storagemanager.StorageManager;
+import catalog.Catalog;
+import common.ITable;
+import common.Utilities;
+import common.VerbosePrint;
+import storagemanager.StorageManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +38,10 @@ public class DMLParser {
      * @return true if successfully parsed/executed; false otherwise
      */
     public static boolean parseDMLStatement(String stmt){
+      
+        if (stmt.toUpperCase().startsWith("DELETE")) {
+            deleteFromTable(stmt);
+        }
         if (stmt.toUpperCase().startsWith("INSERT")) {
             insertTable(stmt);
         }
@@ -159,6 +168,46 @@ public class DMLParser {
             default:
                 return attribute;
         }
+    }
+  
+  // delete from <tableName> where <condition>
+    private static void deleteFromTable(String stmt) {
+
+        try {
+
+            // removes redundant spaces and new lines
+            stmt = stmt.replace(";", "");
+            // tokenizing tokens
+            List<String> tokens = Utilities.mkTokensFromStr(stmt);
+
+            // getting the tablet o remove from
+            String tableName = tokens.get(2);
+
+            VerbosePrint.print("deleting from table name:" + tableName);
+
+            // cehck table exists
+            ITable table = Catalog.getCatalog().getTable(tableName);
+
+            // if no where clause then remove all from table
+            boolean removeEverything = tokens.size() == 3;
+            if (removeEverything) {
+                VerbosePrint.print("removing everyting from table : " + tableName);
+                ((StorageManager) StorageManager.getStorageManager()).deleteRecordWhere(table, "", true);
+                return;
+            }
+            //WHERE CLAUSE found
+            String Where = String.join(" ", tokens.subList(4, tokens.size())).replace(";", "");
+            System.out.println("where{" + Where + "}");
+            // deleteing where is true
+            ((StorageManager) StorageManager.getStorageManager()).deleteRecordWhere(table, Where, false);
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("error in removing in DML");
+        }
+
+
     }
 
     // insert into <name> values <tuples>

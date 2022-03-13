@@ -2,56 +2,73 @@ package parsers;
 
 
 import common.Attribute;
+import common.Utilities;
 
 import java.util.*;
-import java.util.regex.Pattern;
 
 import static java.util.Map.entry;
 
 public class WhereParser {
 
+
+
+    // a cache for already seen statements
     private static HashMap<String, Tuple<List<String>, ArrayList<Tuple<Integer, Integer>>>> CacheWhereStmtPlacementPattern = new HashMap<>();
 
+    // used in the shunting yard algo list of operators and their precedence
     private static final Map<String, Integer> precedence = Map.ofEntries(
             entry("and", 1), entry("or", 2),
+
+            entry("AND", 1), entry("OR", 2),
             entry("=", 3), entry("!=", 3),
             entry("<", 3), entry(">", 3),
             entry("<=", 3), entry(">=", 3));
 
+    // operators used
     private static final Set operators = precedence.keySet();
 
 
-    private static boolean Validate(List<String> tokens, List<Object> row) {
 
-
+    // shunting yard algo given a list of tokens
+    // evaluates as it parses
+    private static boolean Validate(List<String> tokens) {
         try {
             // making stacks for shunting yard algo
 
             Stack<String> stack = new Stack<>();
             List<Object> Output = new ArrayList<>();
 
-            // look through each char
+            // look through each tokens
             for (String token : tokens) {
 
+                // is an operator or not
                 boolean OpsContains = operators.contains(token);
+
+                // is a (  or  )
                 boolean isLeftParentheses = token.equals("(");
                 boolean isRightParentheses = token.equals(")");
 
-
+                // is not any special char
                 if (!OpsContains && !isLeftParentheses && !isRightParentheses) {
                     Output.add(token);
 
+                    // if it is a operator
                 } else if (OpsContains) {
                     if (!stack.isEmpty()) {
+
+                        // get the top and see what its precedence
                         String top = stack.peek();
                         Integer tokenPrec = precedence.get(token);
 
-
+                        // pop from stack while precedence of new token <= top of the stack
                         while (!stack.isEmpty() && !top.equals("(") &&
                                 operators.contains(top) && tokenPrec <= precedence.get(top)) {
 
+
+                            // add top to the output
                             String t = stack.pop();
                             Output.add(t);
+
 
                             if (Output.size() >= 3 && operators.contains(t)) {
                                 Object val = eval(Output.get(Output.size() - 3), Output.get(Output.size() - 2), Output.get(Output.size() - 1));
@@ -60,12 +77,14 @@ public class WhereParser {
 
                             }
 
+                            // repeat
                             if (!stack.isEmpty()) {
                                 top = stack.peek();
                             }
+
                         }
                     }
-
+                    // add the new token
                     stack.push(token);
 
                 } else if (isLeftParentheses) {
@@ -89,7 +108,7 @@ public class WhereParser {
                 }
             }
 
-
+            // at the end remove everything and add to output
             while (!stack.isEmpty()) {
                 String t = stack.pop();
                 Output.add(t);
@@ -100,22 +119,37 @@ public class WhereParser {
                     Output.add(val);
                 }
             }
+            // return the result val
             return (boolean) Output.get(Output.size() - 1);
+
+
         } catch (Exception exp) {
             System.err.println(exp);
             return false;
         }
     }
 
-
+    // will evaluate an expression of ether val op val ,  bool op bool
     private static Object eval(Object lexp, Object rexp, Object oplexp) throws Exception {
+
 
         String left = lexp.toString();
         String right = rexp.toString();
         String op = oplexp.toString();
 
 
-        switch (op) {
+        // if op is a and/or then we know bothvals are truth vals (t/f)
+
+        if (((left.equals("true") || left.equals("false")) || (right.equals("true") || right.equals("false")))) {
+
+            if (!((left.equals("true") || left.equals("false")) && (right.equals("true") || right.equals("false")))) {
+                System.err.println("COMPARING DIFFERENT TYPES:" + left + " with " + right);
+                return false;
+            }
+        }
+
+        switch (op.toLowerCase()) {
+
             case "and":
                 return left.equals("true") && right.equals("true");
             case "or":
@@ -125,37 +159,26 @@ public class WhereParser {
         }
 
 
-        boolean leftMatch = false;
-        boolean rightMatch = false;
+        // else vals are variables that need to be checked for truth value
+        // ex: 1 < 5
 
-        Double numLeft = 0.0;
-        Double numRight = 0.0;
 
-        if (left.startsWith("\"") ) {
-            leftMatch = true;
+        // check if vals are strings or numeric
 
-        } else {
+        // check if string by looking for a " or trying to parse into a double
 
-            try {
-                Double.parseDouble(left);
-            }catch (Exception e){
-                leftMatch = true;
-            }
+
+        String typeL = Utilities.whatType(left,true);
+        String typeR = Utilities.whatType(right,true);
+
+
+        if (typeL == null || !typeL.equals(typeR)){
+            throw new Exception("COMPARING DIFFERENT TYPES:" + typeL + " with " + typeR);
         }
 
-        if (right.startsWith("\"")) {
-            rightMatch = true;
 
-        } else {
-
-            try {
-                Double.parseDouble(right);
-            }catch (Exception e){
-                rightMatch = true;
-            }
-        }
-
-        if (leftMatch && rightMatch) {
+        // if both vals are strings
+        if (typeL.equals("String")) {
 
             return switch (op) {
                 case "=" -> left.compareTo(right) == 0;
@@ -166,9 +189,12 @@ public class WhereParser {
                 case ">=" -> left.compareTo(right) >= 0;
                 default -> null;
             };
-        } else if (!leftMatch && !rightMatch) {
-            numLeft = Double.parseDouble(left);
-            numRight = Double.parseDouble(right);
+
+
+            // both are numeric
+        } else {
+            Double numLeft = Double.parseDouble(left);
+            Double numRight = Double.parseDouble(right);
 
             return switch (op) {
                 case "=" -> numLeft.equals(numRight);
@@ -180,18 +206,29 @@ public class WhereParser {
                 default -> null;
             };
         }
-        throw new Exception("COMPARING DIFFERENT TYPES:" + left + " with " + right);
+
+
+        // types don't match
+//        throw new Exception("COMPARING DIFFERENT TYPES:" + left + " with " + right);
 
     }
 
     // TODO check attributes exits when adding
 
-    private static List<String> fillString(String s, List<Object> r, ArrayList<Attribute> attrs) {
 
+    // fill string will get a string ready to be run through the validate function
+    // string needs to be formated correctly and then be split into tokens
+    private static List<String> tokenizer(String s, List<Object> r, ArrayList<Attribute> attrs) {
+
+        // first thing we do is look to see if weve seen this stmt before
+        // if we have then we have cached the work we did on the string the first time we tokenized it
+        // and dont need to do all that work again
         if (!CacheWhereStmtPlacementPattern.containsKey(s)) {
 
+            // save original stmt for caching
             String stmt = s;
 
+            // make sure we have spacing between operators and values
             s = s.replace("(", " ( ");
             s = s.replace(")", " ) ");
 
@@ -204,9 +241,13 @@ public class WhereParser {
             s = s.replace(">  =", " >= ");
             s = s.replace("! =", " != ");
 
+            // tokenize the string by spaces
+            List<String> tokens = Utilities.mkTokensFromStr(s);
 
-            List<String>tokens = StringFormatter.mkTokensFromStr(s);
 
+            // finding the the WHERE token, we only care what comes after the "where"
+            // we start at 1 because we dont want to include the where token just what comes after
+            // removing all prefix to where and the where
             int whereIdx = 1;
             for (String t : tokens) {
                 if (t.equalsIgnoreCase("where")) {
@@ -217,6 +258,7 @@ public class WhereParser {
             }
 
 
+            // mapping the attribute name to the idx of that attribute  needed for later
             HashMap<String, Integer> AttribNames = new HashMap<>();
             for (int i = 0; i < attrs.size(); i++) {
                 AttribNames.put(attrs.get(i).getAttributeName(), i);
@@ -224,10 +266,12 @@ public class WhereParser {
 
 
             // loop though tokens
-
             int tokenIdx = 0;
 
-            //todo make sure attribute is actally in the table if its on the right or left of operator like bazzel in write up
+
+            // what we are looking for is the token to match with the attribute name
+            // if it does then we replace it with the value in the row at that idx
+            // this is what is being cached
             ArrayList<Tuple<Integer, Integer>> IdxsToReplace = new ArrayList<>();
             for (String t : tokens) {
                 // if that token is a column name in the table, (aka an attribute name)
@@ -241,20 +285,29 @@ public class WhereParser {
                 }
                 tokenIdx++;
             }
+
+            // caching
             Tuple<List<String>, ArrayList<Tuple<Integer, Integer>>> tup = new Tuple<>(tokens, IdxsToReplace);
             CacheWhereStmtPlacementPattern.put(stmt, tup);
+
+            // return tokens ready to go to the validator
+            return tokens;
+        } else {
+
+            // getting cached vals token idx to be replaced with idx in row
+            Tuple<List<String>, ArrayList<Tuple<Integer, Integer>>> cached = CacheWhereStmtPlacementPattern.get(s);
+            List<String> tokens = cached.x;
+            ArrayList<Tuple<Integer, Integer>> replaceAt = cached.y;
+
+
+            // doing the repayment
+            for (Tuple<Integer, Integer> t : replaceAt) {
+                tokens.set(t.x, r.get(t.y).toString());
+            }
+
+
             return tokens;
         }
-
-
-        Tuple<List<String>, ArrayList<Tuple<Integer, Integer>>> cached = CacheWhereStmtPlacementPattern.get(s);
-        List<String> tokens = cached.x;
-        ArrayList<Tuple<Integer, Integer>> replaceAt = cached.y;
-        for (Tuple<Integer, Integer> t : replaceAt) {
-            tokens.set(t.x, r.get(t.y).toString());
-        }
-
-        return tokens;
     }
 
     /*--------------    HOW TO USE  -------------------
@@ -280,14 +333,16 @@ public class WhereParser {
     ...
 
 
-    if (whereIsTrue(stmt, row attribs)){
+
+    if (whereIsTrue("delete from foo where (Fname = Aaron and Gpa < 3) or HeightI = 71", row attribs)){
         delete record
     }
     ...
             */
     public boolean whereIsTrue(String stmt, List<Object> row, ArrayList<Attribute> attrs) {
-        List<String> tokens = fillString(stmt, row, attrs);
-        return Validate(tokens, row);
+
+        List<String> tokens = tokenizer(stmt, row, attrs);
+        return Validate(tokens);
     }
 
 
@@ -320,10 +375,11 @@ public class WhereParser {
         long startTime = System.currentTimeMillis();
 
         for (int i = 0; i < 1; i++) {
-            String s = "delete from foo where gpa < 1 or fName = \"berg\"";
+
+            String s = "delete from foo where 1 != 1.0001";
 
             boolean res = parser.whereIsTrue(s, r, attrs);
-//            System.out.println("STMT IS :" + res);
+            System.out.println("STMT: " + res);
             r.set(3, i);
         }
 

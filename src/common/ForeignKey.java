@@ -32,7 +32,7 @@ public record ForeignKey(String refTableName, String refAttribute, String attrNa
 
     @Override
     public String toString() {
-        return String.format("%s references %s($s)", attrName, refTableName, refAttribute);
+        return String.format("%s references %s(%s)", attrName, refTableName, refAttribute);
     }
 
     @Override

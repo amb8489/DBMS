@@ -73,7 +73,7 @@ public class FileSystem {
         // code that allows for the enum to hold values
         // https://www.baeldung.com/java-enum-values
         public final String rel_loc;  //the location relative to the base location
-        private FilePath(String rel_loc) {
+        FilePath(String rel_loc) {
             this.rel_loc = rel_loc;
         }
     }
@@ -87,6 +87,7 @@ public class FileSystem {
         Path pagePath = Paths.get(FilePath.PAGES.rel_loc);  // DBLocation should be set by first if
         Path tabsPath = Paths.get(FilePath.TABS.rel_loc);
         Path catPath = Paths.get(FilePath.CATALOG.rel_loc);
+
 
         // establish pages directory
         if(!Files.exists(pagePath)){ //if there's not already a pages directory, make one
