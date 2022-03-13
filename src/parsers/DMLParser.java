@@ -216,7 +216,7 @@ public class DMLParser {
             // removes redundant spaces and new lines
             stmt = stmt.replace(","," ");
             stmt = stmt.replace(";","");
-            List<String> tokens = StringFormatter.mkTokensFromStr(stmt);
+            List<String> tokens = Utilities.mkTokensFromStr(stmt);
             System.out.println(tokens);
 
             String tableName = tokens.get(2);
@@ -279,7 +279,7 @@ public class DMLParser {
         try {
             // removes redundant spaces and new lines
             stmt = stmt.replace(";","");
-            List<String> tokens = StringFormatter.mkTokensFromStr(stmt);
+            List<String> tokens = Utilities.mkTokensFromStr(stmt);
             System.out.println(tokens);
 
             String tableName = tokens.get(1);
@@ -360,7 +360,7 @@ public class DMLParser {
 
 
     public static void main(String[] args) {
-        ACatalog catalog = ACatalog.createCatalog("/Users/aryanjha/Documents/CSCI 421", 100, 10);
+        ACatalog catalog = Catalog.createCatalog("DB", 4048, 10);
         AStorageManager sm = AStorageManager.createStorageManager();
 
         ArrayList<Attribute> attributes = new ArrayList<>();

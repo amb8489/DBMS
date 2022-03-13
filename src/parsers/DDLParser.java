@@ -35,7 +35,6 @@ public class DDLParser {
         System.out.println(stmt);
 
         if (stmt.toLowerCase().startsWith("create table")) {
-
             return CreateTable(stmt);
         } else if (stmt.toLowerCase().startsWith("drop table")) {
             return dropTable(stmt);
