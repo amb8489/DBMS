@@ -201,4 +201,46 @@ public class Utilities {
 
 
     }
+
+    // given a char(#) or varchar(#) attribute and a string itll see if that string is too long/short for the #
+    public static boolean isStringTooLong(String attribute, String string){
+
+
+
+
+
+        String type = attribute.toLowerCase();
+        if (type.startsWith("char(") || type.startsWith("varchar(")) {
+
+
+            // lets get how big the string can be and if its too big or small
+
+            int idxOfLeftParen = type.indexOf("(")+1;
+            int idxOfRightParen = type.indexOf(")");
+
+            int StringSize = Integer.parseInt(type.substring(idxOfLeftParen, idxOfRightParen));
+
+            // can simpilfy but for ltr
+            if (type.toLowerCase().startsWith("char(")) {
+                if (string.length() > StringSize) {
+                    return true;
+                }
+
+
+            } else if (type.toLowerCase().startsWith("varchar(")) {
+                if (string.length() > StringSize) {
+                    return true;
+                }
+
+
+            }
+
+            return false;
+
+        }else {
+            return true;
+        }
+    }
+
+
 }

@@ -403,10 +403,6 @@ public class DDLParser {
                     if (defaultValueType.equals("String")) {
 
 
-                        if (defaultValue.startsWith("\"") && defaultValue.endsWith("\"")){
-                            defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
-
-                        }
 
                         // was the type given a string as well
                         if (type.toLowerCase().startsWith("char(") || type.toLowerCase().startsWith("varchar(")) {
@@ -414,29 +410,11 @@ public class DDLParser {
 
                             // lets get how big the string can be and if its too big or small
 
-                            int idxOfLeftParen = type.indexOf("(")+1;
-                            int idxOfRightParen = type.indexOf(")");
-
-                            int StringSize = Integer.parseInt(type.substring(idxOfLeftParen, idxOfRightParen));
-                            System.out.println(StringSize);
-
-
-                            if (type.toLowerCase().startsWith("char(")) {
-                                if (defaultValue.length() != StringSize) {
-                                    System.err.println("default val: {" + defaultValue + "} is of wrong size for " + type);
-                                    return false;
-                                }
-
-
-                            } else if (type.toLowerCase().startsWith("varchar(")) {
-                                if (defaultValue.length() > StringSize) {
-                                    System.err.println("default val: {" + defaultValue + "} is of wrong size for " + type);
-                                    return false;
-                                }
-
-                            } else {
-                                System.err.println("sothing wrong with string types");
+                            if(Utilities.isStringTooLong(defaultValueType,defaultValue)) {
+                                System.err.println("string: "+defaultValue +" too long for type: "+defaultValueType);
+                                return false;
                             }
+
                         } else {
                             System.err.println("types for new attribute and default value dont match: " + type + " with " + defaultValueType + " | default val:" + defaultValue);
                             return false;
