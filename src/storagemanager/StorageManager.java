@@ -106,10 +106,12 @@ public class StorageManager extends AStorageManager {
             // all string will not have " " at front and end
             int idxx = 0;
             for(Object val : record) {
-                if(table.getAttributes().get(idxx).getAttributeType().endsWith(")")){
-                    String recVal = val.toString();
-                    if (recVal.startsWith("\"") && recVal.endsWith("\"")) {
-                        record.set(idxx,recVal.substring(1, ((String)val).length() - 1));
+                String attribType = table.getAttributes().get(idxx).getAttributeType();
+                if(attribType.endsWith(")")){
+                    String str = (String)record.get(idxx);
+                    if(str!= null && Utilities.isStringTooLong(attribType,str)){
+                        System.err.println("string: "+record.get(idxx) +" too long fr type: "+attribType);
+                        return false;
                     }
                 }
                 idxx++;

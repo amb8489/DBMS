@@ -233,7 +233,7 @@ public class Phase2Tester {
 
         System.out.println("Stmt: " + insertStmt);
 
-        if(DMLParser.parseDMLStatement(insertStmt)){ //<----------------------
+        if(DMLParser.parseDMLStatement(insertStmt)){
             System.err.println("Something went wrong inserting null in notnull attr");
            return false;
         }
@@ -270,6 +270,8 @@ public class Phase2Tester {
             System.err.println("Something went wrong inserting to large of a string in the table");
             return false;
         }
+        System.out.println("+++++++++=");
+        System.exit(0);
 
         //should fail, setting not null to null
         String updateStmt = "update table1 set attr2 = null where attr1 < 10;";
@@ -368,11 +370,11 @@ public class Phase2Tester {
         Catalog.createCatalog(args[0], Integer.parseInt(args[1]), Integer.parseInt(args[2]));
         StorageManager.createStorageManager();
 
-//        if(!createVeryLargeTable()){
-//            System.err.println("Large table test failed.");
-//        } else {
-//            System.out.println("Large table test passed.");
-//        }
+        if(!createVeryLargeTable()){
+            System.err.println("Large table test failed.");
+        } else {
+            System.out.println("Large table test passed.");
+        }
         System.out.println("------------------------------------------------");
         System.out.println("------------------------------------------------");
         System.out.println("------------------------------------------------");
