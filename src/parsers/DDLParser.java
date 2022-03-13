@@ -257,7 +257,7 @@ public class DDLParser {
 
             Table newTab = ((Table) cat.getTable(TableName));
             for (ForeignKey fk : TableForeignkeys) {
-                if(!newTab.addForeignKey(fk)){
+                if (!newTab.addForeignKey(fk)) {
                     return false;
                 }
             }
@@ -390,24 +390,57 @@ public class DDLParser {
                 //check that default val type matches the type of the attribute
                 defaultValue = stmtTokens[5];
 
-                String t = Utilities.whatType(defaultValue);
+                String defaultValueType = Utilities.whatType(defaultValue);
 
-                if (t == null) {
+                if (defaultValueType == null) {
                     System.err.println("type " + type + " is not a legal type");
                     return false;
                 } else {
 
-                    if (!t.equalsIgnoreCase(type)) {
+                    // if our default is a string let check that its legal for the type of string
+                    if (defaultValueType.equals("String")) {
 
-                        if (!(t.equals("String") && (type.startsWith("Char") || type.startsWith("VarChar")))) {
-                            System.err.println("types for new attribute and default value dont match: " + type + " with " + t + " | default val:"+defaultValue);
+                        // was the type given a string as well
+                        if (type.toLowerCase().startsWith("char(") || type.toLowerCase().startsWith("varchar(")) {
+
+
+                            // lets get how big the string can be and if its too big or small
+
+                            int idxOfLeftParen = type.indexOf("(")+1;
+                            int idxOfRightParen = type.indexOf(")");
+
+                            int StringSize = Integer.parseInt(type.substring(idxOfLeftParen, idxOfRightParen));
+                            System.out.println(StringSize);
+
+
+                            if (type.toLowerCase().startsWith("char(")) {
+                                if (defaultValue.length() != StringSize) {
+                                    System.err.println("default val: {" + defaultValue + "} is of wrong size for " + type);
+                                    return false;
+                                }
+
+
+                            } else if (type.toLowerCase().startsWith("varchar(")) {
+                                if (defaultValue.length() > StringSize) {
+                                    System.err.println("default val: {" + defaultValue + "} is of wrong size for " + type);
+                                    return false;
+                                }
+
+                            } else {
+                                System.err.println("sothing wrong with string types");
+                            }
+                        } else {
+                            System.err.println("types for new attribute and default value dont match: " + type + " with " + defaultValueType + " | default val:" + defaultValue);
+                            return false;
+                        }
+                    } else {
+                        if (!defaultValueType.equalsIgnoreCase(type)) {
+                            System.err.println("types for new attribute and default value dont match: " + type + " with " + defaultValueType + " | default val:" + defaultValue);
                             return false;
                         }
                     }
                 }
-
             }
-
             //add atrribute
             if (Catalog.getCatalog().getTable(TableName).addAttribute(attributeName, type)) {
                 // add default val
@@ -456,7 +489,7 @@ public class DDLParser {
                                 
                                 
                                 
-                add fish VarChar(8);
+                add fish Char(8);
                 """);
     }
 }

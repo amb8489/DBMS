@@ -175,7 +175,7 @@ public class Phase2Testers {
                 alter  
                 table   
                 student
-                add fish Double default 10.0;
+                add fish boolean default true;
                 """);
         System.out.println(studentTab.tableToString());
 
@@ -208,7 +208,7 @@ public class Phase2Testers {
                 alter  
                 table   
                 student
-                add time Integer;
+                add time boolean default aa;
                 """);
 
         System.out.println(studentTab.tableToString());
