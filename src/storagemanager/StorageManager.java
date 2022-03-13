@@ -103,6 +103,19 @@ public class StorageManager extends AStorageManager {
             // where in a row the pk is
             int pkidx = ((Table) table).pkIdx();
 
+            // all string will not have " " at front and end
+            int idxx = 0;
+            for(Object val : record) {
+                if(table.getAttributes().get(idxx).getAttributeType().endsWith(")")){
+                    String recVal = val.toString();
+                    if (recVal.startsWith("\"") && recVal.endsWith("\"")) {
+                        record.set(idxx,recVal.substring(1, ((String)val).length() - 1));
+                    }
+                }
+                idxx++;
+            }
+
+
 
             for (Integer i : ((Table) table).indicesOfNotNullAttributes) {
                 if( record.get(i) == null){
@@ -126,7 +139,7 @@ public class StorageManager extends AStorageManager {
 //            VerbosePrint.print(headPage.getPageRecords());
 
 
-                int idx = 0;
+                 int idx = 0;
 
                 if (headPage.getPageRecords().size() == 0) {
 //                VerbosePrint.print("head page size 0: "+headPtr);
@@ -188,6 +201,8 @@ public class StorageManager extends AStorageManager {
                                 return false;
                             }
                             if (resS < 0) {
+
+
                                 headPage.getPageRecords().add(idx, record);
                                 headPage.wasChanged = true;
                                 return true;

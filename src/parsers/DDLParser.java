@@ -400,6 +400,12 @@ public class DDLParser {
                     // if our default is a string let check that its legal for the type of string
                     if (defaultValueType.equals("String")) {
 
+
+                        if (defaultValue.startsWith("\"") && defaultValue.endsWith("\"")){
+                            defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
+
+                        }
+
                         // was the type given a string as well
                         if (type.toLowerCase().startsWith("char(") || type.toLowerCase().startsWith("varchar(")) {
 
