@@ -11,12 +11,14 @@ import static java.util.Map.entry;
 public class WhereParser {
 
 
+
     // a cache for already seen statements
     private static HashMap<String, Tuple<List<String>, ArrayList<Tuple<Integer, Integer>>>> CacheWhereStmtPlacementPattern = new HashMap<>();
 
     // used in the shunting yard algo list of operators and their precedence
     private static final Map<String, Integer> precedence = Map.ofEntries(
             entry("and", 1), entry("or", 2),
+
             entry("AND", 1), entry("OR", 2),
             entry("=", 3), entry("!=", 3),
             entry("<", 3), entry(">", 3),
@@ -24,6 +26,7 @@ public class WhereParser {
 
     // operators used
     private static final Set operators = precedence.keySet();
+
 
 
     // shunting yard algo given a list of tokens
@@ -67,11 +70,11 @@ public class WhereParser {
                             Output.add(t);
 
 
-                            // eval if we can
                             if (Output.size() >= 3 && operators.contains(t)) {
                                 Object val = eval(Output.get(Output.size() - 3), Output.get(Output.size() - 2), Output.get(Output.size() - 1));
                                 Output = Output.subList(0, Output.size() - 3);
                                 Output.add(val);
+
                             }
 
                             // repeat
@@ -109,7 +112,7 @@ public class WhereParser {
             while (!stack.isEmpty()) {
                 String t = stack.pop();
                 Output.add(t);
-                // eval as we go
+
                 if (Output.size() >= 3 && operators.contains(t)) {
                     Object val = eval(Output.get(Output.size() - 3), Output.get(Output.size() - 2), Output.get(Output.size() - 1));
                     Output = Output.subList(0, Output.size() - 3);
@@ -129,9 +132,11 @@ public class WhereParser {
     // will evaluate an expression of ether val op val ,  bool op bool
     private static Object eval(Object lexp, Object rexp, Object oplexp) throws Exception {
 
+
         String left = lexp.toString();
         String right = rexp.toString();
         String op = oplexp.toString();
+
 
         // if op is a and/or then we know bothvals are truth vals (t/f)
 
@@ -152,6 +157,7 @@ public class WhereParser {
             default:
                 break;
         }
+
 
         // else vals are variables that need to be checked for truth value
         // ex: 1 < 5
@@ -184,6 +190,7 @@ public class WhereParser {
                 default -> null;
             };
 
+
             // both are numeric
         } else {
             Double numLeft = Double.parseDouble(left);
@@ -200,12 +207,14 @@ public class WhereParser {
             };
         }
 
+
         // types don't match
 //        throw new Exception("COMPARING DIFFERENT TYPES:" + left + " with " + right);
 
     }
 
     // TODO check attributes exits when adding
+
 
     // fill string will get a string ready to be run through the validate function
     // string needs to be formated correctly and then be split into tokens
@@ -259,6 +268,7 @@ public class WhereParser {
             // loop though tokens
             int tokenIdx = 0;
 
+
             // what we are looking for is the token to match with the attribute name
             // if it does then we replace it with the value in the row at that idx
             // this is what is being cached
@@ -275,6 +285,7 @@ public class WhereParser {
                 }
                 tokenIdx++;
             }
+
             // caching
             Tuple<List<String>, ArrayList<Tuple<Integer, Integer>>> tup = new Tuple<>(tokens, IdxsToReplace);
             CacheWhereStmtPlacementPattern.put(stmt, tup);
@@ -287,6 +298,7 @@ public class WhereParser {
             Tuple<List<String>, ArrayList<Tuple<Integer, Integer>>> cached = CacheWhereStmtPlacementPattern.get(s);
             List<String> tokens = cached.x;
             ArrayList<Tuple<Integer, Integer>> replaceAt = cached.y;
+
 
             // doing the repayment
             for (Tuple<Integer, Integer> t : replaceAt) {
@@ -321,12 +333,14 @@ public class WhereParser {
     ...
 
 
+
     if (whereIsTrue("delete from foo where (Fname = Aaron and Gpa < 3) or HeightI = 71", row attribs)){
         delete record
     }
     ...
             */
     public boolean whereIsTrue(String stmt, List<Object> row, ArrayList<Attribute> attrs) {
+
         List<String> tokens = tokenizer(stmt, row, attrs);
         return Validate(tokens);
     }
@@ -361,6 +375,7 @@ public class WhereParser {
         long startTime = System.currentTimeMillis();
 
         for (int i = 0; i < 1; i++) {
+
             String s = "delete from foo where 1 != 1.0001";
 
             boolean res = parser.whereIsTrue(s, r, attrs);
