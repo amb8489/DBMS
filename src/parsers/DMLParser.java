@@ -221,7 +221,11 @@ public class DMLParser {
     private static boolean insertTable(String stmt) {
         try{
             // removes redundant spaces and new lines
+            stmt = Utilities.format(stmt);
+            stmt = stmt.replace("( ","(");
+            stmt = stmt.replace(" )",")");
             stmt = stmt.replace(","," ");
+            stmt = stmt.replace("\"","");
             stmt = stmt.replace(";","");
             List<String> tokens = Utilities.mkTokensFromStr(stmt);
             VerbosePrint.print(tokens);
@@ -255,22 +259,21 @@ public class DMLParser {
 
                     System.out.println(record+"<-------n"+ tokens);
 
-                    if (tokens.get(tokens.size()-1).equals(")")){
-                        tokens.set(tokens.size()-2,tokens.get(tokens.size()-2)+")");
-                        tokens.remove(tokens.size()-1);
-                    }
+//                    if (tokens.get(tokens.size()-1).equals(")")){
+//                        tokens.set(tokens.size()-2,tokens.get(tokens.size()-2)+")");
+//                        tokens.remove(tokens.size()-1);
+//                    }
 
                     while (!tokens.get(i).endsWith(")")) {
-
-
                         record.add(convertAttributeType(attributes.get(i-(4 + (attributes.size() * numberOfInserts)))
                                 .getAttributeType(), tokens.get(i), null, null));
                         i++;
                     }
 
-
-                    record.add(convertAttributeType(attributes.get(i-(4 + (attributes.size() * numberOfInserts)))
-                            .getAttributeType(), tokens.get(i).substring(0, tokens.get(i).length()-1), null, null));
+                    if(!tokens.get(i).strip().equals(")")) {
+                        record.add(convertAttributeType(attributes.get(i - (4 + (attributes.size() * numberOfInserts)))
+                                .getAttributeType(), tokens.get(i).substring(0, tokens.get(i).length() - 1), null, null));
+                    }
 
                     System.out.println(record);
 
@@ -301,7 +304,7 @@ public class DMLParser {
     }
 
     // update <name> set <column_1> = value where <condition>;
-    private static void updateTable(String stmt) {
+    private static boolean updateTable(String stmt) {
         try {
             // removes redundant spaces and new lines
             stmt = stmt.replace(";","");
@@ -313,7 +316,7 @@ public class DMLParser {
             // check if table exists; get table
             if (!Catalog.getCatalog().containsTable(tableName)) {
                 System.err.println("The catalog does not contain the table: " + tableName);
-                return;
+                return false;
             }
 
             System.out.println("updating the table: " + tableName);
@@ -322,6 +325,8 @@ public class DMLParser {
 
             ArrayList<ArrayList<Object>> records = StorageManager.getStorageManager().getRecords(table);
             ArrayList<Attribute> attributes = table.getAttributes();
+
+            boolean updateSuccess = false;
 
             if (tokens.get(6).equalsIgnoreCase("where")) {
                 WhereParser wp = new WhereParser();
@@ -337,7 +342,7 @@ public class DMLParser {
                                     newRow.add(row.get(i));
                                 }
                             }
-                            boolean updateSuccess = StorageManager.getStorageManager().updateRecord(table, row, newRow);
+                            updateSuccess = StorageManager.getStorageManager().updateRecord(table, row, newRow);
                             System.out.println("update success:" + updateSuccess);
                         }
                     }
@@ -358,16 +363,19 @@ public class DMLParser {
                                     newRow.add(row.get(i));
                                 }
                             }
-                            boolean updateSuccess = StorageManager.getStorageManager().updateRecord(table, row, newRow);
+                            updateSuccess = StorageManager.getStorageManager().updateRecord(table, row, newRow);
                             System.out.println("update success:" + updateSuccess);
                         }
                     }
                 }
             }
 
+            return updateSuccess;
+
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("error in updating using DML");
+            return false;
         }
     }
 
