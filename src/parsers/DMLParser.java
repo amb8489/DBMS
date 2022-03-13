@@ -63,8 +63,9 @@ public class DMLParser {
      */
     private static Object evalSetMath (String attributeType, String statement1, String operator, String statement2,
                                        ArrayList<Attribute> attributesList, ArrayList<Object> row) {
+        attributeType = attributeType.toLowerCase();
         switch (attributeType) {
-            case "Integer":
+            case "integer":
                 int attr1Int = 0;
                 boolean attr1IntChanged = false;
                 int attr2Int = 0;
@@ -98,7 +99,7 @@ public class DMLParser {
                     case "/":
                         return attr1Int / attr2Int;
                 }
-            case "Double":
+            case "double":
                 double attr1Double = 0;
                 boolean attr1DoubleChanged = false;
                 double attr2Double = 0;
