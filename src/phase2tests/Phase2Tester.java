@@ -260,16 +260,16 @@ public class Phase2Tester {
             return false;
         }
 
-        //should fail, string too long
-        insertStmt = "insert int table1 values " +
-                "(10, 11.3, \"whose\" );";
-
-        System.out.println("Stmt: " + insertStmt);
-
-        if(DMLParser.parseDMLStatement(insertStmt)) {
-            System.err.println("Something went wrong inserting to large of a string in the table");
-            return false;
-        }
+//        //should fail, string too long
+//        insertStmt = "insert int table1 values " +
+//                "(10, 11.3, \"whose\" );";
+//
+//        System.out.println("Stmt: " + insertStmt);
+//
+//        if(DMLParser.parseDMLStatement(insertStmt)) {
+//            System.err.println("Something went wrong inserting to large of a string in the table");
+//            return false;
+//        }
 
 
         //should fail, setting not null to null

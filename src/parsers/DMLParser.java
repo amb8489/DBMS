@@ -46,9 +46,9 @@ public class DMLParser {
             return insertTable(stmt);
         }
         if (stmt.toUpperCase().startsWith("UPDATE")) {
-            updateTable(stmt);
+            return updateTable(stmt);
         }
-        return true;
+        return false;
     }
 
     /**
@@ -339,6 +339,7 @@ public class DMLParser {
                             }
                             updateSuccess = StorageManager.getStorageManager().updateRecord(table, row, newRow);
                             System.out.println("update success:" + updateSuccess);
+                            return updateSuccess;
                         }
                     }
                 }
@@ -360,6 +361,7 @@ public class DMLParser {
                             }
                             updateSuccess = StorageManager.getStorageManager().updateRecord(table, row, newRow);
                             System.out.println("update success:" + updateSuccess);
+                            return updateSuccess;
                         }
                     }
                 }
