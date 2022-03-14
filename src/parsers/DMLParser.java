@@ -2,14 +2,11 @@ package parsers;
 
 import catalog.ACatalog;
 import catalog.Catalog;
-import common.Attribute;
-import common.ITable;
+import common.*;
 import storagemanager.AStorageManager;
 import storagemanager.StorageManager;
 import catalog.Catalog;
 import common.ITable;
-import common.Utilities;
-import common.VerbosePrint;
 import storagemanager.StorageManager;
 
 import java.util.ArrayList;
@@ -203,7 +200,7 @@ public class DMLParser {
             }
             //WHERE CLAUSE found
             String Where = String.join(" ", tokens.subList(4, tokens.size())).replace(";", "");
-            System.out.println("where{" + Where + "}");
+//            System.out.println("where{" + Where + "}");
             // deleteing where is true
             return ((StorageManager) StorageManager.getStorageManager()).deleteRecordWhere(table, Where, false);
 
@@ -267,7 +264,7 @@ public class DMLParser {
                                 .getAttributeType(), tokens.get(i).substring(1), null, null));
                         i++;
 
-                        System.out.println(record+"<-------n"+ tokens);
+//                        System.out.println(record+"<-------n"+ tokens);
 
                         while (!tokens.get(i).endsWith(")")) {
                             record.add(convertAttributeType(attributes.get(i-(4 + (attributes.size() * numberOfInserts)))
@@ -281,11 +278,11 @@ public class DMLParser {
                         }
                     }
 
-                    System.out.println(record);
+//                    System.out.println(record);
 
                     if (record.size() == attributes.size()) {
                         boolean insertSuccess = StorageManager.getStorageManager().insertRecord(table, record);
-                        System.out.println("insert success: " + insertSuccess);
+//                        System.out.println("insert success: " + insertSuccess);
                         if (!insertSuccess){
                             return false;
                         }
@@ -316,7 +313,7 @@ public class DMLParser {
             // removes redundant spaces and new lines
             stmt = stmt.replace(";","");
             List<String> tokens = Utilities.mkTokensFromStr(stmt);
-            System.out.println(tokens);
+//            System.out.println(tokens);
 
             String tableName = tokens.get(1);
 
@@ -341,12 +338,13 @@ public class DMLParser {
             }
 
 
-            System.out.println("updating the table: " + tableName);
+//            System.out.println("updating the table: " + tableName);
 
             ITable table = Catalog.getCatalog().getTable(tableName);
 
             ArrayList<ArrayList<Object>> records = StorageManager.getStorageManager().getRecords(table);
             ArrayList<Attribute> attributes = table.getAttributes();
+//            ArrayList<Attribute> attributes = ((Table)table).indicesOfNotNullAttributes;
 
             boolean updateSuccess = false;
 
@@ -365,7 +363,10 @@ public class DMLParser {
                                 }
                             }
                             updateSuccess = StorageManager.getStorageManager().updateRecord(table, row, newRow);
-                            System.out.println("update success:" + updateSuccess);
+//                            System.out.println("update success:" + updateSuccess);
+                            if(!updateSuccess){
+                                StorageManager.getStorageManager().insertRecord(table,row);
+                            }
                             return updateSuccess;
                         }
                     }
@@ -387,7 +388,10 @@ public class DMLParser {
                                 }
                             }
                             updateSuccess = StorageManager.getStorageManager().updateRecord(table, row, newRow);
-                            System.out.println("update success:" + updateSuccess);
+                            if(!updateSuccess){
+                                StorageManager.getStorageManager().updateRecord(table, newRow,row);
+                            }
+//                            System.out.println("update success:" + updateSuccess);
                             return updateSuccess;
                         }
                     }

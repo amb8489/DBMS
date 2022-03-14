@@ -9,7 +9,7 @@ import common.*;
 import pagebuffer.PageBuffer;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 
 import filesystem.FileSystem;
 import parsers.WhereParser;
@@ -71,6 +71,51 @@ public class StorageManager extends AStorageManager {
         return null;
     }
 
+
+    public boolean TableContainsFkVal(ForeignKey fk, Object wanted) {
+        try {
+            Table FkTable = (Table) Catalog.getCatalog().getTable(fk.getRefTableName());
+
+            // page name for head is always at idx zero
+            int headPtr = ((Table) FkTable).getPagesThatBelongToMe().get(0);
+
+            // where in a row the fk val is
+
+
+            int fkidx = 0;
+            for (Attribute a:  FkTable.getAttributes()){
+                if (a.getAttributeName().equals(fk.refAttribute())){
+                    break;
+                }else{
+                    fkidx++;
+                }
+            }
+
+            // loop though all the tables pages in order to find
+            while (headPtr != -1) {
+
+                Page headPage = pb.getPageFromBuffer("" + headPtr, FkTable);
+                // look though all record for that page
+                for (ArrayList<Object> row : headPage.getPageRecords()) {
+//                    System.err.println(row.get(fkidx)+"--------------"+fk);
+
+                    if (row.get(fkidx).equals(wanted)) {
+                        return true;
+                    }
+                }
+                // next page
+                headPtr = headPage.getPtrToNextPage();
+            }
+            return false;
+
+
+        }catch (Exception e){
+            System.err.println("could not find val in fk table");
+            return false;
+        }
+    }
+
+
     @Override
     public ArrayList<ArrayList<Object>> getRecords(ITable table) {
 
@@ -105,27 +150,47 @@ public class StorageManager extends AStorageManager {
 
             // all string will not have " " at front and end
             int idxx = 0;
-            for(Object val : record) {
+            for (Object val : record) {
                 String attribType = table.getAttributes().get(idxx).getAttributeType();
-                if(attribType.endsWith(")")){
-                    String str = (String)record.get(idxx);
-                    if(str!= null && Utilities.isStringTooLong(attribType,str)){
-                        System.err.println("string: "+record.get(idxx) +" too long fr type: "+attribType);
+                if (attribType.endsWith(")")) {
+                    String str = (String) record.get(idxx);
+                    if (str != null && Utilities.isStringTooLong(attribType, str)) {
+                        System.err.println("string: " + record.get(idxx) + " too long fr type: " + attribType);
                         return false;
                     }
-                    // removing " before plaving in db
-                    record.set(idxx,str.replace("\"",""));
+                    if (str != null) {
+                        // removing " before plaving in db
+                        record.set(idxx, str.replace("\"", ""));
+                    }
                 }
                 idxx++;
             }
 
 
-
             for (Integer i : ((Table) table).indicesOfNotNullAttributes) {
-                if( record.get(i) == null){
-                    System.err.println("attribute: "+table.getAttributes().get(i).getAttributeName()+" cant be null");
+                if (record.get(i) == null) {
+                    System.err.println("attribute: " + table.getAttributes().get(i).getAttributeName() + " cant be null");
                     return false;
                 }
+            }
+
+
+            HashMap<String, Integer> AttribNamesIdx = new HashMap<>();
+            ArrayList<Attribute> attrs = table.getAttributes();
+            for (int i = 0; i < table.getAttributes().size(); i++) {
+                AttribNamesIdx.put(attrs.get(i).getAttributeName(), i);
+            }
+
+
+            for (ForeignKey fk : (table).getForeignKeys()) {
+                String fkAttribute = fk.getAttrName();
+                Object valueToFindInFKtab = record.get(AttribNamesIdx.get(fkAttribute));
+                System.err.println(valueToFindInFKtab+"--------------"+fk);
+
+                if (!TableContainsFkVal(fk, valueToFindInFKtab)) {
+                    return false;
+                }
+
             }
 
             // loop though all the tables pages in order
@@ -143,7 +208,7 @@ public class StorageManager extends AStorageManager {
 //            VerbosePrint.print(headPage.getPageRecords());
 
 
-                 int idx = 0;
+                int idx = 0;
 
                 if (headPage.getPageRecords().size() == 0) {
 //                VerbosePrint.print("head page size 0: "+headPtr);
@@ -266,7 +331,7 @@ public class StorageManager extends AStorageManager {
                 headPtr = headPage.getPtrToNextPage();
             }
             return true;
-        }catch (Exception e){
+        } catch (Exception e) {
             System.err.println("error removing in remove where in sm");
             return false;
         }

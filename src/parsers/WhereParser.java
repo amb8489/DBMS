@@ -11,7 +11,6 @@ import static java.util.Map.entry;
 public class WhereParser {
 
 
-
     // a cache for already seen statements
     private static HashMap<String, Tuple<List<String>, ArrayList<Tuple<Integer, Integer>>>> CacheWhereStmtPlacementPattern = new HashMap<>();
 
@@ -26,7 +25,6 @@ public class WhereParser {
 
     // operators used
     private static final Set operators = precedence.keySet();
-
 
 
     // shunting yard algo given a list of tokens
@@ -167,11 +165,11 @@ public class WhereParser {
         // check if string by looking for a " or trying to parse into a double
 
 
-        String typeL = Utilities.whatType(left,true);
-        String typeR = Utilities.whatType(right,true);
+        String typeL = Utilities.whatType(left, true);
+        String typeR = Utilities.whatType(right, true);
 
 
-        if (typeL == null || !typeL.equals(typeR)){
+        if (typeL == null || !typeL.equals(typeR)) {
             throw new Exception("COMPARING DIFFERENT TYPES:" + typeL + " with " + typeR);
         }
 
@@ -212,8 +210,6 @@ public class WhereParser {
 
     }
 
-    // TODO check attributes exits when adding
-
 
     // fill string will get a string ready to be run through the validate function
     // string needs to be formated correctly and then be split into tokens
@@ -224,77 +220,77 @@ public class WhereParser {
         // and dont need to do all that work again
 //        if (!CacheWhereStmtPlacementPattern.containsKey(s)) {
 
-            // save original stmt for caching
-            String stmt = s;
+        // save original stmt for caching
+        String stmt = s;
 
-            // make sure we have spacing between operators and values
-            s = s.replace("(", " ( ");
-            s = s.replace(")", " ) ");
+        // make sure we have spacing between operators and values
+        s = s.replace("(", " ( ");
+        s = s.replace(")", " ) ");
 
-            s = s.replace("!", " !");
-            s = s.replace("<", " < ");
-            s = s.replace(">", " > ");
-            s = s.replace("=", " = ");
+        s = s.replace("!", " !");
+        s = s.replace("<", " < ");
+        s = s.replace(">", " > ");
+        s = s.replace("=", " = ");
 
-            s = s.replace("<  =", " <= ");
-            s = s.replace(">  =", " >= ");
-            s = s.replace("! =", " != ");
+        s = s.replace("<  =", " <= ");
+        s = s.replace(">  =", " >= ");
+        s = s.replace("! =", " != ");
 
-            // tokenize the string by spaces
-            List<String> tokens = Utilities.mkTokensFromStr(s);
+        // tokenize the string by spaces
+        List<String> tokens = Utilities.mkTokensFromStr(s);
 
 
-            // finding the the WHERE token, we only care what comes after the "where"
-            // we start at 1 because we dont want to include the where token just what comes after
-            // removing all prefix to where and the where
-            int whereIdx = 1;
-            for (String t : tokens) {
-                if (t.equalsIgnoreCase("where")) {
-                    tokens = tokens.subList(whereIdx, tokens.size());
-                    break;
-                }
-                whereIdx++;
+        // finding the the WHERE token, we only care what comes after the "where"
+        // we start at 1 because we dont want to include the where token just what comes after
+        // removing all prefix to where and the where
+        int whereIdx = 1;
+        for (String t : tokens) {
+            if (t.equalsIgnoreCase("where")) {
+                tokens = tokens.subList(whereIdx, tokens.size());
+                break;
+            }
+            whereIdx++;
+        }
+
+
+        // mapping the attribute name to the idx of that attribute  needed for later
+        HashMap<String, Integer> AttribNames = new HashMap<>();
+        for (int i = 0; i < attrs.size(); i++) {
+            AttribNames.put(attrs.get(i).getAttributeName(), i);
+        }
+
+
+        // loop though tokens
+        int tokenIdx = 0;
+
+
+        // what we are looking for is the token to match with the attribute name
+        // if it does then we replace it with the value in the row at that idx
+        // this is what is being cached
+        ArrayList<Tuple<Integer, Integer>> IdxsToReplace = new ArrayList<>();
+        for (String t : tokens) {
+            // if that token is a column name in the table, (aka an attribute name)
+            if (Utilities.isColName(t) && !AttribNames.containsKey(t)) {
+                return null;
             }
 
+            if (AttribNames.containsKey(t)) {
+                // set that token to the value from the given row at the idx of the col name
+                Integer attribIdx = AttribNames.get(t);
 
-            // mapping the attribute name to the idx of that attribute  needed for later
-            HashMap<String, Integer> AttribNames = new HashMap<>();
-            for (int i = 0; i < attrs.size(); i++) {
-                AttribNames.put(attrs.get(i).getAttributeName(), i);
+                IdxsToReplace.add(new Tuple<>(tokenIdx, attribIdx));
+
+                tokens.set(tokenIdx, r.get(attribIdx).toString());
             }
+            tokenIdx++;
+        }
 
+        // caching
+        Tuple<List<String>, ArrayList<Tuple<Integer, Integer>>> tup = new Tuple<>(tokens, IdxsToReplace);
+        CacheWhereStmtPlacementPattern.put(stmt, tup);
 
-            // loop though tokens
-            int tokenIdx = 0;
-
-
-            // what we are looking for is the token to match with the attribute name
-            // if it does then we replace it with the value in the row at that idx
-            // this is what is being cached
-            ArrayList<Tuple<Integer, Integer>> IdxsToReplace = new ArrayList<>();
-            for (String t : tokens) {
-                // if that token is a column name in the table, (aka an attribute name)
-                if(Utilities.isColName(t) && !AttribNames.containsKey(t)){
-                    return null;
-                }
-
-                if (AttribNames.containsKey(t)) {
-                    // set that token to the value from the given row at the idx of the col name
-                    Integer attribIdx = AttribNames.get(t);
-
-                    IdxsToReplace.add(new Tuple<>(tokenIdx, attribIdx));
-
-                    tokens.set(tokenIdx, r.get(attribIdx).toString());
-                }
-                tokenIdx++;
-            }
-
-            // caching
-            Tuple<List<String>, ArrayList<Tuple<Integer, Integer>>> tup = new Tuple<>(tokens, IdxsToReplace);
-            CacheWhereStmtPlacementPattern.put(stmt, tup);
-
-            // return tokens ready to go to the validator
-            return tokens;
+        // return tokens ready to go to the validator
+        return tokens;
 //        } else {
 //
 //            // getting cached vals token idx to be replaced with idx in row
@@ -346,7 +342,7 @@ public class WhereParser {
 
         List<String> tokens = tokenizer(stmt, row, attrs);
 
-        if (tokens == null){
+        if (tokens == null) {
             return false;
         }
 

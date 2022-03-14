@@ -260,27 +260,28 @@ public class Phase2Tester {
             return false;
         }
 
-//        //should fail, string too long
-//        insertStmt = "insert int table1 values " +
-//                "(10, 11.3, \"whose\" );";
-//
-//        System.out.println("Stmt: " + insertStmt);
-//
-//        if(DMLParser.parseDMLStatement(insertStmt)) {
-//            System.err.println("Something went wrong inserting to large of a string in the table");
-//            return false;
-//        }
+        //should fail, string too long
+        insertStmt = "insert int table1 values " +
+                "(10, 11.3, \"whoose\" );";
+
+        System.out.println("Stmt: " + insertStmt);
+
+        if(DMLParser.parseDMLStatement(insertStmt)) {
+            System.err.println("Something went wrong inserting to large of a string in the table");
+            return false;
+        }
 
 
         //should fail, setting not null to null
         String updateStmt = "update table1 set attr2 = null where attr1 < 10;";
 
         System.out.println("Stmt: " + updateStmt);
-
+        System.out.println(StorageManager.getStorageManager().getRecords(table));
         if(DMLParser.parseDMLStatement(updateStmt)) {
             System.err.println("Something went wrong updating a notnull to null in the table");
             return false;
         }
+        System.out.println(StorageManager.getStorageManager().getRecords(table));
 
         //should fail, not such table
         updateStmt = "update table5 set attr2 = null where attr1 < 10;";
@@ -341,13 +342,14 @@ public class Phase2Tester {
         }
 
         //should pass
+        System.out.println();
         insertStmt = "insert into table2 values " +
                 "(1);";
 
         System.out.println("Stmt: " + insertStmt);
 
         if(!DMLParser.parseDMLStatement(insertStmt)) {
-            System.err.println("Something went wrong inserting a valid fk value in the table");
+            System.err.println("1 Something went wrong inserting a valid fk value in the table");
             return false;
         }
 
@@ -358,7 +360,7 @@ public class Phase2Tester {
         System.out.println("Stmt: " + insertStmt);
 
         if(DMLParser.parseDMLStatement(insertStmt)) {
-            System.err.println("Something went wrong inserting a invalid fk value in the table");
+            System.err.println("7 Something went wrong inserting a invalid fk value in the table");
             return false;
         }
 

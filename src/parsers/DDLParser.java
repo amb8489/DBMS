@@ -32,7 +32,6 @@ public class DDLParser {
     public static boolean parseDDLStatement(String stmt) {
 
         stmt = Utilities.format(stmt);
-        System.out.println(stmt);
 
         if (stmt.toLowerCase().startsWith("create table")) {
             return CreateTable(stmt);
