@@ -205,7 +205,7 @@ public class Utilities {
     // given a char(#) or varchar(#) attribute and a string itll see if that string is too long/short for the #
     public static boolean isStringTooLong(String attribute, String string){
 
-
+        string = string.replace("\"","");
 
 
 

@@ -410,7 +410,8 @@ public class DDLParser {
 
                             // lets get how big the string can be and if its too big or small
 
-                            if(Utilities.isStringTooLong(defaultValueType,defaultValue)) {
+                            if(Utilities.isStringTooLong(type,defaultValue)) {
+
                                 System.err.println("string: "+defaultValue +" too long for type: "+defaultValueType);
                                 return false;
                             }
