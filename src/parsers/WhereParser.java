@@ -345,9 +345,12 @@ public class WhereParser {
     public boolean whereIsTrue(String stmt, List<Object> row, ArrayList<Attribute> attrs) {
 
         List<String> tokens = tokenizer(stmt, row, attrs);
+
         if (tokens == null){
             return false;
         }
+
+
         return Validate(tokens);
     }
 

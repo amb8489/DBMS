@@ -113,6 +113,8 @@ public class StorageManager extends AStorageManager {
                         System.err.println("string: "+record.get(idxx) +" too long fr type: "+attribType);
                         return false;
                     }
+                    // removing " before plaving in db
+                    record.set(idxx,str.replace("\"",""));
                 }
                 idxx++;
             }

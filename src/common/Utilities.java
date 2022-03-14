@@ -244,7 +244,13 @@ public class Utilities {
 
     public static Boolean isColName(String s) {
 
-        if (s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false")) {
+        if (s.equalsIgnoreCase("true") ||
+                s.equalsIgnoreCase("false")||
+                s.equalsIgnoreCase("and")||
+                s.equalsIgnoreCase("or")) {
+            return false;
+        }
+        if (KEYWORDS.contains(s)) {
             return false;
         }
 
