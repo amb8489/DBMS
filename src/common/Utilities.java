@@ -53,7 +53,7 @@ public class Utilities {
             return true;
         }
         if (!(name.chars().allMatch(Character::isLetterOrDigit) && (name.charAt(0) >= 'A' && name.charAt(0) <= 'z'))) {
-            System.err.println("name must start with letter and only contain alphanumerics");
+//            System.err.println("name must start with letter and only contain alphanumerics");
             return true;
         }
 
@@ -242,5 +242,20 @@ public class Utilities {
         }
     }
 
+    public static Boolean isColName(String s) {
 
+        if (s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false")) {
+            return false;
+        }
+
+        // is it a string?
+        if (s.contains("\"")) {
+            return false;
+        }
+
+
+        return !isiIllLegalName(s);
+
+
+    }
 }

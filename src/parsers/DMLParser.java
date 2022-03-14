@@ -314,6 +314,8 @@ public class DMLParser {
                 return false;
             }
 
+
+            // does not have attrib
             boolean hasAttrib = false;
             for(Attribute attributee : Catalog.getCatalog().getTable(tableName).getAttributes()){
                 if(attributee.getAttributeName().equals(tokens.get(3))){

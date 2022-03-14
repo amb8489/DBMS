@@ -222,7 +222,7 @@ public class WhereParser {
         // first thing we do is look to see if weve seen this stmt before
         // if we have then we have cached the work we did on the string the first time we tokenized it
         // and dont need to do all that work again
-        if (!CacheWhereStmtPlacementPattern.containsKey(s)) {
+//        if (!CacheWhereStmtPlacementPattern.containsKey(s)) {
 
             // save original stmt for caching
             String stmt = s;
@@ -274,6 +274,10 @@ public class WhereParser {
             ArrayList<Tuple<Integer, Integer>> IdxsToReplace = new ArrayList<>();
             for (String t : tokens) {
                 // if that token is a column name in the table, (aka an attribute name)
+                if(Utilities.isColName(t) && !AttribNames.containsKey(t)){
+                    return null;
+                }
+
                 if (AttribNames.containsKey(t)) {
                     // set that token to the value from the given row at the idx of the col name
                     Integer attribIdx = AttribNames.get(t);
@@ -291,22 +295,22 @@ public class WhereParser {
 
             // return tokens ready to go to the validator
             return tokens;
-        } else {
-
-            // getting cached vals token idx to be replaced with idx in row
-            Tuple<List<String>, ArrayList<Tuple<Integer, Integer>>> cached = CacheWhereStmtPlacementPattern.get(s);
-            List<String> tokens = cached.x;
-            ArrayList<Tuple<Integer, Integer>> replaceAt = cached.y;
-
-
-            // doing the repayment
-            for (Tuple<Integer, Integer> t : replaceAt) {
-                tokens.set(t.x, r.get(t.y).toString());
-            }
-
-
-            return tokens;
-        }
+//        } else {
+//
+//            // getting cached vals token idx to be replaced with idx in row
+//            Tuple<List<String>, ArrayList<Tuple<Integer, Integer>>> cached = CacheWhereStmtPlacementPattern.get(s);
+//            List<String> tokens = cached.x;
+//            ArrayList<Tuple<Integer, Integer>> replaceAt = cached.y;
+//
+//
+//            // doing the repayment
+//            for (Tuple<Integer, Integer> t : replaceAt) {
+//                tokens.set(t.x, r.get(t.y).toString());
+//            }
+//
+//
+//            return tokens;
+//        }
     }
 
     /*--------------    HOW TO USE  -------------------
@@ -341,6 +345,9 @@ public class WhereParser {
     public boolean whereIsTrue(String stmt, List<Object> row, ArrayList<Attribute> attrs) {
 
         List<String> tokens = tokenizer(stmt, row, attrs);
+        if (tokens == null){
+            return false;
+        }
         return Validate(tokens);
     }
 
@@ -376,7 +383,7 @@ public class WhereParser {
 
         for (int i = 0; i < 1; i++) {
 
-            String s = "delete from foo where gpa != true";
+            String s = "delete from foo where fName = \"Aaron\" ";
 
             boolean res = parser.whereIsTrue(s, r, attrs);
             System.out.println("STMT: " + res);

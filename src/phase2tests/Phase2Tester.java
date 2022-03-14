@@ -302,15 +302,15 @@ public class Phase2Tester {
             return false;
         }
 
-//        //should fail, no such attr
-//        updateStmt = "update table1 set attr1 = 10 where attr11 < 10;";
-//
-//        System.out.println("Stmt: " + updateStmt);
-//
-//        if(DMLParser.parseDMLStatement(updateStmt)) {
-//            System.err.println(" 2 Something went wrong updating a non-existing attr in where");
-//            return false;
-//        }
+        //should fail, no such attr
+        updateStmt = "update table1 set attr1 = 10 where attr11 < 10;";
+
+        System.out.println("Stmt: " + updateStmt);
+
+        if(DMLParser.parseDMLStatement(updateStmt)) {
+            System.err.println(" 2 Something went wrong updating a non-existing attr in where");
+            return false;
+        }
 //
 //        //should fail, no such attr
 //        updateStmt = "update table1 set attr1 = attr11 where attr11 < 10;";
@@ -369,11 +369,11 @@ public class Phase2Tester {
         Catalog.createCatalog(args[0], Integer.parseInt(args[1]), Integer.parseInt(args[2]));
         StorageManager.createStorageManager();
 
-//        if(!createVeryLargeTable()){
-//            System.err.println("Large table test failed.");
-//        } else {
-//            System.out.println("Large table test passed.");
-//        }
+        if(!createVeryLargeTable()){
+            System.err.println("Large table test failed.");
+        } else {
+            System.out.println("Large table test passed.");
+        }
         System.out.println("------------------------------------------------");
         System.out.println("------------------------------------------------");
         System.out.println("------------------------------------------------");
