@@ -314,6 +314,19 @@ public class DMLParser {
                 return false;
             }
 
+            boolean hasAttrib = false;
+            for(Attribute attributee : Catalog.getCatalog().getTable(tableName).getAttributes()){
+                if(attributee.getAttributeName().equals(tokens.get(3))){
+                    hasAttrib = true;
+                    break;
+                }
+            }
+            if (!hasAttrib) {
+                System.err.println("The table "+tableName +" does not contain the attribute: " + tokens.get(3));
+                return false;
+            }
+
+
             System.out.println("updating the table: " + tableName);
 
             ITable table = Catalog.getCatalog().getTable(tableName);
