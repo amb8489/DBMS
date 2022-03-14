@@ -43,7 +43,7 @@ public class DMLParser {
             return deleteFromTable(stmt);
         }
         if (stmt.toUpperCase().startsWith("INSERT")) {
-            return insertTable(stmt);
+            return insertToTable(stmt);
         }
         if (stmt.toUpperCase().startsWith("UPDATE")) {
             return updateTable(stmt);
@@ -180,7 +180,7 @@ public class DMLParser {
     private static boolean deleteFromTable(String stmt) {
 
         try {
-
+            stmt = stmt.replace("\"","");
             // removes redundant spaces and new lines
             stmt = stmt.replace(";", "");
             // tokenizing tokens
@@ -218,7 +218,7 @@ public class DMLParser {
     }
 
     // insert into <name> values <tuples>
-    private static boolean insertTable(String stmt) {
+    private static boolean insertToTable(String stmt) {
         try{
             // removes redundant spaces and new lines
             stmt = Utilities.format(stmt);
@@ -228,6 +228,11 @@ public class DMLParser {
             stmt = stmt.replace("\"","");
             stmt = stmt.replace(";","");
             List<String> tokens = Utilities.mkTokensFromStr(stmt);
+
+            if (tokens.size() == 5 && tokens.get(4).equals("(1)")) {
+                int q = 0;
+            }
+
             VerbosePrint.print(tokens);
 
             String tableName = tokens.get(2);
@@ -253,21 +258,27 @@ public class DMLParser {
                         return false;
                     }
 
-                    record.add(convertAttributeType(attributes.get(i-(4 + (attributes.size() * numberOfInserts)))
-                            .getAttributeType(), tokens.get(i).substring(1), null, null));
-                    i++;
-
-                    System.out.println(record+"<-------n"+ tokens);
-
-                    while (!tokens.get(i).endsWith(")")) {
+                    if (attributes.size() == 1) {
                         record.add(convertAttributeType(attributes.get(i-(4 + (attributes.size() * numberOfInserts)))
-                                .getAttributeType(), tokens.get(i), null, null));
-                        i++;
+                                .getAttributeType(), tokens.get(i).substring(1, tokens.get(i).length() - 1), null, null));
                     }
+                    else {
+                        record.add(convertAttributeType(attributes.get(i-(4 + (attributes.size() * numberOfInserts)))
+                                .getAttributeType(), tokens.get(i).substring(1), null, null));
+                        i++;
 
-                    if(!tokens.get(i).strip().equals(")")) {
-                        record.add(convertAttributeType(attributes.get(i - (4 + (attributes.size() * numberOfInserts)))
-                                .getAttributeType(), tokens.get(i).substring(0, tokens.get(i).length() - 1), null, null));
+                        System.out.println(record+"<-------n"+ tokens);
+
+                        while (!tokens.get(i).endsWith(")")) {
+                            record.add(convertAttributeType(attributes.get(i-(4 + (attributes.size() * numberOfInserts)))
+                                    .getAttributeType(), tokens.get(i), null, null));
+                            i++;
+                        }
+
+                        if(!tokens.get(i).strip().equals(")")) {
+                            record.add(convertAttributeType(attributes.get(i - (4 + (attributes.size() * numberOfInserts)))
+                                    .getAttributeType(), tokens.get(i).substring(0, tokens.get(i).length() - 1), null, null));
+                        }
                     }
 
                     System.out.println(record);
@@ -301,6 +312,7 @@ public class DMLParser {
     // update <name> set <column_1> = value where <condition>;
     private static boolean updateTable(String stmt) {
         try {
+            stmt = stmt.replace("\"","");
             // removes redundant spaces and new lines
             stmt = stmt.replace(";","");
             List<String> tokens = Utilities.mkTokensFromStr(stmt);

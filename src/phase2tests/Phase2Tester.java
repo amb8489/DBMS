@@ -311,56 +311,56 @@ public class Phase2Tester {
             System.err.println(" 2 Something went wrong updating a non-existing attr in where");
             return false;
         }
-//
-//        //should fail, no such attr
-//        updateStmt = "update table1 set attr1 = attr11 where attr11 < 10;";
-//
-//        System.out.println("Stmt: " + updateStmt);
-//
-//        if(DMLParser.parseDMLStatement(updateStmt)) {
-//            System.err.println("Something went wrong updating a non-existing attr in where");
-//            return false;
-//        }
-//
-//        //should pass
-//        updateStmt = "update table1 set attr3 = null where attr1 < 10;";
-//
-//        System.out.println("Stmt: " + updateStmt);
-//
-//        if(!DMLParser.parseDMLStatement(updateStmt)) {
-//             System.err.println("Something went wrong updating a nullable to null in the table");
-//             return false;
-//        }
-//
-//        String fkTable = "create table table2( attr7 integer primarykey, " +
-//                "foreignkey( attr7 ) references table1( attr1 ) );";
-//
-//        if(!DDLParser.parseDDLStatement(fkTable)){
-//            System.err.println("Something went wrong creating the fk table");
-//            return false;
-//        }
-//
-//        //should pass
-//        insertStmt = "insert into table2 values " +
-//                "(1);";
-//
-//        System.out.println("Stmt: " + insertStmt);
-//
-//        if(!DMLParser.parseDMLStatement(insertStmt)) {
-//            System.err.println("Something went wrong inserting a valid fk value in the table");
-//            return false;
-//        }
-//
-//        //should fail, no such fk value in table1
-//        insertStmt = "insert int table2 values " +
-//                "(300);";
-//
-//        System.out.println("Stmt: " + insertStmt);
-//
-//        if(DMLParser.parseDMLStatement(insertStmt)) {
-//            System.err.println("Something went wrong inserting a invalid fk value in the table");
-//            return false;
-//        }
+
+        //should fail, no such attr
+        updateStmt = "update table1 set attr1 = attr11 where attr11 < 10;";
+
+        System.out.println("Stmt: " + updateStmt);
+
+        if(DMLParser.parseDMLStatement(updateStmt)) {
+            System.err.println("Something went wrong updating a non-existing attr in where");
+            return false;
+        }
+
+        //should pass
+        updateStmt = "update table1 set attr3 = null where attr1 < 10;";
+
+        System.out.println("Stmt: " + updateStmt);
+
+        if(!DMLParser.parseDMLStatement(updateStmt)) {
+             System.err.println("Something went wrong updating a nullable to null in the table");
+             return false;
+        }
+
+        String fkTable = "create table table2( attr7 integer primarykey, " +
+                "foreignkey( attr7 ) references table1( attr1 ) );";
+
+        if(!DDLParser.parseDDLStatement(fkTable)){
+            System.err.println("Something went wrong creating the fk table");
+            return false;
+        }
+
+        //should pass
+        insertStmt = "insert into table2 values " +
+                "(1);";
+
+        System.out.println("Stmt: " + insertStmt);
+
+        if(!DMLParser.parseDMLStatement(insertStmt)) {
+            System.err.println("Something went wrong inserting a valid fk value in the table");
+            return false;
+        }
+
+        //should fail, no such fk value in table1
+        insertStmt = "insert int table2 values " +
+                "(300);";
+
+        System.out.println("Stmt: " + insertStmt);
+
+        if(DMLParser.parseDMLStatement(insertStmt)) {
+            System.err.println("Something went wrong inserting a invalid fk value in the table");
+            return false;
+        }
 
         return true;
     }
