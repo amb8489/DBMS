@@ -428,6 +428,7 @@ public class DDLParser {
                 }
             }
             //add atrribute
+
             if (Catalog.getCatalog().getTable(TableName).addAttribute(attributeName, type)) {
                 // add default val
                 StorageManager.getStorageManager().addAttributeValue(Catalog.getCatalog().getTable(TableName), defaultValue);

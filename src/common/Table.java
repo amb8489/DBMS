@@ -32,6 +32,9 @@ public class Table implements ITable{
     private ArrayList<ForeignKey> ForeignKeys= new ArrayList<>();
     private ArrayList<Integer>PagesThatBelongToMe = new ArrayList<>();
 
+    public HashMap<String, Integer> AttribIdxs = new HashMap<>();
+
+
 
     // ADD INDEX LIST HERE - FOURTH PHASE
 
@@ -43,6 +46,13 @@ public class Table implements ITable{
         this.Attributes = Attributes;
         this.TableName = name;
         this.PrimaryKey = PrimaryKey;
+
+
+
+        // mapping the attribute name to the idx of that attribute  needed for later
+        for (int i = 0; i < Attributes.size(); i++) {
+            AttribIdxs.put(Attributes.get(i).getAttributeName(), i);
+        }
 
         Page firstPAgeForTable = new Page(this);
         firstPAgeForTable.writeToDisk(ACatalog.getCatalog().getDbLocation(), this);
@@ -72,6 +82,11 @@ public class Table implements ITable{
         this.TableName = tableName;
         this.PrimaryKey = pk;
         this.PagesThatBelongToMe = belongToMe;
+
+        // mapping the attribute name to the idx of that attribute  needed for later
+        for (int i = 0; i < Attributes.size(); i++) {
+            AttribIdxs.put(Attributes.get(i).getAttributeName(), i);
+        }
     }
 
 
@@ -130,6 +145,7 @@ public class Table implements ITable{
             }
         }
         this.Attributes.add( new Attribute(name,type));
+        AttribIdxs.put(name,Attributes.size()-1);
         return true;
     }
 
@@ -142,7 +158,14 @@ public class Table implements ITable{
     }
 
     public void setAttributes(ArrayList<Attribute> attributes) {
+
         Attributes = attributes;
+        // mapping the attribute name to the idx of that attribute  needed for later
+        HashMap<String, Integer> attributeNameToIdx = new HashMap<>();
+        for (int i = 0; i < Attributes.size(); i++) {
+            attributeNameToIdx.put(Attributes.get(i).getAttributeName(), i);
+        }
+        this.AttribIdxs = attributeNameToIdx;
     }
 
     public void setPagesThatBelongToMe(ArrayList<Integer> pagesThatBelongToMe) {
@@ -161,6 +184,7 @@ public class Table implements ITable{
         for(Attribute attribute:Attributes){
             if (attribute.attributeName().equals(name)){
                 this.Attributes.remove(idx);
+                AttribIdxs.remove(name);
                 return true;
             }
             idx++;

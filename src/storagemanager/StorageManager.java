@@ -466,8 +466,7 @@ public class StorageManager extends AStorageManager {
                 return false;
             }
             // update table first
-            table.getAttributes().remove(attrIndex);
-
+            table.dropAttribute(table.getAttributes().get(attrIndex).getAttributeName());
             // page name for head is always at idx zero
             int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
 
