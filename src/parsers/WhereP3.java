@@ -217,13 +217,44 @@ public class WhereP3 {
 
     // fill string will get a string ready to be run through the validate function
     // string needs to be formated correctly and then be split into tokens
-    private static List<String> tokenizer(String whereStmt, String fromStmt) {
+    private static List<String> tokenizer(String whereStmt, String fromStmt,ArrayList<List<Object>> rows) {
 
         // what tables are referenced in the where
         String[] tables = fromStmt.split(",");
 
+        // make sure we have spacing between operators and values
+        whereStmt = whereStmt.replace("(", " ( ");
+        whereStmt = whereStmt.replace(")", " ) ");
+
+        whereStmt = whereStmt.replace("!", " !");
+        whereStmt = whereStmt.replace("<", " < ");
+        whereStmt = whereStmt.replace(">", " > ");
+        whereStmt = whereStmt.replace("=", " = ");
+
+        whereStmt = whereStmt.replace("<  =", " <= ");
+        whereStmt = whereStmt.replace(">  =", " >= ");
+        whereStmt = whereStmt.replace("! =", " != ");
+
+        // tokenize the string by spaces
+        List<String> tokens = Utilities.mkTokensFromStr(whereStmt);
 
 
+        // finding the the WHERE token, we only care what comes after the "where"
+        // we start at 1 because we dont want to include the where token just what comes after
+        // removing all prefix to where and the where
+        int whereIdx = 1;
+        for (String t : tokens) {
+            if (t.equalsIgnoreCase("where")) {
+                tokens = tokens.subList(whereIdx, tokens.size());
+                break;
+            }
+            whereIdx++;
+        }
+
+        System.out.println(tokens);
+
+
+    return null;
 
 
 
@@ -261,9 +292,9 @@ public class WhereP3 {
     }
     ...
             */
-    public boolean whereIsTrue(String whereStmt, String fromStmt) {
+    public boolean whereIsTrue(String whereStmt, String fromStmt,ArrayList<List<Object>> rows) {
 
-        List<String> tokens = tokenizer(whereStmt, fromStmt);
+        List<String> tokens = tokenizer(whereStmt, fromStmt,null);
 
         if (tokens == null) {
             return false;
@@ -282,7 +313,7 @@ public class WhereP3 {
         StorageManager.createStorageManager();
         AStorageManager sm = StorageManager.getStorageManager();
         Catalog cat = (Catalog) Catalog.getCatalog();
-        WhereParser parser = new WhereParser();
+        WhereP3 parser = new WhereP3();
 
 //        select t1.a, t2.b, t2.c, t3.d
 //        from t1, t2, t3
@@ -318,7 +349,7 @@ public class WhereP3 {
 
         // adding vales to table t2
         ArrayList<Object> r2 = new ArrayList<>();
-        r2.add(1,1);
+        r2.add(1);
         sm.insertRecord(cat.getTable("t2"),r2);
 
         // adding vales to table t3
@@ -334,11 +365,10 @@ public class WhereP3 {
                     where t1.a = t2.b and t2.c = t3.d
                     """;
 
-        boolean res = parser.whereIsTrue("where t1.a = t2.b and t2.c = t3.d",
-                                            "from t1, t2, t3",
+        boolean res = parser.whereIsTrue("where t1.a = t2.b and t2.c = t3.d", "from t1, t2, t3",null);
 
                                             // needs to be table names mapped to its row we are looking at  );
-        System.out.println("STMT: " + res);
+//        System.out.println("STMT: " + res);
 
 
         long endTime = System.currentTimeMillis();
