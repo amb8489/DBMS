@@ -255,10 +255,11 @@ public class Utilities {
         }
 
         // is it a string?
-        if (s.contains("\"")) {
+        if (s.startsWith("\"") && s.endsWith("\"")) {
             return false;
         }
 
+        s = s.replace(".","");
 
         return !isiIllLegalName(s);
 

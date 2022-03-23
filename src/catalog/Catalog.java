@@ -144,8 +144,6 @@ public class Catalog extends ACatalog {
         if (containsTable(tableName)) {
             return CurrentTablesInBD.get(tableName);
         }
-        System.err.printf("table with name %s is does not exist%n", tableName);
-
         return null;
     }
 

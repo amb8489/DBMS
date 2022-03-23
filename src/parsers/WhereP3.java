@@ -4,6 +4,7 @@ package parsers;
 import catalog.ACatalog;
 import catalog.Catalog;
 import common.Attribute;
+import common.Table;
 import common.Utilities;
 import storagemanager.AStorageManager;
 import storagemanager.StorageManager;
@@ -21,7 +22,6 @@ public class WhereP3 {
     // used in the shunting yard algo list of operators and their precedence
     private static final Map<String, Integer> precedence = Map.ofEntries(
             entry("and", 1), entry("or", 2),
-
             entry("AND", 1), entry("OR", 2),
             entry("=", 3), entry("!=", 3),
             entry("<", 3), entry(">", 3),
@@ -217,9 +217,12 @@ public class WhereP3 {
 
     // fill string will get a string ready to be run through the validate function
     // string needs to be formated correctly and then be split into tokens
-    private static List<String> tokenizer(String whereStmt, String fromStmt,ArrayList<List<Object>> rows) {
+    private static List<String> tokenizer(String whereStmt, String fromStmt, ArrayList<List<Object>> rows) {
 
         // what tables are referenced in the where
+        fromStmt = fromStmt.replace("from","");
+        fromStmt = fromStmt.replace(" ","");
+
         String[] tables = fromStmt.split(",");
 
         // make sure we have spacing between operators and values
@@ -234,6 +237,8 @@ public class WhereP3 {
         whereStmt = whereStmt.replace("<  =", " <= ");
         whereStmt = whereStmt.replace(">  =", " >= ");
         whereStmt = whereStmt.replace("! =", " != ");
+        whereStmt = whereStmt.replace(" .", ".");
+        whereStmt = whereStmt.replace(". ", ".");
 
         // tokenize the string by spaces
         List<String> tokens = Utilities.mkTokensFromStr(whereStmt);
@@ -251,14 +256,73 @@ public class WhereP3 {
             whereIdx++;
         }
 
-        System.out.println(tokens);
+        // gen possible conficts
+        Table[] tabsInFrom = new Table[tables.length];
+        for ( int i = 0;i< tables.length;i++) {
+            String tablename = tables[i];
+
+            Table t = (Table) Catalog.getCatalog().getTable(tablename);
+            if (t != null){
+                tabsInFrom[i] = t;
+            }
+        }
+
+        HashSet<String> ConflictCols = AmbiguityCols(tabsInFrom);
+
+        // fill
+        for (String token : tokens) {
+
+            // if column name
+            if (Utilities.isColName(token)) {
+
+                String[] splitToken = token.split("\\.");
+
+                // if there's a dot then the table name is specified
+                if (splitToken.length > 1) {
+                    String tableName = splitToken[0];
+                    String attributeName = splitToken[1];
+
+                    // check that table exist
+                    Table tab = (Table) Catalog.getCatalog().getTable(tableName);
+                    if (tab == null) {
+                        System.err.println("table " + tableName + " does not exist");
+                        return null;
+                    }
+                    // check that attribute exists in table
+                    if (!tab.AttribIdxs.containsKey(attributeName)) {
+                        System.err.println("attribute name " + attributeName + " in table " + tableName + " does not exist");
+                        return null;
+                    }
+                    // get idx of that attributeName from that table
+                    int idx = tab.AttribIdxs.get(attributeName);
+
+//                    tokens.set(idx, row.get(idx).toString());
+//                    System.out.println(tableName + " "+attributeName+" " + idx);
+                    continue;
+                }
 
 
-    return null;
 
 
+//                 we could have ambiguity with no table name specifer
 
+                    if(ConflictCols.contains(splitToken[0])) {
+                        System.err.println("Ambiguous attribute reference: "+ splitToken[0]);
+                        return null;
+                    }
+//              TODO here
+//                 check that the attribue belong to only one table (ambiquity check)
+//                 make sure that its in at least one table
+//
+//
+//                 find that table and replace that token
 
+//                tokens.set(attrIdx, row.get(attrIdx).toString());
+
+            }
+        }
+
+        return null;
 
 
     }
@@ -292,24 +356,48 @@ public class WhereP3 {
     }
     ...
             */
-    public boolean whereIsTrue(String whereStmt, String fromStmt,ArrayList<List<Object>> rows) {
+    public boolean whereIsTrue(String whereStmt, String fromStmt, ArrayList<List<Object>> rows) {
 
-        List<String> tokens = tokenizer(whereStmt, fromStmt,null);
+        List<String> tokens = tokenizer(whereStmt, fromStmt, null);
 
         if (tokens == null) {
             return false;
         }
-
-
         return Validate(tokens);
     }
 
+
+    public static HashSet<String> AmbiguityCols(Table[] tables) {
+
+
+        //find where attribute names intersect with other tables tables
+        HashSet<String> unique = new HashSet<>();
+        HashSet<String> notUnique = new HashSet<>();
+
+        for (Table t : tables) {
+            for (Attribute aName : t.getAttributes()) {
+
+                // found dup
+                if (unique.contains(aName.getAttributeName())) {
+                    notUnique.add(aName.getAttributeName());
+
+                    // no dup and yet and place in
+                }else {
+                    unique.add(aName.getAttributeName());
+                }
+
+            }
+        }
+
+        return notUnique;
+
+}
 
     /////////////////////////////////////////// EXAMPLE
     public static void main(String[] args) {
 
 
-        Catalog.createCatalog("DB",4048,3);
+        Catalog.createCatalog("DB", 4048, 3);
         StorageManager.createStorageManager();
         AStorageManager sm = StorageManager.getStorageManager();
         Catalog cat = (Catalog) Catalog.getCatalog();
@@ -321,53 +409,65 @@ public class WhereP3 {
 //        orderby t1.a
 
 
-
         // TALES
 
         //t1
         ArrayList<Attribute> attrs = new ArrayList<>();
         attrs.add(new Attribute("a", "Integer"));
-        cat.addTable("t1",attrs,attrs.get(0));
+        attrs.add(new Attribute("uidt1", "Integer"));
+        cat.addTable("t1", attrs, attrs.get(0));
 
 
         //t2
         ArrayList<Attribute> attrs2 = new ArrayList<>();
         attrs2.add(new Attribute("b", "Integer"));
-        attrs2.add(new Attribute("c", "Integer"));
-        cat.addTable("t2",attrs2,attrs2.get(0));
+        attrs2.add(new Attribute("c", "Char(3)"));
+        attrs2.add(new Attribute("uidt2", "Integer"));
+        cat.addTable("t2", attrs2, attrs2.get(0));
 
         //t3
         ArrayList<Attribute> attrs3 = new ArrayList<>();
-        attrs3.add(new Attribute("d", "Integer"));
-        cat.addTable("t3",attrs3,attrs3.get(0));
+        attrs3.add(new Attribute("a", "Integer"));
+
+        cat.addTable("t3", attrs3, attrs3.get(0));
 
         // adding vales to table t1
         ArrayList<Object> r = new ArrayList<>();
         r.add(1);
-        sm.insertRecord(cat.getTable("t1"),r);
+        sm.insertRecord(cat.getTable("t1"), r);
 
 
         // adding vales to table t2
         ArrayList<Object> r2 = new ArrayList<>();
         r2.add(1);
-        sm.insertRecord(cat.getTable("t2"),r2);
+        sm.insertRecord(cat.getTable("t2"), r2);
 
         // adding vales to table t3
         ArrayList<Object> r3 = new ArrayList<>();
         r3.add(1);
-        sm.insertRecord(cat.getTable("t3"),r3);
+        sm.insertRecord(cat.getTable("t3"), r3);
 
 
         // testing STMT
         long startTime = System.currentTimeMillis();
+
+
+//        select fName
+//        from foo, baz
+//        where fName = bName and foo.fName = "aaron";
+
+
         String Wherestmt = """
-                    from t1, t2, t3
-                    where t1.a = t2.b and t2.c = t3.d
-                    """;
+                from t1, t2, t3
+                where t1.a = t2.b and t2.c = t3.d or uidt1 = uidt2
+                """;
 
-        boolean res = parser.whereIsTrue("where t1.a = t2.b and t2.c = t3.d", "from t1, t2, t3",null);
 
-                                            // needs to be table names mapped to its row we are looking at  );
+        boolean res = parser.whereIsTrue(
+                "where t1.a = t2.b and t2.c = \"str\" and uidt1 = uidt2 and t2.b = z",
+                "from t1, t2, t3", null);
+
+        // needs to be table names mapped to its row we are looking at  );
 //        System.out.println("STMT: " + res);
 
 
@@ -377,26 +477,26 @@ public class WhereP3 {
 
     }
 
-    /**
-     * author kyle f
-     *
-     * @param <X> element of type X
-     * @param <Y> element of type Y
-     */
-    public static class Tuple<X, Y> {
-        public X x;  //element 1
-        public Y y;  //element 2
+/**
+ * author kyle f
+ *
+ * @param <X> element of type X
+ * @param <Y> element of type Y
+ */
+public static class Tuple<X, Y> {
+    public X x;  //element 1
+    public Y y;  //element 2
 
-        public Tuple(X x, Y y) {
-            this.x = x;
-            this.y = y;
-        }
-
-        @Override
-        public String toString() {
-            return x + " " + y;
-        }
+    public Tuple(X x, Y y) {
+        this.x = x;
+        this.y = y;
     }
+
+    @Override
+    public String toString() {
+        return x + " " + y;
+    }
+}
   /*
 
 
