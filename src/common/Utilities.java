@@ -265,4 +265,31 @@ public class Utilities {
 
 
     }
+
+
+    public static HashSet<String> AmbiguityCols(Table[] tables) {
+
+
+        //find where attribute names intersect with other tables tables
+        HashSet<String> unique = new HashSet<>();
+        HashSet<String> notUnique = new HashSet<>();
+
+        for (Table t : tables) {
+            for (Attribute aName : t.getAttributes()) {
+
+                // found dup
+                if (unique.contains(aName.getAttributeName())) {
+                    notUnique.add(aName.getAttributeName());
+
+                    // no dup and yet and place in
+                }else {
+                    unique.add(aName.getAttributeName());
+                }
+
+            }
+        }
+
+        return notUnique;
+
+    }
 }
