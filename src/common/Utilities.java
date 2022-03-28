@@ -267,27 +267,31 @@ public class Utilities {
     }
 
 
-    public static HashSet<String> AmbiguityCols(Table[] tables) {
+    public static HashSet<String> AmbiguityCols(Table table) {
 
 
         //find where attribute names intersect with other tables tables
         HashSet<String> unique = new HashSet<>();
         HashSet<String> notUnique = new HashSet<>();
 
-        for (Table t : tables) {
-            for (Attribute aName : t.getAttributes()) {
+            for (Attribute aName : table.getAttributes()) {
+                String Name = aName.getAttributeName();
+
+                String[] SplitAName = aName.getAttributeName().split("\\.");
+
+                if (SplitAName.length > 1){
+                    Name = SplitAName[1];
+                }
 
                 // found dup
-                if (unique.contains(aName.getAttributeName())) {
-                    notUnique.add(aName.getAttributeName());
-
+                if (unique.contains(Name)) {
+                    notUnique.add(Name);
                     // no dup and yet and place in
                 }else {
-                    unique.add(aName.getAttributeName());
+                    unique.add(Name);
                 }
 
             }
-        }
 
         return notUnique;
 

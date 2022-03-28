@@ -217,13 +217,11 @@ public class WhereP3 {
 
     // fill string will get a string ready to be run through the validate function
     // string needs to be formated correctly and then be split into tokens
-    private static List<String> tokenizer(String whereStmt, String fromStmt, HashMap<String, List<Object>> rows) {
+    private static List<String> tokenizer(String whereStmt, Table table, ArrayList<Object> row) {
 
-        // what tables are referenced in the where
-        fromStmt = fromStmt.replace("from", "");
-        fromStmt = fromStmt.replace(" ", "");
 
-        String[] tables = fromStmt.split(",");
+//        System.out.println(table.getAttributes());
+
 
         // make sure we have spacing between operators and values
         whereStmt = whereStmt.replace("(", " ( ");
@@ -256,18 +254,9 @@ public class WhereP3 {
             whereIdx++;
         }
 
-        // getting the tables specifed in from stmt
-        Table[] tabsInFrom = new Table[tables.length];
-        for (int i = 0; i < tables.length; i++) {
-            String tablename = tables[i];
-            Table t = (Table) Catalog.getCatalog().getTable(tablename);
-            if (t != null) {
-                tabsInFrom[i] = t;
-            }
-        }
 
         // gen possible conficts
-        HashSet<String> ConflictCols = Utilities.AmbiguityCols(tabsInFrom);
+        HashSet<String> ConflictCols = Utilities.AmbiguityCols(table);
 
         // fill
         int tokenIdx = -1;
@@ -281,7 +270,6 @@ public class WhereP3 {
                 String[] splitToken = token.split("\\.");
 
                 // if there's a dot then the table name is specified
-                List<Object> row;
                 if (splitToken.length > 1) {
                     String tableName = splitToken[0];
                     String attributeName = splitToken[1];
@@ -292,14 +280,15 @@ public class WhereP3 {
                         System.err.println("table " + tableName + " does not exist");
                         return null;
                     }
+
                     // check that attribute exists in table
-                    if (!tab.AttribIdxs.containsKey(attributeName)) {
+                    if (!tab.AttribIdxs.containsKey(token)) {
                         System.err.println("attribute name " + attributeName + " in table " + tableName + " does not exist");
                         return null;
                     }
+
                     // get idx of that attributeName from that table
-                    int AttributeIdx = tab.AttribIdxs.get(attributeName);
-                    row = rows.get(tableName);
+                    int AttributeIdx = table.AttribIdxs.get(token);
                     tokens.set(tokenIdx, row.get(AttributeIdx).toString());
                     continue;
                 }
@@ -316,28 +305,19 @@ public class WhereP3 {
 
                 // make sure that the attribute is in at least one table that was in the from stmt
                 // find that table
-                boolean oneTableHasThisAttribute = false;
-                Table tableOfAttribute = null;
-                for (Table t : tabsInFrom) {
-                    if (t.AttribIdxs.containsKey(splitToken[0])) {
-                        oneTableHasThisAttribute = true;
-                        tableOfAttribute = t;
-                        break;
-                    }
-                }
-                if (!oneTableHasThisAttribute) {
+
+
+                if (!table.AttribIdxs.containsKey(splitToken[0])) {
                     System.err.println("attribute does not exist in any of the tables referenced: " + splitToken[0]);
                     return null;
                 }
-
                 // get the index of that attrbute
-                int AttributeIdx = tableOfAttribute.AttribIdxs.get(splitToken[0]);
-
-
-                row = rows.get(tableOfAttribute.getTableName());
-
+                int AttributeIdx = table.AttribIdxs.get(token);
                 tokens.set(tokenIdx, row.get(AttributeIdx).toString());
             }
+
+
+
         }
 
         System.out.println(tokens);
@@ -354,9 +334,9 @@ public class WhereP3 {
 
     ...
             */
-    public boolean whereIsTrue(String whereStmt, String fromStmt, HashMap<String, List<Object>> TableNameToTableRow) {
+    public boolean whereIsTrue(String whereStmt, Table table, ArrayList<Object> row) {
 
-        List<String> tokens = tokenizer(whereStmt, fromStmt, TableNameToTableRow);
+        List<String> tokens = tokenizer(whereStmt, table,row);
 
         if (tokens == null) {
             return false;
@@ -375,68 +355,78 @@ public class WhereP3 {
         Catalog cat = (Catalog) Catalog.getCatalog();
         WhereP3 parser = new WhereP3();
 
-//        select t1.a, t2.b, t2.c, t3.d
-//        from t1, t2, t3
-//        where t1.a = t2.b and t2.c = t3.d
-//        orderby t1.a
 
 
         // TALES
 
         //t1
         ArrayList<Attribute> attrs = new ArrayList<>();
-        attrs.add(new Attribute("a", "Integer"));
-        attrs.add(new Attribute("uidt1", "Integer"));
+        attrs.add(new Attribute("t1.a", "Integer"));
+        attrs.add(new Attribute("t1.uidt1", "Integer"));
         cat.addTable("t1", attrs, attrs.get(0));
 
 
         //t2
         ArrayList<Attribute> attrs2 = new ArrayList<>();
-        attrs2.add(new Attribute("b", "Integer"));
-        attrs2.add(new Attribute("c", "Integer"));
-        attrs2.add(new Attribute("uidt2", "Integer"));
+        attrs2.add(new Attribute("t2.b", "Integer"));
+        attrs2.add(new Attribute("t2.c", "Integer"));
+        attrs2.add(new Attribute("t2.uidt2", "Integer"));
         cat.addTable("t2", attrs2, attrs2.get(0));
 
         //t3
         ArrayList<Attribute> attrs3 = new ArrayList<>();
-        attrs3.add(new Attribute("a", "Integer"));
-        attrs3.add(new Attribute("uidt3", "Integer"));
-
+//        attrs3.add(new Attribute("t3.a", "Integer"));
+        attrs3.add(new Attribute("t3.uidt3", "Integer"));
         cat.addTable("t3", attrs3, attrs3.get(0));
 
 
 
 
-        // testing STMT
+        // cartesian product table
+
+        // 1) adding the attributes from all the tables together
+        ArrayList<Attribute> catAt = new ArrayList<>();
+        catAt.addAll(attrs);
+        catAt.addAll(attrs2);
+        catAt.addAll(attrs3);
+
+
+        // 2 sample row from new table
+
+        ArrayList<Object> row = new ArrayList<>();
+        row.add(1);
+        row.add(2);
+        row.add(3);
+        row.add(4);
+        row.add(5);
+//        row.add(6);
+        row.add(7);
+
+
+
+        // add new table
+        Catalog.getCatalog().addTable("catTab",catAt,null);
+
+
+
+        // row from cartesian product table
+
+//        System.out.println(row);
+//        System.out.println(((Table) Catalog.getCatalog().getTable("catTab")).AttribIdxs);
         long startTime = System.currentTimeMillis();
 
 
 
-
-
-
-        HashMap<String, List<Object>> rows = new HashMap<>();
-        List<Object> row1 = new ArrayList<>(Arrays.asList(1,2));
-
-        rows.put("t1",row1);
-
-        List<Object> row2 = new ArrayList<>(Arrays.asList(3, 4,5));
-        rows.put("t2",row2);
-
-        List<Object> row3 = new ArrayList<>(Arrays.asList(6, 7));
-        rows.put("t3",row3);
-
-
         boolean res = parser.whereIsTrue(
-                "where t1.a = t2.b and t2.c = \"str\" and uidt3 = uidt2",
-                "from t1, t2, t3", rows);
+                "where t1.a = a", (Table) Catalog.getCatalog().getTable("catTab"), row);
 
         // needs to be table names mapped to its row we are looking at  );
-//        System.out.println("STMT: " + res);
 
 
         long endTime = System.currentTimeMillis();
 
+
+        System.out.println("STMT: " + res);
         System.out.println(endTime - startTime);
 
     }

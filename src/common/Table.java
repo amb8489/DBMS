@@ -40,18 +40,27 @@ public class Table implements ITable{
 
 
 
-    public Table(String name,ArrayList<Attribute> Attributes,Attribute PrimaryKey ){
+    public Table(String tableName,ArrayList<Attribute> Attributes,Attribute PrimaryKey ){
         ID = numTables;
         numTables++;
         this.Attributes = Attributes;
-        this.TableName = name;
+        this.TableName = tableName;
         this.PrimaryKey = PrimaryKey;
 
 
 
         // mapping the attribute name to the idx of that attribute  needed for later
         for (int i = 0; i < Attributes.size(); i++) {
-            AttribIdxs.put(Attributes.get(i).getAttributeName(), i);
+
+            String name = Attributes.get(i).getAttributeName();
+
+            // . for table specifier in cartesion table prod case
+            if (name.contains(".")){
+                String[] splitName = name.split("\\.");
+                String attributeName = splitName[1];
+                AttribIdxs.put(attributeName, i);
+            }
+            AttribIdxs.put(name, i);
         }
 
         Page firstPAgeForTable = new Page(this);
@@ -85,7 +94,16 @@ public class Table implements ITable{
 
         // mapping the attribute name to the idx of that attribute  needed for later
         for (int i = 0; i < Attributes.size(); i++) {
-            AttribIdxs.put(Attributes.get(i).getAttributeName(), i);
+
+            String name = Attributes.get(i).getAttributeName();
+
+            // . for table specifier in cartesion table prod case
+            if (name.contains(".")){
+                String[] splitName = name.split("\\.");
+                String attributeName = splitName[1];
+                AttribIdxs.put(attributeName, i);
+            }
+            AttribIdxs.put(name, i);
         }
     }
 
