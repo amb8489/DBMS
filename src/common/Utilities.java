@@ -269,16 +269,22 @@ public class Utilities {
     public static void prettyPrintTable(ResultSet table) {
 
 
-        int spacingSeparation = 1;                   // number of spaces between columns
-
+        int spacingSeparation = 0;                   // number of spaces between columns
+        int maxStrSize = 15;
         int max = 0;
         for (ArrayList<Object> r: table.results()){
-            for (Object o: r) {
+            for (int i = 0;i < r.size();i++) {
+                Object o = r.get(i);
                 max = Math.max(max,o.toString().length());
-            }
+
+                    if (o.toString().length() > maxStrSize) {
+                        r.set(i, o.toString().substring(0, maxStrSize - 4) + "...");
+                    }
+                }
         }
 
-        int spacing = max + spacingSeparation;   // total spacing
+        int spacing = Math.min(max, maxStrSize) + spacingSeparation;   // total spacing
+
 
 
         String[] atters =  new String[table.attrs().size()];
@@ -292,13 +298,13 @@ public class Utilities {
         StringBuilder formatStr = new StringBuilder();
         formatStr.append("║ %-").append(spacing);
         for (int i = 0; i < table.attrs().size()-1; i++) {
-            formatStr.append("s ║%-").append(spacing);
+            formatStr.append("."+spacing+"s ║%-").append(spacing);
 
         }
         formatStr.append("s║\n");
         String ColNames = String.format(formatStr.toString(), atters);
-
         System.out.println("═".repeat(ColNames.length()-1));
+
         System.out.print(ColNames);
         System.out.println("═".repeat(ColNames.length()-1));
 
@@ -391,7 +397,7 @@ public class Utilities {
             row.add(3231);
             row.add(4);
 
-            row.add("abcdefghijklmn");
+            row.add("abcdkjjkklklklasdasdasdasdasdalklkefghijklmn");
             row.add(6);
             row.add(7);
             rows.add(row);
