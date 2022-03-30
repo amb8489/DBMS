@@ -56,7 +56,7 @@ public class Database {
 
         Scanner scn = new Scanner(System.in);
         String statement = "";
-        while(!statement.equals("exit;")){
+        while(true){
             String input;
 
             do{
@@ -65,15 +65,17 @@ public class Database {
             }
             while(!input.contains(";"));
 
-            if(statement.strip().equals("exit;")){  // end of entering statements
+            if(statement.strip().equals("quit;")){  // end of entering statements
                 System.out.println("SUCCESS, Exiting Now...");
                 break;
             }
+            if (statement.toLowerCase().startsWith("select")){
+                //TODO kyle is this right to put this here like this??
+                executeQuery(statement);
 
-            if(executeStatement(statement)){
+            }else if(executeStatement(statement)){
                 System.out.println("SUCCESS");
-            }
-            else{
+            } else{
                 System.err.println("ERROR");
             }
 
@@ -100,18 +102,29 @@ public class Database {
             System.out.println("ddl");
             return true;
         }
-        else return DMLParser.parseDMLStatement(stmt);
+        else{
+            return DMLParser.parseDMLStatement(stmt);
+        }
     }
 
     /**
      * //TODO To be completed in a later phase
      * This function will be used when executing database queries that return tables of data.
      *
-     * @param query The query to be executed
+     * @param queryStmt The query to be executed
      * @return The table of data
      */
-    public static ResultSet executeQuery(String query){
-        return null;
+    public static ResultSet executeQuery(String queryStmt){
+        ResultSet QueryResultTable = DMLParser.parseDMLQuery(queryStmt);
+        if(QueryResultTable == null){
+            System.err.println("query: "+ queryStmt +"failed");
+            return null;
+        }
+
+        // TODO print the table
+
+
+        return QueryResultTable;
     }
 
     /**

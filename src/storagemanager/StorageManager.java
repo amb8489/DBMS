@@ -185,9 +185,10 @@ public class StorageManager extends AStorageManager {
             for (ForeignKey fk : (table).getForeignKeys()) {
                 String fkAttribute = fk.getAttrName();
                 Object valueToFindInFKtab = record.get(AttribNamesIdx.get(fkAttribute));
-                System.err.println(valueToFindInFKtab+"--------------"+fk);
 
                 if (!TableContainsFkVal(fk, valueToFindInFKtab)) {
+                    System.err.println(valueToFindInFKtab+" not in fk "+fk);
+
                     return false;
                 }
 

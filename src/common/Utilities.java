@@ -2,7 +2,10 @@ package common;
 
 // a class for helpul utilities
 
+import parsers.ResultSet;
+
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -10,7 +13,6 @@ public class Utilities {
 
 // list of key words not allowed for use for table/ column names
 
-    //TODO add types
     private static Set<String> KEYWORDS = Stream.of(
             "create", "table", "drop", "insert", "into", "delete", "from", "where", "update",
             "notnull", "primarykey", "foreignkey", "references", "add", "default", "set",
@@ -134,24 +136,23 @@ public class Utilities {
         return tokens;
     }
 
-    public static String whatType(String s,boolean simplifyTypes) {
+    public static String whatType(String s, boolean simplifyTypes) {
 
 
-            if (!simplifyTypes){
-                return whatType(s);
-            }
+        if (!simplifyTypes) {
+            return whatType(s);
+        }
 
-            String type =  whatType(s);
+        String type = whatType(s);
 
-            if(type == null){
-                return null;
-            }
+        if (type == null) {
+            return null;
+        }
 
-            return switch (type.toLowerCase()) {
-                case "double", "integer" -> "Numeric";
-                default -> type;
-            };
-
+        return switch (type.toLowerCase()) {
+            case "double", "integer" -> "Numeric";
+            default -> type;
+        };
 
 
     }
@@ -203,10 +204,9 @@ public class Utilities {
     }
 
     // given a char(#) or varchar(#) attribute and a string itll see if that string is too long/short for the #
-    public static boolean isStringTooLong(String attribute, String string){
+    public static boolean isStringTooLong(String attribute, String string) {
 
-        string = string.replace("\"","");
-
+        string = string.replace("\"", "");
 
 
         String type = attribute.toLowerCase();
@@ -215,7 +215,7 @@ public class Utilities {
 
             // lets get how big the string can be and if its too big or small
 
-            int idxOfLeftParen = type.indexOf("(")+1;
+            int idxOfLeftParen = type.indexOf("(") + 1;
             int idxOfRightParen = type.indexOf(")");
 
             int StringSize = Integer.parseInt(type.substring(idxOfLeftParen, idxOfRightParen));
@@ -237,7 +237,7 @@ public class Utilities {
 
             return false;
 
-        }else {
+        } else {
             return true;
         }
     }
@@ -245,8 +245,8 @@ public class Utilities {
     public static Boolean isColName(String s) {
 
         if (s.equalsIgnoreCase("true") ||
-                s.equalsIgnoreCase("false")||
-                s.equalsIgnoreCase("and")||
+                s.equalsIgnoreCase("false") ||
+                s.equalsIgnoreCase("and") ||
                 s.equalsIgnoreCase("or")) {
             return false;
         }
@@ -259,9 +259,60 @@ public class Utilities {
             return false;
         }
 
-        s = s.replace(".","");
+        s = s.replace(".", "");
 
         return !isiIllLegalName(s);
+
+
+    }
+
+    public static void prettyPrintTable(ResultSet table) {
+
+
+        int spacingSeparation = 1;                   // number of spaces between columns
+
+        int max = 0;
+        for (ArrayList<Object> r: table.results()){
+            for (Object o: r) {
+                max = Math.max(max,o.toString().length());
+            }
+        }
+
+        int spacing = max + spacingSeparation;   // total spacing
+
+
+        String[] atters =  new String[table.attrs().size()];
+
+        for (int i = 0; i < table.attrs().size(); i++) {
+            Attribute a = table.attrs().get(i);
+            atters[i] = a.getAttributeName();
+        }
+
+
+        StringBuilder formatStr = new StringBuilder();
+        formatStr.append("║ %-").append(spacing);
+        for (int i = 0; i < table.attrs().size()-1; i++) {
+            formatStr.append("s ║%-").append(spacing);
+
+        }
+        formatStr.append("s║\n");
+        String ColNames = String.format(formatStr.toString(), atters);
+
+        System.out.println("═".repeat(ColNames.length()-1));
+        System.out.print(ColNames);
+        System.out.println("═".repeat(ColNames.length()-1));
+
+
+
+
+        for (int i = 0; i < table.results().size(); i++) {
+            String rowstr = table.results().get(i).toString().substring(1,table.results().get(i).toString().length()-1);
+            String[] rowStrarr  = rowstr.split(",");
+            System.out.printf(formatStr.toString(),rowStrarr);
+        }
+
+        System.out.println("═".repeat(ColNames.length()-1));
+
 
 
     }
@@ -274,26 +325,79 @@ public class Utilities {
         HashSet<String> unique = new HashSet<>();
         HashSet<String> notUnique = new HashSet<>();
 
-            for (Attribute aName : table.getAttributes()) {
-                String Name = aName.getAttributeName();
+        for (Attribute aName : table.getAttributes()) {
+            String Name = aName.getAttributeName();
 
-                String[] SplitAName = aName.getAttributeName().split("\\.");
+            String[] SplitAName = aName.getAttributeName().split("\\.");
 
-                if (SplitAName.length > 1){
-                    Name = SplitAName[1];
-                }
-
-                // found dup
-                if (unique.contains(Name)) {
-                    notUnique.add(Name);
-                    // no dup and yet and place in
-                }else {
-                    unique.add(Name);
-                }
-
+            if (SplitAName.length > 1) {
+                Name = SplitAName[1];
             }
+
+            // found dup
+            if (unique.contains(Name)) {
+                notUnique.add(Name);
+                // no dup and yet and place in
+            } else {
+                unique.add(Name);
+            }
+
+        }
 
         return notUnique;
 
+    }
+
+    public static void main(String[] args) {
+
+        // TALES
+
+        //t1
+        ArrayList<Attribute> attrs = new ArrayList<>();
+        attrs.add(new Attribute("t1.a", "Integer"));
+        attrs.add(new Attribute("t1.uidt1", "Integer"));
+
+
+        //t2
+        ArrayList<Attribute> attrs2 = new ArrayList<>();
+        attrs2.add(new Attribute("t2.b", "Integer"));
+        attrs2.add(new Attribute("t2.c", "Integer"));
+        attrs2.add(new Attribute("t2.uidt2", "Integer"));
+
+        //t3
+        ArrayList<Attribute> attrs3 = new ArrayList<>();
+        attrs3.add(new Attribute("t3.a", "Integer"));
+        attrs3.add(new Attribute("t3.uidt3", "Integer"));
+
+
+        // cartesian product table
+
+        // 1) adding the attributes from all the tables together
+        ArrayList<Attribute> catAt = new ArrayList<>();
+        catAt.addAll(attrs);
+        catAt.addAll(attrs2);
+        catAt.addAll(attrs3);
+
+
+        // 2 sample row from new table
+
+
+        ArrayList<ArrayList<Object>> rows = new ArrayList<ArrayList<Object>>();
+
+        for (int i = 0; i < 10; i++) {
+            ArrayList<Object> row = new ArrayList<>();
+            row.add(1);
+            row.add(2);
+            row.add(3231);
+            row.add(4);
+
+            row.add("abcdefghijklmn");
+            row.add(6);
+            row.add(7);
+            rows.add(row);
+        }
+        ResultSet table = new ResultSet(catAt, rows);
+
+        prettyPrintTable(table);
     }
 }

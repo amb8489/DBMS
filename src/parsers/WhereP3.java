@@ -258,7 +258,7 @@ public class WhereP3 {
         // gen possible conficts
         HashSet<String> ConflictCols = Utilities.AmbiguityCols(table);
 
-        // fill
+        // replace token col names with row val for that attribute
         int tokenIdx = -1;
         for (String token : tokens) {
             tokenIdx++;
@@ -315,11 +315,7 @@ public class WhereP3 {
                 int AttributeIdx = table.AttribIdxs.get(token);
                 tokens.set(tokenIdx, row.get(AttributeIdx).toString());
             }
-
-
-
         }
-
         System.out.println(tokens);
 
         // return the tokens now filled with proer values
@@ -375,7 +371,7 @@ public class WhereP3 {
 
         //t3
         ArrayList<Attribute> attrs3 = new ArrayList<>();
-//        attrs3.add(new Attribute("t3.a", "Integer"));
+        attrs3.add(new Attribute("t3.a", "Integer"));
         attrs3.add(new Attribute("t3.uidt3", "Integer"));
         cat.addTable("t3", attrs3, attrs3.get(0));
 
@@ -417,8 +413,9 @@ public class WhereP3 {
 
 
 
+
         boolean res = parser.whereIsTrue(
-                "where t1.a = a", (Table) Catalog.getCatalog().getTable("catTab"), row);
+                "where t1.a = t3.a", (Table) Catalog.getCatalog().getTable("catTab"), row);
 
         // needs to be table names mapped to its row we are looking at  );
 

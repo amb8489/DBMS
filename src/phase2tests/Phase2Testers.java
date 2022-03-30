@@ -208,7 +208,7 @@ public class Phase2Testers {
                 alter  
                 table   
                 student
-                add time boolean default aa;
+                add time boolean default true;
                 """);
 
         System.out.println(studentTab.tableToString());
