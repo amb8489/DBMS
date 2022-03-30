@@ -2,7 +2,10 @@ package common;
 
 // a class for helpul utilities
 
+import catalog.Catalog;
 import parsers.ResultSet;
+import phase2tests.Phase2Testers;
+import storagemanager.StorageManager;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -266,28 +269,54 @@ public class Utilities {
 
     }
 
+    //
+//    public static Table SortBy(Table table, String AttributeName,Boolean accenting){
+//        // table does not have that atrribute
+//        if(! table.AttribIdxs.containsKey(AttributeName)){
+//            System.err.println("Sorting on unknown attribute: "+AttributeName);
+//            return null;
+//        }
+//
+//        // what column you want to sort on is ambiguous
+//        if(AmbiguityCols(table).contains(AttributeName)){
+//            System.err.println("Sorting on ambiguous attribute: "+AttributeName);
+//            return null;
+//        }
+//        String type = table.getAttributes().get(table.AttribIdxs.get(AttributeName)).getAttributeType();
+//        // comparitor based on type
+////        Collections.sort(namesAndNumbers, new Comparator<ArrayList<String>>() {
+////            @Override
+////            public int compare(ArrayList<String> o1, ArrayList<String> o2) {
+////                return o1.get(0).compareTo(o2.get(0));
+////            }
+////        });
+//
+//
+//
+//
+//
+//    }
     public static void prettyPrintTable(ResultSet table) {
 
 
         int spacingSeparation = 0;                   // number of spaces between columns
-        int maxStrSize = 15;
+        int maxStrSize = 160;
         int max = 0;
-        for (ArrayList<Object> r: table.results()){
-            for (int i = 0;i < r.size();i++) {
+        for (ArrayList<Object> r : table.results()) {
+            for (int i = 0; i < r.size(); i++) {
                 Object o = r.get(i);
-                max = Math.max(max,o.toString().length());
+                max = Math.max(max, o.toString().length());
 
-                    if (o.toString().length() > maxStrSize) {
-                        r.set(i, o.toString().substring(0, maxStrSize - 4) + "...");
-                    }
+                if (o.toString().length() > maxStrSize) {
+                    r.set(i, o.toString().substring(0, maxStrSize - 4) + "...");
                 }
+            }
         }
 
         int spacing = Math.min(max, maxStrSize) + spacingSeparation;   // total spacing
 
 
-
-        String[] atters =  new String[table.attrs().size()];
+        String[] atters = new String[table.attrs().size()];
 
         for (int i = 0; i < table.attrs().size(); i++) {
             Attribute a = table.attrs().get(i);
@@ -297,28 +326,25 @@ public class Utilities {
 
         StringBuilder formatStr = new StringBuilder();
         formatStr.append("║ %-").append(spacing);
-        for (int i = 0; i < table.attrs().size()-1; i++) {
-            formatStr.append("."+spacing+"s ║%-").append(spacing);
+        for (int i = 0; i < table.attrs().size() - 1; i++) {
+            formatStr.append("." + spacing + "s ║%-").append(spacing);
 
         }
         formatStr.append("s║\n");
         String ColNames = String.format(formatStr.toString(), atters);
-        System.out.println("═".repeat(ColNames.length()-1));
+        System.out.println("═".repeat(ColNames.length() - 1));
 
         System.out.print(ColNames);
-        System.out.println("═".repeat(ColNames.length()-1));
-
-
+        System.out.println("═".repeat(ColNames.length() - 1));
 
 
         for (int i = 0; i < table.results().size(); i++) {
-            String rowstr = table.results().get(i).toString().substring(1,table.results().get(i).toString().length()-1);
-            String[] rowStrarr  = rowstr.split(",");
-            System.out.printf(formatStr.toString(),rowStrarr);
+            String rowstr = table.results().get(i).toString().substring(1, table.results().get(i).toString().length() - 1);
+            String[] rowStrarr = rowstr.split(",");
+            System.out.printf(formatStr.toString(), rowStrarr);
         }
 
-        System.out.println("═".repeat(ColNames.length()-1));
-
+        System.out.println("═".repeat(ColNames.length() - 1));
 
 
     }
@@ -366,13 +392,13 @@ public class Utilities {
 
         //t2
         ArrayList<Attribute> attrs2 = new ArrayList<>();
-        attrs2.add(new Attribute("t2.b", "Integer"));
+        attrs2.add(new Attribute("t2.b", "Char(20)"));
         attrs2.add(new Attribute("t2.c", "Integer"));
         attrs2.add(new Attribute("t2.uidt2", "Integer"));
 
         //t3
         ArrayList<Attribute> attrs3 = new ArrayList<>();
-        attrs3.add(new Attribute("t3.a", "Integer"));
+        attrs3.add(new Attribute("t3.a", "Double"));
         attrs3.add(new Attribute("t3.uidt3", "Integer"));
 
 
@@ -385,21 +411,15 @@ public class Utilities {
         catAt.addAll(attrs3);
 
 
+
         // 2 sample row from new table
 
 
         ArrayList<ArrayList<Object>> rows = new ArrayList<ArrayList<Object>>();
 
         for (int i = 0; i < 10; i++) {
-            ArrayList<Object> row = new ArrayList<>();
-            row.add(1);
-            row.add(2);
-            row.add(3231);
-            row.add(4);
+            ArrayList<Object> row = Phase2Testers.mkRandomRec(catAt);;
 
-            row.add("abcdkjjkklklklasdasdasdasdasdalklkefghijklmn");
-            row.add(6);
-            row.add(7);
             rows.add(row);
         }
         ResultSet table = new ResultSet(catAt, rows);

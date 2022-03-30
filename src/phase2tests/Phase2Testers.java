@@ -34,7 +34,7 @@ public class Phase2Testers {
     public static int tot = 0;
 
     // makes a random record with the schema
-    public static ArrayList<Object> mkRandomRec(Table table) {
+    public static ArrayList<Object> mkRandomRec(ArrayList<Attribute> Attributes) {
         tot++;
 
 
@@ -43,7 +43,7 @@ public class Phase2Testers {
         ArrayList<String> schema = new ArrayList<>();
 
         // looping though table attribs to get their types
-        for (Attribute att : table.getAttributes()) {
+        for (Attribute att : Attributes) {
             schema.add(att.getAttributeType());
 
             // found a char(#) paring for the number
@@ -56,12 +56,12 @@ public class Phase2Testers {
         }
         Random r = new Random();
         ArrayList<Object> rec = new ArrayList<>();
-        for (int idx = 0; idx < table.getAttributes().size(); idx++) {
+        for (int idx = 0; idx < Attributes.size(); idx++) {
 
             // read in what the schema says is next
             switch (schema.get(idx)) {
                 case "Integer":
-                    if (idx == table.pkIdx()) {
+                    if (idx == 0) {
                         rec.add(tot);
                     } else {
                         rec.add(r.nextInt());
@@ -147,7 +147,7 @@ public class Phase2Testers {
 
         ITable studentTab = cat.getTable("student");
         for (int i = 0; i < numberOfRows; i++) {
-            ArrayList<Object> row = mkRandomRec((Table) studentTab);
+            ArrayList<Object> row = mkRandomRec(studentTab.getAttributes());
             System.out.println(row);
             sm.insertRecord(studentTab, row);
         }
@@ -161,7 +161,7 @@ public class Phase2Testers {
 
 
         //bad null test
-        ArrayList<Object> rowNull = mkRandomRec((Table) studentTab);
+        ArrayList<Object> rowNull = mkRandomRec(studentTab.getAttributes());
         rowNull.set(0,null);
         sm.insertRecord(studentTab, rowNull);
 
