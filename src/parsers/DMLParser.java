@@ -425,12 +425,10 @@ public class DMLParser {
 
 
 
+        //TODO
+        // ----------------- ----------------- FROM | make cartesian prod table -----------------
 
-        // FROM | make cartesian prod table
 
-        // temp table this will be the table we work with fill this for cartesian prod tab
-        ArrayList<Attribute> attribs = new ArrayList<>();
-        ArrayList<ArrayList<Object>> rows = new ArrayList<>();
 
 
 
@@ -438,19 +436,22 @@ public class DMLParser {
 
         // -----------------WHERE | do where on cartesian prod table-----------------------
         // ----------------- will remove all unqualified rows -----------------------------
-        int whereIdx = StmtTokens.indexOf("where");
-        int semiIdx = StmtTokens.indexOf(";");
-        int orderbyIdx = StmtTokens.indexOf("orderby");
+        int whereIdx = LowerQueryStmt.indexOf("where");
+        int semiIdx = LowerQueryStmt.indexOf(";");
+        int orderbyIdx = LowerQueryStmt.indexOf("orderby");
+
         if(whereIdx > 0) {
             int stopIdx = semiIdx;
             if(semiIdx != -1 || orderbyIdx != -1 ) {
                 if (semiIdx == -1){
                     stopIdx = orderbyIdx;
+                }else{
+                    stopIdx = Math.min(orderbyIdx,semiIdx);
                 }
-                List<String> FROM_TOKENS = StmtTokens.subList(whereIdx,stopIdx);
+                String WHERE = query.substring(whereIdx,stopIdx);
 
                 // parse table unqualified rows
-                ((StorageManager) StorageManager.getStorageManager()).deleteRecordWhere()
+                ((StorageManager) StorageManager.getStorageManager()).deleteRecordWhere(null,WHERE,false);
             }else{
                 System.err.println("error in stmt");
                 return null;
@@ -458,14 +459,16 @@ public class DMLParser {
 
         }
 
-        // SELECT | get only columns we asked for
+        //TODO
+        //  ----------------- ----------------- SELECT | get only columns we asked for -----------------
 
-        // ORDER-BY | SORT rows
+        //TODO
+        //  ----------------- ----------------- ORDER-BY | SORT rows ----------------- -----------------
 
 
         // MAKE RESULT-SET
 
-        ResultSet rs = Utilities.ResultSetFromTable(attribs,rows);
+//        ResultSet rs = Utilities.ResultSetFromTable(attribs,rows);
 
         // RETURN RESULT-SET
         return rs;
