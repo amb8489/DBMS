@@ -471,7 +471,7 @@ public class DMLParser {
 //        ResultSet rs = Utilities.ResultSetFromTable(attribs,rows);
 
         // RETURN RESULT-SET
-        return rs;
+        return null;
     }
 
 
