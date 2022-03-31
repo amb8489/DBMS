@@ -109,7 +109,6 @@ public class Database {
     }
 
     /**
-     * //TODO To be completed in a later phase
      * This function will be used when executing database queries that return tables of data.
      *
      * @param queryStmt The query to be executed
@@ -118,11 +117,9 @@ public class Database {
     public static ResultSet executeQuery(String queryStmt){
         ResultSet QueryResultTable = DMLParser.parseDMLQuery(queryStmt);
         if(QueryResultTable == null){
-            System.err.println("query: "+ queryStmt +"failed");
+            System.err.println("query: "+ queryStmt +" failed");
             return null;
         }
-
-        // TODO print the table
         Utilities.prettyPrintResultSet(QueryResultTable,false,15);
         return QueryResultTable;
     }

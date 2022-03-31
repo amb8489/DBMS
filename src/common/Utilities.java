@@ -364,6 +364,11 @@ public class Utilities {
     }
 
 
+    public static ResultSet ResultSetFromTable(ArrayList<Attribute> attributes,ArrayList<ArrayList<Object>>rows){
+        return new ResultSet(attributes,rows);
+    }
+
+
     public static HashSet<String> AmbiguityCols(Table table) {
 
 

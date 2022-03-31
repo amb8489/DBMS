@@ -417,7 +417,26 @@ public class DMLParser {
      *         Note: No data and error are two different cases.
      */
     public static ResultSet parseDMLQuery(String query){
-        return null;
+
+
+        // temp table
+        ArrayList<Attribute> attribs = new ArrayList<>();
+        ArrayList<ArrayList<Object>> rows = new ArrayList<>();
+
+        // FROM | make cartesian prod table
+
+        // WHERE | do where on cartesian prod table
+
+        // SELECT | get only columns we asked for
+
+        // ORDER-BY | SORT rows
+
+
+        // MAKE RESULT-SET
+        ResultSet rs = Utilities.ResultSetFromTable(attribs,rows);
+
+        // RETURN RESULT-SET
+        return rs;
     }
 
 
