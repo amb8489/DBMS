@@ -12,18 +12,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import filesystem.FileSystem;
+import parsers.WhereP3;
 import parsers.WhereParser;
 
 public class StorageManager extends AStorageManager {
 
 
     private static PageBuffer pb;
-    private static WhereParser wp;
+    private static WhereP3 wp;
 
     public StorageManager() {
 
         pb = new PageBuffer(Catalog.getCatalog().getPageBufferSize());
-        wp = new WhereParser();
+        wp = new WhereP3();
     }
 
 
@@ -318,7 +319,7 @@ public class StorageManager extends AStorageManager {
 
                 for (int i = recSize - 1; i > -1; i--) {
                     ArrayList<Object> row = headPage.getPageRecords().get(i);
-                    if (removeAllRecords || wp.whereIsTrue(where, row, attributes)) {
+                    if (removeAllRecords || wp.whereIsTrue(where, (Table) table,row)) {
                         VerbosePrint.Verbose = true;
                         VerbosePrint.print("REMOVING" + row);
                         VerbosePrint.Verbose = false;

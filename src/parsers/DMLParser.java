@@ -417,15 +417,46 @@ public class DMLParser {
      *         Note: No data and error are two different cases.
      */
     public static ResultSet parseDMLQuery(String query){
+        //ensure formated correctly
+        query = Utilities.format(query);
+        String LowerQueryStmt = query.toLowerCase().replace(",","");
+        List<String> StmtTokens = Utilities.mkTokensFromStr(LowerQueryStmt);
 
 
-        // temp table
-        ArrayList<Attribute> attribs = new ArrayList<>();
-        ArrayList<ArrayList<Object>> rows = new ArrayList<>();
+
+
 
         // FROM | make cartesian prod table
 
-        // WHERE | do where on cartesian prod table
+        // temp table this will be the table we work with fill this for cartesian prod tab
+        ArrayList<Attribute> attribs = new ArrayList<>();
+        ArrayList<ArrayList<Object>> rows = new ArrayList<>();
+
+
+
+
+
+        // -----------------WHERE | do where on cartesian prod table-----------------------
+        // ----------------- will remove all unqualified rows -----------------------------
+        int whereIdx = StmtTokens.indexOf("where");
+        int semiIdx = StmtTokens.indexOf(";");
+        int orderbyIdx = StmtTokens.indexOf("orderby");
+        if(whereIdx > 0) {
+            int stopIdx = semiIdx;
+            if(semiIdx != -1 || orderbyIdx != -1 ) {
+                if (semiIdx == -1){
+                    stopIdx = orderbyIdx;
+                }
+                List<String> FROM_TOKENS = StmtTokens.subList(whereIdx,stopIdx);
+
+                // parse table unqualified rows
+                ((StorageManager) StorageManager.getStorageManager()).deleteRecordWhere()
+            }else{
+                System.err.println("error in stmt");
+                return null;
+            }
+
+        }
 
         // SELECT | get only columns we asked for
 
@@ -433,6 +464,7 @@ public class DMLParser {
 
 
         // MAKE RESULT-SET
+
         ResultSet rs = Utilities.ResultSetFromTable(attribs,rows);
 
         // RETURN RESULT-SET
