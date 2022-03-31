@@ -301,19 +301,25 @@ public class Utilities {
 
         int spacingSeparation = 0;                   // number of spaces between columns
         int maxStrSize = 160;
-        int max = 0;
+        int[] max = new int[table.attrs().size()];
+
+
         for (ArrayList<Object> r : table.results()) {
             for (int i = 0; i < r.size(); i++) {
                 Object o = r.get(i);
-                max = Math.max(max, o.toString().length());
-
+                max[i] = Math.max(Math.max(max[i], o.toString().length()), table.attrs().get(i).getAttributeName().length());
                 if (o.toString().length() > maxStrSize) {
                     r.set(i, o.toString().substring(0, maxStrSize - 4) + "...");
                 }
             }
         }
+        System.out.println(Arrays.toString(max));
 
-        int spacing = Math.min(max, maxStrSize) + spacingSeparation;   // total spacing
+        int[] spacing = new int[table.attrs().size()];
+        for (int i = 0; i < table.attrs().size(); i++) {
+            spacing[i] = Math.min(max[i], maxStrSize) + spacingSeparation;   // total spac
+            spacing[i]+=1;
+        }
 
 
         String[] atters = new String[table.attrs().size()];
@@ -325,12 +331,15 @@ public class Utilities {
 
 
         StringBuilder formatStr = new StringBuilder();
-        formatStr.append("║ %-").append(spacing);
-        for (int i = 0; i < table.attrs().size() - 1; i++) {
-            formatStr.append("." + spacing + "s ║%-").append(spacing);
+        formatStr.append("║ %-").append(spacing[0]);
+        for (int i = 1; i < table.attrs().size(); i++) {
+
+            int idx = i % table.attrs().size();
+            formatStr.append("s ║%-").append(spacing[idx]);
 
         }
         formatStr.append("s║\n");
+        System.out.println(formatStr);
         String ColNames = String.format(formatStr.toString(), atters);
         System.out.println("═".repeat(ColNames.length() - 1));
 
@@ -393,7 +402,7 @@ public class Utilities {
         //t2
         ArrayList<Attribute> attrs2 = new ArrayList<>();
         attrs2.add(new Attribute("t2.b", "Char(20)"));
-        attrs2.add(new Attribute("t2.c", "Integer"));
+        attrs2.add(new Attribute("t2.c", "Varchar(20)"));
         attrs2.add(new Attribute("t2.uidt2", "Integer"));
 
         //t3
@@ -411,14 +420,14 @@ public class Utilities {
         catAt.addAll(attrs3);
 
 
-
         // 2 sample row from new table
 
 
         ArrayList<ArrayList<Object>> rows = new ArrayList<ArrayList<Object>>();
 
         for (int i = 0; i < 10; i++) {
-            ArrayList<Object> row = Phase2Testers.mkRandomRec(catAt);;
+            ArrayList<Object> row = Phase2Testers.mkRandomRec(catAt);
+            ;
 
             rows.add(row);
         }
