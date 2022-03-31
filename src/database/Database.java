@@ -11,6 +11,7 @@ package database;
 
 import catalog.ACatalog;
 import catalog.Catalog;
+import common.Utilities;
 import parsers.DDLParser;
 import parsers.DMLParser;
 import parsers.ResultSet;
@@ -72,7 +73,6 @@ public class Database {
             if (statement.toLowerCase().startsWith("select")){
                 //TODO kyle is this right to put this here like this??
                 executeQuery(statement);
-
             }else if(executeStatement(statement)){
                 System.out.println("SUCCESS");
             } else{
@@ -122,8 +122,7 @@ public class Database {
         }
 
         // TODO print the table
-
-
+        Utilities.prettyPrintResultSet(QueryResultTable,false,15);
         return QueryResultTable;
     }
 

@@ -296,11 +296,16 @@ public class Utilities {
 //
 //
 //    }
-    public static void prettyPrintTable(ResultSet table) {
+    public static void prettyPrintResultSet(ResultSet table,Boolean truncate,int maxSizeTruncate) {
 
 
         int spacingSeparation = 0;                   // number of spaces between columns
-        int maxStrSize = 160;
+        int maxStrSize = 200;
+
+        if(truncate){
+            maxStrSize = maxSizeTruncate;
+        }
+
         int[] max = new int[table.attrs().size()];
 
 
@@ -313,7 +318,6 @@ public class Utilities {
                 }
             }
         }
-        System.out.println(Arrays.toString(max));
 
         int[] spacing = new int[table.attrs().size()];
         for (int i = 0; i < table.attrs().size(); i++) {
@@ -339,7 +343,6 @@ public class Utilities {
 
         }
         formatStr.append("s║\n");
-        System.out.println(formatStr);
         String ColNames = String.format(formatStr.toString(), atters);
         System.out.println("═".repeat(ColNames.length() - 1));
 
@@ -351,6 +354,8 @@ public class Utilities {
             String rowstr = table.results().get(i).toString().substring(1, table.results().get(i).toString().length() - 1);
             String[] rowStrarr = rowstr.split(",");
             System.out.printf(formatStr.toString(), rowStrarr);
+//            System.out.println("".repeat(ColNames.length() - 1));
+
         }
 
         System.out.println("═".repeat(ColNames.length() - 1));
@@ -425,14 +430,12 @@ public class Utilities {
 
         ArrayList<ArrayList<Object>> rows = new ArrayList<ArrayList<Object>>();
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 100; i++) {
             ArrayList<Object> row = Phase2Testers.mkRandomRec(catAt);
-            ;
-
             rows.add(row);
         }
         ResultSet table = new ResultSet(catAt, rows);
 
-        prettyPrintTable(table);
+        prettyPrintResultSet(table,false,10);
     }
 }
