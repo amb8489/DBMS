@@ -270,32 +270,48 @@ public class Utilities {
     }
 
     //
-//    public static Table SortBy(Table table, String AttributeName,Boolean accenting){
-//        // table does not have that atrribute
-//        if(! table.AttribIdxs.containsKey(AttributeName)){
-//            System.err.println("Sorting on unknown attribute: "+AttributeName);
-//            return null;
-//        }
-//
-//        // what column you want to sort on is ambiguous
-//        if(AmbiguityCols(table).contains(AttributeName)){
-//            System.err.println("Sorting on ambiguous attribute: "+AttributeName);
-//            return null;
-//        }
-//        String type = table.getAttributes().get(table.AttribIdxs.get(AttributeName)).getAttributeType();
-//        // comparitor based on type
-////        Collections.sort(namesAndNumbers, new Comparator<ArrayList<String>>() {
-////            @Override
-////            public int compare(ArrayList<String> o1, ArrayList<String> o2) {
-////                return o1.get(0).compareTo(o2.get(0));
-////            }
-////        });
-//
-//
-//
-//
-//
-//    }
+    public static ArrayList<ArrayList<Object>> SortBy(Table table,ArrayList<ArrayList<Object>> rows, String AttributeName,Boolean accenting) {
+        // table does not have that atrribute
+        if (!table.AttribIdxs.containsKey(AttributeName)) {
+            System.err.println("Sorting on unknown attribute: " + AttributeName);
+            return null;
+        }
+
+        // what column you want to sort on is ambiguous
+        if (AmbiguityCols(table).contains(AttributeName)) {
+            System.err.println("Sorting on ambiguous attribute: " + AttributeName);
+            return null;
+        }
+
+
+        String type = table.getAttributes().get(table.AttribIdxs.get(AttributeName)).getAttributeType().toLowerCase();
+
+        int idx = table.AttribIdxs.get(AttributeName);
+
+        if (type.startsWith("varchar") || type.startsWith("char")) {
+
+            //comparitor based on type
+
+            rows.sort(Comparator.comparing(r -> r.get(idx).toString()));
+        }
+        else if (type.startsWith("int") || type.startsWith("double")) {
+            if (type.startsWith("int")){
+                rows.sort(Comparator.comparing(r -> (Integer)r.get(idx)));
+
+            }else{
+                rows.sort(Comparator.comparing(r -> (Double)r.get(idx)));
+
+            }
+
+
+        }else{
+            rows.sort(Comparator.comparing(r -> ((Boolean)r.get(idx))));
+
+        }
+
+
+        return rows;
+    }
     public static void prettyPrintResultSet(ResultSet table,Boolean truncate,int maxSizeTruncate) {
 
 
@@ -439,6 +455,12 @@ public class Utilities {
             ArrayList<Object> row = Phase2Testers.mkRandomRec(catAt);
             rows.add(row);
         }
+        Catalog cat = (Catalog) Catalog.createCatalog("DB",4048,3);
+        Catalog.getCatalog().addTable("catAt",catAt,catAt.get(0));
+
+        Table t= (Table) cat.getTable("catAt");
+
+        rows = Utilities.SortBy(t,rows,"t1.uidt1",false);
         ResultSet table = new ResultSet(catAt, rows);
 
         prettyPrintResultSet(table,false,10);
