@@ -429,7 +429,7 @@ public class Utilities {
         ArrayList<Attribute> attrs2 = new ArrayList<>();
         attrs2.add(new Attribute("t2.b", "Char(20)"));
         attrs2.add(new Attribute("t2.c", "Varchar(20)"));
-        attrs2.add(new Attribute("t2.uidt2", "Integer"));
+        attrs2.add(new Attribute("t2.uidt2", "Boolean"));
 
         //t3
         ArrayList<Attribute> attrs3 = new ArrayList<>();
@@ -455,13 +455,21 @@ public class Utilities {
             ArrayList<Object> row = Phase2Testers.mkRandomRec(catAt);
             rows.add(row);
         }
+
+
         Catalog cat = (Catalog) Catalog.createCatalog("DB",4048,3);
+        StorageManager sm = ((StorageManager) StorageManager.createStorageManager());
+
         Catalog.getCatalog().addTable("catAt",catAt,catAt.get(0));
 
         Table t= (Table) cat.getTable("catAt");
 
-        rows = Utilities.SortBy(t,rows,"t1.uidt1",false);
-        ResultSet table = new ResultSet(catAt, rows);
+        rows = Utilities.SortBy(t,rows,"t1.a",false);
+        for (ArrayList<Object> ro: rows) {
+            sm.insertRecord(t,ro);
+        }
+        sm.deleteRecordWhere(t,"where t1.a > 50",false);
+        ResultSet table = new ResultSet(t.getAttributes(), sm.getRecords(t));
 
         prettyPrintResultSet(table,false,10);
     }

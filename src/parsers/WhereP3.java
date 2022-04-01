@@ -274,15 +274,10 @@ public class WhereP3 {
                     String tableName = splitToken[0];
                     String attributeName = splitToken[1];
 
-                    // check that table exist
-                    Table tab = (Table) Catalog.getCatalog().getTable(tableName);
-                    if (tab == null) {
-                        System.err.println("table " + tableName + " does not exist");
-                        return null;
-                    }
+
 
                     // check that attribute exists in table
-                    if (!tab.AttribIdxs.containsKey(token)) {
+                    if (!table.AttribIdxs.containsKey(token)) {
                         System.err.println("attribute name " + attributeName + " in table " + tableName + " does not exist");
                         return null;
                     }
