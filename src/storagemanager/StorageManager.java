@@ -337,6 +337,40 @@ public class StorageManager extends AStorageManager {
         }
     }
 
+    public boolean deleteNotWhere(ITable table, String where, Boolean removeAllRecords) {
+        try {
+
+
+            // page name for head is always at idx zero
+            int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
+
+            ArrayList<Attribute> attributes = table.getAttributes();
+            // loop though all the tables pages in order
+            while (headPtr != -1) {
+
+                Page headPage = pb.getPageFromBuffer("" + headPtr, table);
+                // look though all record for that page
+
+                int recSize = headPage.getPageRecords().size();
+
+                for (int i = recSize - 1; i > -1; i--) {
+                    ArrayList<Object> row = headPage.getPageRecords().get(i);
+                    if (removeAllRecords || (!wp.whereIsTrue(where, (Table) table,row))) {
+                        VerbosePrint.print("REMOVING" + row);
+                        headPage.getPageRecords().remove(i);
+                        headPage.wasChanged = true;
+                    }
+                }
+
+                // next page
+                headPtr = headPage.getPtrToNextPage();
+            }
+            return true;
+        } catch (Exception e) {
+            System.err.println("error removing in remove where in sm");
+            return false;
+        }
+    }
 
     @Override
     public boolean deleteRecord(ITable table, Object primaryKey) {
