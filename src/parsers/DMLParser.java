@@ -435,6 +435,7 @@ public class DMLParser {
 
 
         // -----------------WHERE | do where on cartesian prod table-----------------------
+
         // ----------------- will remove all unqualified rows -----------------------------
         int whereIdx = LowerQueryStmt.indexOf("where");
         int semiIdx = LowerQueryStmt.indexOf(";");
@@ -462,13 +463,15 @@ public class DMLParser {
         //TODO
         //  ----------------- ----------------- SELECT | get only columns we asked for -----------------
 
-        //TODO
+        //
         //  ----------------- ----------------- ORDER-BY | SORT rows ----------------- -----------------
-
-
-        // MAKE RESULT-SET
-
-//        ResultSet rs = Utilities.ResultSetFromTable(attribs,rows);
+//        ArrayList<ArrayList<Object>> rows = sm.getRecords(table);
+//        rows = Utilities.SortBy(table, rows, "t1.a", false);
+//
+//
+//        // MAKE RESULT-SET
+//
+//        ResultSet rs = Utilities.ResultSetFromTable(table.getattribs(),rows);
 
         // RETURN RESULT-SET
         return null;

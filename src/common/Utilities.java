@@ -464,12 +464,14 @@ public class Utilities {
 
         Table t= (Table) cat.getTable("catAt");
 
-        rows = Utilities.SortBy(t,rows,"t1.a",false);
         for (ArrayList<Object> ro: rows) {
             sm.insertRecord(t,ro);
         }
         sm.deleteRecordWhere(t,"where t1.a > 50",false);
-        ResultSet table = new ResultSet(t.getAttributes(), sm.getRecords(t));
+
+        rows = Utilities.SortBy(t, sm.getRecords(t), "t1.uidt1",false);
+
+        ResultSet table = new ResultSet(t.getAttributes(), rows);
 
         prettyPrintResultSet(table,false,10);
     }

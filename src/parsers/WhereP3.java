@@ -6,6 +6,7 @@ import catalog.Catalog;
 import common.Attribute;
 import common.Table;
 import common.Utilities;
+import common.VerbosePrint;
 import storagemanager.AStorageManager;
 import storagemanager.StorageManager;
 
@@ -311,7 +312,7 @@ public class WhereP3 {
                 tokens.set(tokenIdx, row.get(AttributeIdx).toString());
             }
         }
-        System.out.println(tokens);
+        VerbosePrint.print(tokens);
 
         // return the tokens now filled with proer values
 

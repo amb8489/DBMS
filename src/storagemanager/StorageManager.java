@@ -320,9 +320,7 @@ public class StorageManager extends AStorageManager {
                 for (int i = recSize - 1; i > -1; i--) {
                     ArrayList<Object> row = headPage.getPageRecords().get(i);
                     if (removeAllRecords || wp.whereIsTrue(where, (Table) table,row)) {
-                        VerbosePrint.Verbose = true;
                         VerbosePrint.print("REMOVING" + row);
-                        VerbosePrint.Verbose = false;
 
                         headPage.getPageRecords().remove(i);
                         headPage.wasChanged = true;
