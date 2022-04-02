@@ -491,7 +491,6 @@ public class StorageManager extends AStorageManager {
 
     @Override
     public boolean dropAttributeValue(ITable table, int attrIndex) {
-        System.err.println("Removing "+attrIndex);
         try {
 
             if (attrIndex >= table.getAttributes().size()) {

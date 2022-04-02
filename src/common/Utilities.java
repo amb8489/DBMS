@@ -470,16 +470,18 @@ public class Utilities {
 
         //
 
-        HashSet<String> keep = new HashSet<>(List.of(new String[]{"t1.a"}));
-        if(!Select(t,keep)){
-            return;
-        }
 
 
 
         sm.keepWhere(t,"where t1.a > 50",false);
 
-        rows = Utilities.SortBy(t, sm.getRecords(t), "t1.a",false);
+
+        HashSet<String> keep = new HashSet<>(List.of(new String[]{"t1.a","t2.uidt2","t2.b"}));
+        if(!Select(t,keep)){
+            return;
+        }
+
+        rows = Utilities.SortBy(t, sm.getRecords(t), "t2.b",false);
 
         ResultSet table = new ResultSet(t.getAttributes(), rows);
 
@@ -491,7 +493,6 @@ public class Utilities {
 
         for (Attribute name : atters) {
             if(!KeepNames.contains(name.getAttributeName())){
-                System.err.println(name.getAttributeName());
                 StorageManager.getStorageManager().dropAttributeValue(table, table.AttribIdxs.get(name.getAttributeName()));
             }
         }
