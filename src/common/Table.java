@@ -202,7 +202,13 @@ public class Table implements ITable{
         for(Attribute attribute:Attributes){
             if (attribute.attributeName().equals(name)){
                 this.Attributes.remove(idx);
-                AttribIdxs.remove(name);
+
+                HashMap<String, Integer> attributeNameToIdx = new HashMap<>();
+                for (int i = 0; i < Attributes.size(); i++) {
+                    attributeNameToIdx.put(Attributes.get(i).getAttributeName(), i);
+                }
+                this.AttribIdxs = attributeNameToIdx;
+
                 return true;
             }
             idx++;

@@ -28,14 +28,14 @@ public class DMLParser {
 
     /**
      * This function will parse and execute DML statements (insert, delete, update, etc)
-     *
+     * <p>
      * This will be used for parsing DML statement that do not return data
      *
      * @param stmt the statement to parse/execute
      * @return true if successfully parsed/executed; false otherwise
      */
-    public static boolean parseDMLStatement(String stmt){
-      
+    public static boolean parseDMLStatement(String stmt) {
+
         if (stmt.toUpperCase().startsWith("DELETE")) {
             return deleteFromTable(stmt);
         }
@@ -50,16 +50,17 @@ public class DMLParser {
 
     /**
      * This function evaluates the mathematical result of a given 'set' expression of an update statement
+     *
      * @param attributeType
-     * @param statement1 statement to the left of the operator
-     * @param operator math operator
-     * @param statement2 statement to the right of the operator
+     * @param statement1     statement to the left of the operator
+     * @param operator       math operator
+     * @param statement2     statement to the right of the operator
      * @param attributesList
-     * @param row the row from the table that meets the 'where' condition
+     * @param row            the row from the table that meets the 'where' condition
      * @return
      */
-    private static Object evalSetMath (String attributeType, String statement1, String operator, String statement2,
-                                       ArrayList<Attribute> attributesList, ArrayList<Object> row) {
+    private static Object evalSetMath(String attributeType, String statement1, String operator, String statement2,
+                                      ArrayList<Attribute> attributesList, ArrayList<Object> row) {
         attributeType = attributeType.toLowerCase();
         switch (attributeType) {
             case "integer":
@@ -137,14 +138,15 @@ public class DMLParser {
 
     /**
      * This function converts an attribute to the given attributeType. The attribute given can be a mathematical expression.
+     *
      * @param attributeType
      * @param attribute
      * @param attributesList
-     * @param row the row from the table that meets the 'where' condition
+     * @param row            the row from the table that meets the 'where' condition
      * @return
      */
-    private static Object convertAttributeType (String attributeType, String attribute, ArrayList<Attribute> attributesList,
-                                                ArrayList<Object> row) {
+    private static Object convertAttributeType(String attributeType, String attribute, ArrayList<Attribute> attributesList,
+                                               ArrayList<Object> row) {
         String[] expression = attribute.split(" ");
         attributeType = attributeType.toLowerCase();
         try {
@@ -168,16 +170,16 @@ public class DMLParser {
                 default:
                     return attribute;
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             return null;
         }
     }
-  
-  // delete from <tableName> where <condition>
+
+    // delete from <tableName> where <condition>
     private static boolean deleteFromTable(String stmt) {
 
         try {
-            stmt = stmt.replace("\"","");
+            stmt = stmt.replace("\"", "");
             // removes redundant spaces and new lines
             stmt = stmt.replace(";", "");
             // tokenizing tokens
@@ -216,14 +218,14 @@ public class DMLParser {
 
     // insert into <name> values <tuples>
     private static boolean insertToTable(String stmt) {
-        try{
+        try {
             // removes redundant spaces and new lines
             stmt = Utilities.format(stmt);
-            stmt = stmt.replace("( ","(");
-            stmt = stmt.replace(" )",")");
-            stmt = stmt.replace(","," ");
-            stmt = stmt.replace("\"","");
-            stmt = stmt.replace(";","");
+            stmt = stmt.replace("( ", "(");
+            stmt = stmt.replace(" )", ")");
+            stmt = stmt.replace(",", " ");
+            stmt = stmt.replace("\"", "");
+            stmt = stmt.replace(";", "");
             List<String> tokens = Utilities.mkTokensFromStr(stmt);
 
             if (tokens.size() == 5 && tokens.get(4).equals("(1)")) {
@@ -256,23 +258,22 @@ public class DMLParser {
                     }
 
                     if (attributes.size() == 1) {
-                        record.add(convertAttributeType(attributes.get(i-(4 + (attributes.size() * numberOfInserts)))
+                        record.add(convertAttributeType(attributes.get(i - (4 + (attributes.size() * numberOfInserts)))
                                 .getAttributeType(), tokens.get(i).substring(1, tokens.get(i).length() - 1), null, null));
-                    }
-                    else {
-                        record.add(convertAttributeType(attributes.get(i-(4 + (attributes.size() * numberOfInserts)))
+                    } else {
+                        record.add(convertAttributeType(attributes.get(i - (4 + (attributes.size() * numberOfInserts)))
                                 .getAttributeType(), tokens.get(i).substring(1), null, null));
                         i++;
 
 //                        System.out.println(record+"<-------n"+ tokens);
 
                         while (!tokens.get(i).endsWith(")")) {
-                            record.add(convertAttributeType(attributes.get(i-(4 + (attributes.size() * numberOfInserts)))
+                            record.add(convertAttributeType(attributes.get(i - (4 + (attributes.size() * numberOfInserts)))
                                     .getAttributeType(), tokens.get(i), null, null));
                             i++;
                         }
 
-                        if(!tokens.get(i).strip().equals(")")) {
+                        if (!tokens.get(i).strip().equals(")")) {
                             record.add(convertAttributeType(attributes.get(i - (4 + (attributes.size() * numberOfInserts)))
                                     .getAttributeType(), tokens.get(i).substring(0, tokens.get(i).length() - 1), null, null));
                         }
@@ -283,11 +284,10 @@ public class DMLParser {
                     if (record.size() == attributes.size()) {
                         boolean insertSuccess = StorageManager.getStorageManager().insertRecord(table, record);
 //                        System.out.println("insert success: " + insertSuccess);
-                        if (!insertSuccess){
+                        if (!insertSuccess) {
                             return false;
                         }
-                    }
-                    else {
+                    } else {
                         System.err.println("The tuples in the insert statement are not in the correct format; " +
                                 "incorrect number of attributes");
                         return false;
@@ -309,9 +309,9 @@ public class DMLParser {
     // update <name> set <column_1> = value where <condition>;
     private static boolean updateTable(String stmt) {
         try {
-            stmt = stmt.replace("\"","");
+            stmt = stmt.replace("\"", "");
             // removes redundant spaces and new lines
-            stmt = stmt.replace(";","");
+            stmt = stmt.replace(";", "");
             List<String> tokens = Utilities.mkTokensFromStr(stmt);
 //            System.out.println(tokens);
 
@@ -326,14 +326,14 @@ public class DMLParser {
 
             // does not have attrib
             boolean hasAttrib = false;
-            for(Attribute attributee : Catalog.getCatalog().getTable(tableName).getAttributes()){
-                if(attributee.getAttributeName().equals(tokens.get(3))){
+            for (Attribute attributee : Catalog.getCatalog().getTable(tableName).getAttributes()) {
+                if (attributee.getAttributeName().equals(tokens.get(3))) {
                     hasAttrib = true;
                     break;
                 }
             }
             if (!hasAttrib) {
-                System.err.println("The table "+tableName +" does not contain the attribute: " + tokens.get(3));
+                System.err.println("The table " + tableName + " does not contain the attribute: " + tokens.get(3));
                 return false;
             }
 
@@ -350,31 +350,29 @@ public class DMLParser {
 
             if (tokens.get(6).equalsIgnoreCase("where")) {
                 WhereParser wp = new WhereParser();
-                for (ArrayList<Object> row: records) {
+                for (ArrayList<Object> row : records) {
                     if (wp.whereIsTrue(stmt, row, attributes)) {
                         if (tokens.get(2).equalsIgnoreCase("set")) {
                             ArrayList<Object> newRow = new ArrayList<>();
                             for (int i = 0; i < attributes.size(); i++) {
                                 if (attributes.get(i).getAttributeName().equals(tokens.get(3))) {
                                     newRow.add(convertAttributeType(attributes.get(i).getAttributeType(), tokens.get(5), attributes, row));
-                                }
-                                else {
+                                } else {
                                     newRow.add(row.get(i));
                                 }
                             }
                             updateSuccess = StorageManager.getStorageManager().updateRecord(table, row, newRow);
 //                            System.out.println("update success:" + updateSuccess);
-                            if(!updateSuccess){
-                                StorageManager.getStorageManager().insertRecord(table,row);
+                            if (!updateSuccess) {
+                                StorageManager.getStorageManager().insertRecord(table, row);
                             }
                             return updateSuccess;
                         }
                     }
                 }
-            }
-            else if (tokens.size() > 10 && tokens.get(8).equalsIgnoreCase("where")) {
+            } else if (tokens.size() > 10 && tokens.get(8).equalsIgnoreCase("where")) {
                 WhereParser wp = new WhereParser();
-                for (ArrayList<Object> row: records) {
+                for (ArrayList<Object> row : records) {
                     if (wp.whereIsTrue(stmt, row, attributes)) {
                         if (tokens.get(2).equalsIgnoreCase("set")) {
                             ArrayList<Object> newRow = new ArrayList<>();
@@ -382,14 +380,13 @@ public class DMLParser {
                                 if (attributes.get(i).getAttributeName().equals(tokens.get(3))) {
                                     newRow.add(convertAttributeType(attributes.get(i).getAttributeType(), tokens.get(5)
                                             + " " + tokens.get(6) + " " + tokens.get(7), attributes, row));
-                                }
-                                else {
+                                } else {
                                     newRow.add(row.get(i));
                                 }
                             }
                             updateSuccess = StorageManager.getStorageManager().updateRecord(table, row, newRow);
-                            if(!updateSuccess){
-                                StorageManager.getStorageManager().updateRecord(table, newRow,row);
+                            if (!updateSuccess) {
+                                StorageManager.getStorageManager().updateRecord(table, newRow, row);
                             }
 //                            System.out.println("update success:" + updateSuccess);
                             return updateSuccess;
@@ -410,28 +407,22 @@ public class DMLParser {
 
     /**
      * This function will parse and execute DML statements (select)
-     *
+     * <p>
      * This will be used for parsing DML statement that return data
+     *
      * @param query the query to parse/execute
      * @return the data resulting from the query; null upon error.
-     *         Note: No data and error are two different cases.
+     * Note: No data and error are two different cases.
      */
-    public static ResultSet parseDMLQuery(String query){
+    public static ResultSet parseDMLQuery(String query) {
         //ensure formated correctly
         query = Utilities.format(query);
-        String LowerQueryStmt = query.toLowerCase().replace(",","");
+        String LowerQueryStmt = query.toLowerCase().replace(",", "");
         List<String> StmtTokens = Utilities.mkTokensFromStr(LowerQueryStmt);
-
-
 
 
         //TODO
         // ----------------- ----------------- FROM | make cartesian prod table -----------------
-
-
-
-
-
 
 
         // -----------------WHERE | do where on cartesian prod table-----------------------
@@ -441,19 +432,19 @@ public class DMLParser {
         int semiIdx = LowerQueryStmt.indexOf(";");
         int orderbyIdx = LowerQueryStmt.indexOf("orderby");
 
-        if(whereIdx > 0) {
+        if (whereIdx > 0) {
             int stopIdx = semiIdx;
-            if(semiIdx != -1 || orderbyIdx != -1 ) {
-                if (semiIdx == -1){
+            if (semiIdx != -1 || orderbyIdx != -1) {
+                if (semiIdx == -1) {
                     stopIdx = orderbyIdx;
-                }else{
-                    stopIdx = Math.min(orderbyIdx,semiIdx);
+                } else {
+                    stopIdx = Math.min(orderbyIdx, semiIdx);
                 }
-                String WHERE = query.substring(whereIdx,stopIdx);
+                String WhereStmt = query.substring(whereIdx, stopIdx);
 
                 // parse table unqualified rows
-                //((StorageManager) StorageManager.getStorageManager()).deleteNotWhere(table,WHERE,false);
-            }else{
+                //((StorageManager) StorageManager.getStorageManager()).keepWhere(table,WhereStmt,false);
+            } else {
                 System.err.println("error in stmt");
                 return null;
             }
@@ -462,6 +453,7 @@ public class DMLParser {
 
         //TODO
         //  ----------------- ----------------- SELECT | get only columns we asked for -----------------
+
 
         //
         //  ----------------- ----------------- ORDER-BY | SORT rows ----------------- -----------------

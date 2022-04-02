@@ -467,12 +467,34 @@ public class Utilities {
         for (ArrayList<Object> ro: rows) {
             sm.insertRecord(t,ro);
         }
-        sm.deleteRecordWhere(t,"where t1.a > 50",false);
 
-        rows = Utilities.SortBy(t, sm.getRecords(t), "t1.uidt1",false);
+        //
+
+        HashSet<String> keep = new HashSet<>(List.of(new String[]{"t1.a"}));
+        if(!Select(t,keep)){
+            return;
+        }
+
+
+
+        sm.keepWhere(t,"where t1.a > 50",false);
+
+        rows = Utilities.SortBy(t, sm.getRecords(t), "t1.a",false);
 
         ResultSet table = new ResultSet(t.getAttributes(), rows);
 
         prettyPrintResultSet(table,false,10);
+    }
+
+    public static boolean Select(Table table, HashSet<String> KeepNames){
+        ArrayList<Attribute> atters = (ArrayList<Attribute>) table.getAttributes().clone();
+
+        for (Attribute name : atters) {
+            if(!KeepNames.contains(name.getAttributeName())){
+                System.err.println(name.getAttributeName());
+                StorageManager.getStorageManager().dropAttributeValue(table, table.AttribIdxs.get(name.getAttributeName()));
+            }
+        }
+        return true;
     }
 }

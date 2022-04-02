@@ -337,7 +337,7 @@ public class StorageManager extends AStorageManager {
         }
     }
 
-    public boolean deleteNotWhere(ITable table, String where, Boolean removeAllRecords) {
+    public boolean keepWhere(ITable table, String where, Boolean removeAllRecords) {
         try {
 
 
@@ -491,7 +491,7 @@ public class StorageManager extends AStorageManager {
 
     @Override
     public boolean dropAttributeValue(ITable table, int attrIndex) {
-
+        System.err.println("Removing "+attrIndex);
         try {
 
             if (attrIndex >= table.getAttributes().size()) {
