@@ -30,7 +30,8 @@ public class PageBuffer {
 
     ////////////////////////constructor///////////////////////////////////////
     public PageBuffer(int pageBufferSize) {
-        this.maxBufferSize = pageBufferSize;
+
+        this.maxBufferSize = Math.max(1,pageBufferSize);
     }
 
 
