@@ -490,7 +490,10 @@ public class DMLParser {
         //ensure formated correctly
         query = Utilities.format(query);
         String LowerQueryStmt = query.toLowerCase().replace(",", "");
+        String OriginalQueryStmt = query.replace(",", "");
         List<String> StmtTokens = Utilities.mkTokensFromStr(LowerQueryStmt);
+        List<String> StmtTokensOriginal = Utilities.mkTokensFromStr(OriginalQueryStmt);
+
 
         int fromStart = StmtTokens.indexOf("from") + 1;
         List<String> tables = new ArrayList<>();
@@ -505,7 +508,7 @@ public class DMLParser {
                 return null;
             }
             else {
-                tables = StmtTokens.subList(fromStart, fromEnd);
+                tables = StmtTokensOriginal.subList(fromStart, fromEnd);
             }
         }
 
@@ -516,11 +519,12 @@ public class DMLParser {
             return null;
         }
 
-        ITable cardProd = selectFrom(tables);
-        if (cardProd == null) {
+        ITable cartProd = selectFrom(tables);
+        if (cartProd == null) {
             System.err.println("Something went wrong in getting the cartesian product of tables in 'from'");
             return null;
         }
+        System.out.println(cartProd.getAttributes());
 
 
         //TODO
@@ -591,7 +595,7 @@ public class DMLParser {
 
 
     public static void main(String[] args) {
-        ACatalog catalog = Catalog.createCatalog("DB", 4048, 10);
+        ACatalog catalog = Catalog.createCatalog("/Users/aryanjha/Documents/CSCI 421/DBMS/DB", 4048, 10);
         AStorageManager sm = AStorageManager.createStorageManager();
 
         ArrayList<Attribute> attributes = new ArrayList<>();
@@ -603,7 +607,7 @@ public class DMLParser {
         Attribute pk = attributes.get(0);
 
         ITable table1 = catalog.addTable("goalScorers", attributes, pk);
-
+        ITable table2 = catalog.addTable("soalGcorers", attributes, pk);
 
         // test insert
         DMLParser.parseDMLStatement("insert into goalScorers \n values \n (1, \"Karim Benzema\", 7)," +
@@ -613,6 +617,7 @@ public class DMLParser {
         System.out.println("Before update call: " + sm.getRecords(table1));
         DMLParser.parseDMLStatement("update goalScorers \n set Goals = ID + 2 \n where ID = 1");
         System.out.println("After update call: " + sm.getRecords(table1));
-        DMLParser.parseDMLStatement("select id from goalscorers where goals > 2;");
+
+        DMLParser.parseDMLStatement("select id from goalScorers, soalGcorers where goals > 2;");
     }
 }
