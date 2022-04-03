@@ -9,10 +9,7 @@ import catalog.Catalog;
 import common.ITable;
 import storagemanager.StorageManager;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /*
   Class for DML parser
@@ -46,6 +43,9 @@ public class DMLParser {
         }
         if (stmt.toUpperCase().startsWith("UPDATE")) {
             return updateTable(stmt);
+        }
+        if (stmt.toUpperCase().startsWith("SELECT")) {
+            parseDMLQuery(stmt);
         }
         return false;
     }
@@ -406,6 +406,76 @@ public class DMLParser {
         }
     }
 
+    public static ITable selectFrom (List<String> tables) {
+        Set<String> set = new HashSet<String>(tables);
+        if(set.size() < tables.size()){
+            System.err.println("Invalid select statement: duplicate table names in 'from'");
+            return null;
+        }
+
+        if (tables.size() == 1) {
+            if (!Catalog.getCatalog().containsTable(tables.get(0))) {
+                System.err.println("Invalid select statement: table " + tables.get(0) + " in 'from' does not exist");
+                return null;
+            }
+            return Catalog.getCatalog().getTable(tables.get(0));
+        }
+
+        else {
+            if (!Catalog.getCatalog().containsTable(tables.get(0))) {
+                System.err.println("Invalid select statement: table " + tables.get(0) + " in 'from' does not exist");
+                return null;
+            }
+
+            ITable table0 = Catalog.getCatalog().getTable(tables.get(0));
+            ArrayList<Attribute> attributes0 = table0.getAttributes();
+            ArrayList<Attribute> newAttributes0 = new ArrayList<>();
+            newAttributes0.add(new Attribute("primaryKey", "Integer"));
+            Attribute pk0 = newAttributes0.get(0);
+            for (Attribute attr: attributes0) {
+                newAttributes0.add(new Attribute(tables.get(0) + "." + attr.getAttributeName(),
+                        attr.attributeType()));
+            }
+            ITable cartProd = new Table("cartesianProduct", newAttributes0, pk0);
+            int serial = 1;
+            for (ArrayList<Object> row : StorageManager.getStorageManager().getRecords(table0)) {
+                ArrayList<Object> record = new ArrayList<>(serial);
+                record.addAll(row);
+                StorageManager.getStorageManager().insertRecord(cartProd, record);
+                serial++;
+            }
+
+            for (int i = 1; i < tables.size(); i++) {
+                if (!Catalog.getCatalog().containsTable(tables.get(i))) {
+                    System.err.println("Invalid select statement: table" + tables.get(i) + "in 'from' does not exist");
+                    return null;
+                }
+                ITable table = Catalog.getCatalog().getTable(tables.get(i));
+                ArrayList<Attribute> attributes = table.getAttributes();
+                ArrayList<Attribute> newAttributes = new ArrayList<>(cartProd.getAttributes());
+                Attribute pk = newAttributes.get(0);
+                for (Attribute attr: attributes) {
+                    newAttributes.add(new Attribute(tables.get(i) + "." + attr.getAttributeName(),
+                            attr.attributeType()));
+                }
+                ITable cartProdTemp = new Table("cartesianProduct", newAttributes, pk);
+
+                serial = 1;
+                for (ArrayList<Object> cpRow : StorageManager.getStorageManager().getRecords(cartProd)) {
+                    for (ArrayList<Object> row : StorageManager.getStorageManager().getRecords(table)) {
+                        ArrayList<Object> record = new ArrayList<>(serial);
+                        record.addAll(cpRow.subList(1, cpRow.size()));
+                        record.addAll(row);
+                        StorageManager.getStorageManager().insertRecord(cartProdTemp, record);
+                        serial++;
+                    }
+                }
+                cartProd = cartProdTemp;
+            }
+            return cartProd;
+        }
+    }
+
 
     /**
      * This function will parse and execute DML statements (select)
@@ -421,6 +491,36 @@ public class DMLParser {
         query = Utilities.format(query);
         String LowerQueryStmt = query.toLowerCase().replace(",", "");
         List<String> StmtTokens = Utilities.mkTokensFromStr(LowerQueryStmt);
+
+        int fromStart = StmtTokens.indexOf("from") + 1;
+        List<String> tables = new ArrayList<>();
+        if (fromStart == 0) {
+            System.err.println("Invalid select statement: missing 'from'");
+            return null;
+        }
+        else {
+            int fromEnd = StmtTokens.indexOf("where");
+            if (fromEnd == -1) {
+                System.err.println("Invalid select statement: missing 'where'");
+                return null;
+            }
+            else {
+                tables = StmtTokens.subList(fromStart, fromEnd);
+            }
+        }
+
+        System.out.println(tables);
+
+        if (tables.size() == 0) {
+            System.err.println("Invalid select statement: missing <tables> in 'from'");
+            return null;
+        }
+
+        ITable cardProd = selectFrom(tables);
+        if (cardProd == null) {
+            System.err.println("Something went wrong in getting the cartesian product of tables in 'from'");
+            return null;
+        }
 
 
         //TODO
@@ -504,6 +604,7 @@ public class DMLParser {
 
         ITable table1 = catalog.addTable("goalScorers", attributes, pk);
 
+
         // test insert
         DMLParser.parseDMLStatement("insert into goalScorers \n values \n (1, \"Karim Benzema\", 7)," +
                 "(2, \"Kylian Mbappe\", 1)");
@@ -512,5 +613,6 @@ public class DMLParser {
         System.out.println("Before update call: " + sm.getRecords(table1));
         DMLParser.parseDMLStatement("update goalScorers \n set Goals = ID + 2 \n where ID = 1");
         System.out.println("After update call: " + sm.getRecords(table1));
+        DMLParser.parseDMLStatement("select id from goalscorers where goals > 2;");
     }
 }
