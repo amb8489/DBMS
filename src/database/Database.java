@@ -1,4 +1,4 @@
-/**
+package database; /**
  * A class for the Database object.  It's contains the core main loop that makes up a database.
  *
  * The program will be ran as:
@@ -6,8 +6,6 @@
  *
  * authors: Scott Johnson, Kyle Ferguson
  */
-
-package database;
 
 import catalog.ACatalog;
 import catalog.Catalog;
@@ -55,9 +53,14 @@ public class Database {
         Catalog.createCatalog(args[0], Integer.parseInt(args[1]), Integer.parseInt(args[2]));
         StorageManager.createStorageManager();
 
+        System.out.println("""
+                Welcome!  Begin by entering some DDL statements, then feel free to query using DML statements. \s
+                All statements should end with a ";".
+                Exit using the statement "quit;".""");
         Scanner scn = new Scanner(System.in);
         String statement = "";
         while(true){
+            System.out.println("Enter Statement:");
             String input;
 
             do{
@@ -70,9 +73,9 @@ public class Database {
                 System.out.println("SUCCESS, Exiting Now...");
                 break;
             }
-            if (statement.toLowerCase().startsWith("select")){
+            else if (statement.toLowerCase().startsWith("select")){
                 //TODO kyle is this right to put this here like this??
-                executeQuery(statement);
+                Utilities.prettyPrintResultSet(executeQuery(statement), false, 16);
             }else if(executeStatement(statement)){
                 System.out.println("SUCCESS");
             } else{

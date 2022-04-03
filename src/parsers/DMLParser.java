@@ -10,6 +10,8 @@ import common.ITable;
 import storagemanager.StorageManager;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 /*
@@ -424,11 +426,13 @@ public class DMLParser {
         //TODO
         // ----------------- ----------------- FROM | make cartesian prod table -----------------
 
+        Table table = null;  //TODO insert table here
 
         // -----------------WHERE | do where on cartesian prod table-----------------------
 
         // ----------------- will remove all unqualified rows -----------------------------
         int whereIdx = LowerQueryStmt.indexOf("where");
+        int fromIdx = LowerQueryStmt.indexOf("from");
         int semiIdx = LowerQueryStmt.indexOf(";");
         int orderbyIdx = LowerQueryStmt.indexOf("orderby");
 
@@ -454,6 +458,16 @@ public class DMLParser {
         //TODO
         //  ----------------- ----------------- SELECT | get only columns we asked for -----------------
 
+        // get the string containing only the attributes we want (doesn't include the word "select")
+        String wantedAttrString = query.substring(LowerQueryStmt.indexOf("select")+"select".length()+1, fromIdx);
+        String [] wantedAttrs = wantedAttrString.split(" |, ");  //lazy regex move, will split on space or ,space
+        System.out.println("Debug: " + Arrays.deepToString(wantedAttrs));  //TODO remove debug
+
+        //make a list out of our array, then a hashset out of that list to send to Select function
+        if(!Utilities.Select(table, new HashSet<>(Arrays.asList(wantedAttrs)))){
+            System.out.println("Error with selected attributes");
+            return null;
+        }
 
         //
         //  ----------------- ----------------- ORDER-BY | SORT rows ----------------- -----------------
