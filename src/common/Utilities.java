@@ -463,6 +463,7 @@ public class Utilities {
     public static boolean Select(Table table, HashSet<String> KeepNames){
         ArrayList<Attribute> atters = (ArrayList<Attribute>) table.getAttributes().clone();
 
+
         for (Attribute name : atters) {
             if(!KeepNames.contains(name.getAttributeName())){
                 StorageManager.getStorageManager().dropAttributeValue(table, table.AttribIdxs.get(name.getAttributeName()));
