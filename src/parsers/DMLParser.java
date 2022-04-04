@@ -465,7 +465,7 @@ public class DMLParser {
 
         // check for star
 
-        if(wantedAttrs.length > 1 && wantedAttrString.contains("*")){ // there's a star, and it's not the only attribute
+        if(wantedAttrs.length > 1 && wantedAttrString.contains("*")){ // there's a star, but it's not the only attribute
             System.err.println("Improper use of \"*\".  Cannot combine \"*\" with other attributes.");
         }
         if(!(wantedAttrs.length == 1 && wantedAttrs[0].equals("*"))) { //if there's a star, leave the table in tact
