@@ -439,8 +439,16 @@ public class DMLParser {
             ITable cartProd = new Table("cartesianProduct", newAttributes0, pk0);
             int serial = 1;
             for (ArrayList<Object> row : StorageManager.getStorageManager().getRecords(table0)) {
-                ArrayList<Object> record = new ArrayList<>(serial);
+                ArrayList<Object> record = new ArrayList<>();
+                record.add(serial);
+                System.out.println(record);
+
                 record.addAll(row);
+                //TODO -------
+                System.out.println(record);
+                System.out.println(row);
+                System.out.println("");
+
                 StorageManager.getStorageManager().insertRecord(cartProd, record);
                 serial++;
             }
@@ -463,7 +471,8 @@ public class DMLParser {
                 serial = 1;
                 for (ArrayList<Object> cpRow : StorageManager.getStorageManager().getRecords(cartProd)) {
                     for (ArrayList<Object> row : StorageManager.getStorageManager().getRecords(table)) {
-                        ArrayList<Object> record = new ArrayList<>(serial);
+                        ArrayList<Object> record = new ArrayList<>();
+                        record.add(serial);
                         record.addAll(cpRow.subList(1, cpRow.size()));
                         record.addAll(row);
                         StorageManager.getStorageManager().insertRecord(cartProdTemp, record);
@@ -530,6 +539,12 @@ public class DMLParser {
 
 
         Table table = (Table) cartProd;
+//        StorageManager.getStorageManager().dropAttributeValue(cartProd,0);
+        ArrayList<ArrayList<Object>> v = StorageManager.getStorageManager().getRecords(table);
+        ResultSet r = Utilities.ResultSetFromTable(table.getAttributes(), v);
+        Utilities.prettyPrintResultSet(r,false,10);
+        System.exit(1);
+        System.out.println(table.tableToString());
 
         // -----------------WHERE | do where on cartesian prod table-----------------------
 

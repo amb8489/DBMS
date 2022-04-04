@@ -29,18 +29,18 @@ public class Phase3TestSelect {
 
         //t1
         ArrayList<Attribute> attrs = new ArrayList<>();
-        attrs.add(new Attribute("t1.a", "Integer"));
-        attrs.add(new Attribute("t1.uidt1", "Integer"));
+        attrs.add(new Attribute("a", "Integer"));
+        attrs.add(new Attribute("uidt1", "Integer"));
         //t2
         ArrayList<Attribute> attrs2 = new ArrayList<>();
-        attrs2.add(new Attribute("t2.b", "Char(20)"));
-        attrs2.add(new Attribute("t2.c", "Varchar(20)"));
-        attrs2.add(new Attribute("t2.uidt2", "Integer"));
+        attrs2.add(new Attribute("b", "Char(20)"));
+        attrs2.add(new Attribute("c", "Varchar(20)"));
+        attrs2.add(new Attribute("uidt2", "Integer"));
 
         //t3
         ArrayList<Attribute> attrs3 = new ArrayList<>();
-        attrs3.add(new Attribute("t3.a", "Double"));
-        attrs3.add(new Attribute("t3.uidt3", "Integer"));
+        attrs3.add(new Attribute("a", "Double"));
+        attrs3.add(new Attribute("uidt3", "Integer"));
 
         Catalog.getCatalog().addTable("t1", attrs, attrs.get(0));
         Catalog.getCatalog().addTable("t2", attrs2, attrs2.get(0));
@@ -58,8 +58,8 @@ public class Phase3TestSelect {
 
         String statement = """
                            select t1.a, t2.c
-                           from t1, t2
-                           where t1 > 50
+                           from t1, t2, t3
+                           where t1.a > 51
                            orderby t1.a;
                            """;
         Database.executeQuery(statement);

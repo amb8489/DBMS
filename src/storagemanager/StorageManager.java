@@ -154,7 +154,7 @@ public class StorageManager extends AStorageManager {
             for (Object val : record) {
                 String attribType = table.getAttributes().get(idxx).getAttributeType();
                 if (attribType.endsWith(")")) {
-                    String str = (String) record.get(idxx);
+                    String str =  record.get(idxx).toString();
                     if (str != null && Utilities.isStringTooLong(attribType, str)) {
                         System.err.println("string: " + record.get(idxx) + " too long fr type: " + attribType);
                         return false;

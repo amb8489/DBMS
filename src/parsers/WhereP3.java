@@ -261,6 +261,8 @@ public class WhereP3 {
 
         // replace token col names with row val for that attribute
         int tokenIdx = -1;
+
+
         for (String token : tokens) {
             tokenIdx++;
 
@@ -269,8 +271,9 @@ public class WhereP3 {
             if (Utilities.isColName(token)) {
 
                 String[] splitToken = token.split("\\.");
-
                 // if there's a dot then the table name is specified
+//                System.out.println(token);
+//                System.exit(1);
                 if (splitToken.length > 1) {
                     String tableName = splitToken[0];
                     String attributeName = splitToken[1];
@@ -293,7 +296,6 @@ public class WhereP3 {
 
 
 //               we could have ambiguity with no table name specifer
-
                 if (ConflictCols.contains(splitToken[0])) {
                     System.err.println("Ambiguous attribute reference: " + splitToken[0]);
                     return null;
@@ -315,7 +317,8 @@ public class WhereP3 {
         VerbosePrint.print(tokens);
 
         // return the tokens now filled with proer values
-
+        System.out.println(tokens);
+        System.exit(1);
         return tokens;
 
 
