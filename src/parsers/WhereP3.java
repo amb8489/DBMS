@@ -242,6 +242,10 @@ public class WhereP3 {
         // tokenize the string by spaces
         List<String> tokens = Utilities.mkTokensFromStr(whereStmt);
 
+        System.out.println(whereStmt);
+//        System.exit(1);
+
+
 
         // finding the the WHERE token, we only care what comes after the "where"
         // we start at 1 because we dont want to include the where token just what comes after
@@ -318,7 +322,7 @@ public class WhereP3 {
 
         // return the tokens now filled with proer values
         System.out.println(tokens);
-        System.exit(1);
+//        System.exit(1);
         return tokens;
 
 

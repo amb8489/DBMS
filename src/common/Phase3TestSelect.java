@@ -46,7 +46,7 @@ public class Phase3TestSelect {
         Catalog.getCatalog().addTable("t2", attrs2, attrs2.get(0));
         Catalog.getCatalog().addTable("t3", attrs3, attrs3.get(0));
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 10; i++) {
             ArrayList<Object> row = Phase2Testers.mkRandomRec(attrs);
             ArrayList<Object> row2 = Phase2Testers.mkRandomRec(attrs2);
             ArrayList<Object> row3 = Phase2Testers.mkRandomRec(attrs3);
@@ -59,7 +59,8 @@ public class Phase3TestSelect {
         String statement = """
                            select t1.a, t2.c
                            from t1, t2, t3
-                           where t1.a > 51
+                           
+                           where 1 = 1
                            orderby t1.a;
                            """;
         Database.executeQuery(statement);

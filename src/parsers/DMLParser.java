@@ -496,10 +496,12 @@ public class DMLParser {
      * Note: No data and error are two different cases.
      */
     public static ResultSet parseDMLQuery(String query) {
+
         //ensure formated correctly
         query = Utilities.format(query);
-        String LowerQueryStmt = query.toLowerCase().replace(",", "");
+        String LowerQueryStmt = query.toLowerCase().replace(",", " ");
         String OriginalQueryStmt = query.replace(",", "");
+
         List<String> StmtTokens = Utilities.mkTokensFromStr(LowerQueryStmt);
         List<String> StmtTokensOriginal = Utilities.mkTokensFromStr(OriginalQueryStmt);
 
@@ -540,15 +542,18 @@ public class DMLParser {
 
         Table table = (Table) cartProd;
 //        StorageManager.getStorageManager().dropAttributeValue(cartProd,0);
-        ArrayList<ArrayList<Object>> v = StorageManager.getStorageManager().getRecords(table);
-        ResultSet r = Utilities.ResultSetFromTable(table.getAttributes(), v);
-        Utilities.prettyPrintResultSet(r,false,10);
-        System.exit(1);
-        System.out.println(table.tableToString());
+//        ArrayList<ArrayList<Object>> v = StorageManager.getStorageManager().getRecords(table);
+//        ResultSet r = Utilities.ResultSetFromTable(table.getAttributes(), v);
+//        Utilities.prettyPrintResultSet(r,false,10);
+//        System.exit(1);
+//        System.out.println(table.tableToString());
 
         // -----------------WHERE | do where on cartesian prod table-----------------------
 
         // ----------------- will remove all unqualified rows -----------------------------
+        System.out.println(LowerQueryStmt);
+        System.out.println(query);
+
         int whereIdx = LowerQueryStmt.indexOf("where");
         int fromIdx = LowerQueryStmt.indexOf("from");
         int semiIdx = LowerQueryStmt.indexOf(";");
@@ -605,7 +610,7 @@ public class DMLParser {
                 System.err.println("OrderBy: column name to order by is missing");
                 return null;
             }
-            records = Utilities.SortBy(table,  records, sortByAttributeName[0], false);
+            records = Utilities.SortBy(table,  records, sortByAttributeName[1], false);
         }
         ResultSet rs = new ResultSet(table.getAttributes(), records);
 
