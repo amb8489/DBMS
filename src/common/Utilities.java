@@ -225,17 +225,9 @@ public class Utilities {
 
             // can simpilfy but for ltr
             if (type.toLowerCase().startsWith("char(")) {
-                if (string.length() > StringSize) {
-                    return true;
-                }
-
-
+                return string.length() > StringSize;
             } else if (type.toLowerCase().startsWith("varchar(")) {
-                if (string.length() > StringSize) {
-                    return true;
-                }
-
-
+                return string.length() > StringSize;
             }
 
             return false;
@@ -265,12 +257,10 @@ public class Utilities {
         s = s.replace(".", "");
 
         return !isiIllLegalName(s);
-
-
     }
 
     //
-    public static ArrayList<ArrayList<Object>> SortBy(Table table,ArrayList<ArrayList<Object>> rows, String AttributeName,Boolean accenting) {
+    public static ArrayList<ArrayList<Object>> SortBy(Table table, ArrayList<ArrayList<Object>> rows, String AttributeName, Boolean accenting) {
         // table does not have that atrribute
         if (!table.AttribIdxs.containsKey(AttributeName)) {
             System.err.println("Sorting on unknown attribute: " + AttributeName);
@@ -293,32 +283,25 @@ public class Utilities {
             //comparitor based on type
 
             rows.sort(Comparator.comparing(r -> r.get(idx).toString()));
-        }
-        else if (type.startsWith("int") || type.startsWith("double")) {
-            if (type.startsWith("int")){
-                rows.sort(Comparator.comparing(r -> (Integer)r.get(idx)));
-
-            }else{
-                rows.sort(Comparator.comparing(r -> (Double)r.get(idx)));
-
+        } else if (type.startsWith("int") || type.startsWith("double")) {
+            if (type.startsWith("int")) {
+                rows.sort(Comparator.comparing(r -> (Integer) r.get(idx)));
+            } else {
+                rows.sort(Comparator.comparing(r -> (Double) r.get(idx)));
             }
-
-
-        }else{
-            rows.sort(Comparator.comparing(r -> ((Boolean)r.get(idx))));
-
+        } else {
+            rows.sort(Comparator.comparing(r -> ((Boolean) r.get(idx))));
         }
-
-
         return rows;
     }
-    public static void prettyPrintResultSet(ResultSet table,Boolean truncate,int maxSizeTruncate) {
+
+    public static void prettyPrintResultSet(ResultSet table, Boolean truncate, int maxSizeTruncate) {
 
 
         int spacingSeparation = 0;                   // number of spaces between columns
         int maxStrSize = 200;
 
-        if(truncate){
+        if (truncate) {
             maxStrSize = maxSizeTruncate;
         }
 
@@ -338,7 +321,7 @@ public class Utilities {
         int[] spacing = new int[table.attrs().size()];
         for (int i = 0; i < table.attrs().size(); i++) {
             spacing[i] = Math.min(max[i], maxStrSize) + spacingSeparation;   // total spac
-            spacing[i]+=1;
+            spacing[i] += 1;
         }
 
 
@@ -380,8 +363,8 @@ public class Utilities {
     }
 
 
-    public static ResultSet ResultSetFromTable(ArrayList<Attribute> attributes,ArrayList<ArrayList<Object>>rows){
-        return new ResultSet(attributes,rows);
+    public static ResultSet ResultSetFromTable(ArrayList<Attribute> attributes, ArrayList<ArrayList<Object>> rows) {
+        return new ResultSet(attributes, rows);
     }
 
 
@@ -445,10 +428,7 @@ public class Utilities {
         catAt.addAll(attrs2);
         catAt.addAll(attrs3);
 
-
         // 2 sample row from new table
-
-
         ArrayList<ArrayList<Object>> rows = new ArrayList<ArrayList<Object>>();
 
         for (int i = 0; i < 100; i++) {
@@ -457,43 +437,44 @@ public class Utilities {
         }
 
 
-        Catalog cat = (Catalog) Catalog.createCatalog("DB",4048,3);
+        Catalog cat = (Catalog) Catalog.createCatalog("DB", 4048, 6);
         StorageManager sm = ((StorageManager) StorageManager.createStorageManager());
 
-        Catalog.getCatalog().addTable("catAt",catAt,catAt.get(0));
+        Catalog.getCatalog().addTable("catAt", catAt, catAt.get(0));
 
-        Table t= (Table) cat.getTable("catAt");
+        Table t = (Table) cat.getTable("catAt");
 
-        for (ArrayList<Object> ro: rows) {
-            sm.insertRecord(t,ro);
+        for (ArrayList<Object> ro : rows) {
+            sm.insertRecord(t, ro);
         }
+        sm.keepWhere(t, "where t1.a > 50", false);
 
-        //
-
-
-
-
-        sm.keepWhere(t,"where t1.a > 50",false);
-
-
-        HashSet<String> keep = new HashSet<>(List.of(new String[]{"t1.a","t2.uidt2","t2.b"}));
-        if(!Select(t,keep)){
+        if (!Select(t, "t2.b, t2.uidt2,t1.a")) {
             return;
         }
 
-        rows = Utilities.SortBy(t, sm.getRecords(t), "t2.b",false);
+        rows = Utilities.SortBy(t, sm.getRecords(t), "t2.uidt2", false);
 
         ResultSet table = new ResultSet(t.getAttributes(), rows);
 
-        prettyPrintResultSet(table,false,10);
+        prettyPrintResultSet(table, false, 10);
     }
 
-    public static boolean Select(Table table, HashSet<String> KeepNames){
-        ArrayList<Attribute> atters = (ArrayList<Attribute>) table.getAttributes().clone();
+    public static boolean Select(Table table, String selectStmt) {
+        selectStmt = selectStmt.replace(","," ");
+        List<String> selectStmtTokens =Utilities.mkTokensFromStr(selectStmt);
 
-        for (Attribute name : atters) {
-            if(!KeepNames.contains(name.getAttributeName())){
-                StorageManager.getStorageManager().dropAttributeValue(table, table.AttribIdxs.get(name.getAttributeName()));
+        // if we get a star then we want all columns
+        if(!selectStmtTokens.get(1).equals("*")) {
+
+            HashSet<String> KeepNames = null;
+
+            ArrayList<Attribute>atters = (ArrayList<Attribute>) table.getAttributes().clone();
+
+            for (Attribute name : atters) {
+                if (!KeepNames.contains(name.getAttributeName())) {
+                    StorageManager.getStorageManager().dropAttributeValue(table, table.AttribIdxs.get(name.getAttributeName()));
+                }
             }
         }
         return true;
