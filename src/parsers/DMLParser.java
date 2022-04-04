@@ -305,7 +305,6 @@ public class DMLParser {
             return false;
 
         }
-        System.out.println("Here");
         return true;////////////
     }
 
@@ -442,13 +441,9 @@ public class DMLParser {
             for (ArrayList<Object> row : StorageManager.getStorageManager().getRecords(table0)) {
                 ArrayList<Object> record = new ArrayList<>();
                 record.add(serial);
-                System.out.println(record);
 
                 record.addAll(row);
-                //TODO -------
-                System.out.println(record);
-                System.out.println(row);
-                System.out.println("");
+
 
                 StorageManager.getStorageManager().insertRecord(cartProd, record);
                 serial++;
@@ -561,8 +556,7 @@ public class DMLParser {
         // -----------------WHERE | do where on cartesian prod table-----------------------
 
         // ----------------- will remove all unqualified rows -----------------------------
-        System.out.println(LowerQueryStmt);
-        System.out.println(query);
+
 
         int whereIdx = LowerQueryStmt.indexOf("where");
         int fromIdx = LowerQueryStmt.indexOf("from");
@@ -608,7 +602,6 @@ public class DMLParser {
                 return null;
             }
         }
-        System.out.println( (StorageManager.getStorageManager()).getRecords(table));
 
         //
         //  ----------------- ----------------- ORDER-BY | SORT rows ----------------- -----------------

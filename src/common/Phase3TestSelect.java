@@ -57,7 +57,7 @@ public class Phase3TestSelect {
         }
 
         String statement = """
-                           select t3.a
+                           select uidt3
                            from t1, t3;
                            """;
         Database.executeQuery(statement);
