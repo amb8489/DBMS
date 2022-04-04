@@ -42,36 +42,23 @@ public class Phase3TestSelect {
         attrs3.add(new Attribute("t3.a", "Double"));
         attrs3.add(new Attribute("t3.uidt3", "Integer"));
 
+        Catalog.getCatalog().addTable("t1", attrs, attrs.get(0));
+        Catalog.getCatalog().addTable("t2", attrs2, attrs2.get(0));
+        Catalog.getCatalog().addTable("t3", attrs3, attrs3.get(0));
 
-
-        //////////////////////////////--cartesian product table--/////////////////////////////////////////
-
-        // cartesian product table atributes
-
-        // 1) adding the attributes from all the tables together
-        ArrayList<Attribute> catAt = new ArrayList<>();
-        catAt.addAll(attrs);
-        catAt.addAll(attrs2);
-        catAt.addAll(attrs3);
-
-
-        // 2) make rows for table
-        ArrayList<ArrayList<Object>> rows = new ArrayList<ArrayList<Object>>();
         for (int i = 0; i < 100; i++) {
-            ArrayList<Object> row = Phase2Testers.mkRandomRec(catAt);
-            rows.add(row);
+            ArrayList<Object> row = Phase2Testers.mkRandomRec(attrs);
+            ArrayList<Object> row2 = Phase2Testers.mkRandomRec(attrs2);
+            ArrayList<Object> row3 = Phase2Testers.mkRandomRec(attrs3);
+            //rows.add(row);
+            StorageManager.getStorageManager().insertRecord(Catalog.getCatalog().getTable("t1"), row);
+            StorageManager.getStorageManager().insertRecord(Catalog.getCatalog().getTable("t2"), row2);
+            StorageManager.getStorageManager().insertRecord(Catalog.getCatalog().getTable("t3"), row3);
         }
-
-        // makr table
-        ResultSet table = Utilities.ResultSetFromTable(catAt, rows);
-
-        /////////////////////////////////////////////////////////////////////////////////
-
-
 
         String statement = """
                            select t1.a, t2.c
-                           from t1 t2
+                           from t1, t2
                            where t1 > 50
                            orderby t1.a;
                            """;
