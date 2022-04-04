@@ -59,8 +59,7 @@ public class Phase3TestSelect {
         String statement = """
                            select t1.a, t2.c
                            from t1, t2, t3
-                           
-                           where 1 = 1
+                           where t1.a > 1
                            orderby t1.a;
                            """;
         Database.executeQuery(statement);

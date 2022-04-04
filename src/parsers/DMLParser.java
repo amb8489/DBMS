@@ -407,6 +407,7 @@ public class DMLParser {
     }
 
     public static ITable selectFrom (List<String> tables) {
+//        tables.forEach(t -> t = t.replace(",",""));
         Set<String> set = new HashSet<String>(tables);
         if(set.size() < tables.size()){
             System.err.println("Invalid select statement: duplicate table names in 'from'");
@@ -500,7 +501,8 @@ public class DMLParser {
         //ensure formated correctly
         query = Utilities.format(query);
         String LowerQueryStmt = query.toLowerCase().replace(",", " ");
-        String OriginalQueryStmt = query.replace(",", "");
+        String OriginalQueryStmt = query.replace(",", " ");
+        OriginalQueryStmt = Utilities.format(OriginalQueryStmt);
 
         List<String> StmtTokens = Utilities.mkTokensFromStr(LowerQueryStmt);
         List<String> StmtTokensOriginal = Utilities.mkTokensFromStr(OriginalQueryStmt);
@@ -532,7 +534,8 @@ public class DMLParser {
             System.err.println("Invalid select statement: missing <tables> in 'from'");
             return null;
         }
-
+        tables.forEach(t -> t = t.replace(",",""));
+        System.out.println(tables);
         ITable cartProd = selectFrom(tables);
         if (cartProd == null) {
             System.err.println("Something went wrong in getting the cartesian product of tables in 'from'");
