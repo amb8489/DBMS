@@ -29,7 +29,7 @@ public class Phase3TestSelect {
 
         //t1
         ArrayList<Attribute> attrs = new ArrayList<>();
-        attrs.add(new Attribute("a", "Integer"));
+        attrs.add(new Attribute("a", "Char(2)"));
         attrs.add(new Attribute("uidt1", "Integer"));
         //t2
         ArrayList<Attribute> attrs2 = new ArrayList<>();
@@ -59,8 +59,8 @@ public class Phase3TestSelect {
         String statement = """
                            select t1.a, t2.c
                            from t1, t2, t3
-                           where t1.a > 1
-                           orderby t1.a;
+                           where t1.a > "a"
+                           orderby t2.c;
                            """;
         Database.executeQuery(statement);
     }

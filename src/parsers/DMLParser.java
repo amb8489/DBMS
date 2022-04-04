@@ -407,10 +407,12 @@ public class DMLParser {
         }
     }
 
-    public static ITable selectFrom (List<String> tables) {
+    public static ITable selectFrom(List<String> tables) {
 //        tables.forEach(t -> t = t.replace(",",""));
+
+        HashSet<ArrayList<Object>> seen = new HashSet<>();
         Set<String> set = new HashSet<String>(tables);
-        if(set.size() < tables.size()){
+        if (set.size() < tables.size()) {
             System.err.println("Invalid select statement: duplicate table names in 'from'");
             return null;
         }
@@ -421,9 +423,7 @@ public class DMLParser {
                 return null;
             }
             return Catalog.getCatalog().getTable(tables.get(0));
-        }
-
-        else {
+        } else {
             if (!Catalog.getCatalog().containsTable(tables.get(0))) {
                 System.err.println("Invalid select statement: table " + tables.get(0) + " in 'from' does not exist");
                 return null;
@@ -434,7 +434,7 @@ public class DMLParser {
             ArrayList<Attribute> newAttributes0 = new ArrayList<>();
             newAttributes0.add(new Attribute("primaryKey", "Integer"));
             Attribute pk0 = newAttributes0.get(0);
-            for (Attribute attr: attributes0) {
+            for (Attribute attr : attributes0) {
                 newAttributes0.add(new Attribute(tables.get(0) + "." + attr.getAttributeName(),
                         attr.attributeType()));
             }
@@ -453,6 +453,7 @@ public class DMLParser {
 
                 StorageManager.getStorageManager().insertRecord(cartProd, record);
                 serial++;
+
             }
 
             for (int i = 1; i < tables.size(); i++) {
@@ -464,7 +465,7 @@ public class DMLParser {
                 ArrayList<Attribute> attributes = table.getAttributes();
                 ArrayList<Attribute> newAttributes = new ArrayList<>(cartProd.getAttributes());
                 Attribute pk = newAttributes.get(0);
-                for (Attribute attr: attributes) {
+                for (Attribute attr : attributes) {
                     newAttributes.add(new Attribute(tables.get(i) + "." + attr.getAttributeName(),
                             attr.attributeType()));
                 }
@@ -509,7 +510,6 @@ public class DMLParser {
         List<String> StmtTokensOriginal = Utilities.mkTokensFromStr(OriginalQueryStmt);
 
 
-
         // ----------------- ----------------- FROM | make cartesian prod table -----------------
 
         int fromStart = StmtTokens.indexOf("from") + 1;
@@ -517,8 +517,7 @@ public class DMLParser {
         if (fromStart == 0) {
             System.err.println("Invalid select statement: missing 'from'");
             return null;
-        }
-        else {
+        } else {
             int fromEnd = StmtTokens.indexOf("where");
             if (fromEnd == -1){
                 fromEnd = StmtTokens.indexOf("orderby");
@@ -529,8 +528,7 @@ public class DMLParser {
             if (fromEnd == -1) {
                 System.err.println("Invalid select statement: missing \";\"");
                 return null;
-            }
-            else {
+            } else {
                 tables = StmtTokensOriginal.subList(fromStart, fromEnd);
             }
         }
@@ -541,7 +539,7 @@ public class DMLParser {
             System.err.println("Invalid select statement: missing <tables> in 'from'");
             return null;
         }
-        tables.forEach(t -> t = t.replace(",",""));
+        tables.forEach(t -> t = t.replace(",", ""));
         System.out.println(tables);
         ITable cartProd = selectFrom(tables);
         if (cartProd == null) {
@@ -580,7 +578,7 @@ public class DMLParser {
                 String WhereStmt = query.substring(whereIdx, stopIdx);
 
                 // parse table unqualified rows
-                ((StorageManager) StorageManager.getStorageManager()).keepWhere(table,WhereStmt,false);
+                ((StorageManager) StorageManager.getStorageManager()).keepWhere(table, WhereStmt, false);
             } else {
                 System.err.println("error in stmt");
                 return null;
@@ -592,16 +590,16 @@ public class DMLParser {
         //  ----------------- ----------------- SELECT | get only columns we asked for -----------------
 
         // get the string containing only the attributes we want (doesn't include the word "select")
-        String wantedAttrString = query.substring(LowerQueryStmt.indexOf("select")+"select".length()+1, fromIdx);
-        String [] wantedAttrs = wantedAttrString.split(" |, ");  //lazy regex move, will split on space or ,space
+        String wantedAttrString = query.substring(LowerQueryStmt.indexOf("select") + "select".length() + 1, fromIdx);
+        String[] wantedAttrs = wantedAttrString.split(" |, ");  //lazy regex move, will split on space or ,space
         System.out.println("Debug: " + Arrays.deepToString(wantedAttrs));  //TODO remove debug
 
         // check for star
 
-        if(wantedAttrs.length > 1 && wantedAttrString.contains("*")){ // there's a star, but it's not the only attribute
+        if (wantedAttrs.length > 1 && wantedAttrString.contains("*")) { // there's a star, but it's not the only attribute
             System.err.println("Improper use of \"*\".  Cannot combine \"*\" with other attributes.");
         }
-        if(!(wantedAttrs.length == 1 && wantedAttrs[0].equals("*"))) { //if there's a star, leave the table in tact
+        if (!(wantedAttrs.length == 1 && wantedAttrs[0].equals("*"))) { //if there's a star, leave the table in tact
             //make a list out of our array, then a hashset out of that list to send to Select function
             if (!Utilities.Select(table, new HashSet<>(Arrays.asList(wantedAttrs)))) {
                 System.out.println("Error with selected attributes");
@@ -615,17 +613,30 @@ public class DMLParser {
 
         ArrayList<ArrayList<Object>> records = (StorageManager.getStorageManager()).getRecords(table);
         if (orderbyIdx != -1) {
-            String[] sortByAttributeName = query.substring(orderbyIdx).replace(";","").split(" ");
-            if(sortByAttributeName.length <2 ){
+            String[] sortByAttributeName = query.substring(orderbyIdx).replace(";", "").split(" ");
+            if (sortByAttributeName.length < 2) {
                 System.err.println("OrderBy: column name to order by is missing");
                 return null;
             }
-            records = Utilities.SortBy(table,  records, sortByAttributeName[1], false);
+            records = Utilities.SortBy(table, records, sortByAttributeName[1], false);
+
+
+
         }
-        ResultSet rs = new ResultSet(table.getAttributes(), records);
+
+        HashSet<ArrayList<Object>>seen = new HashSet<>();
+        ArrayList<ArrayList<Object>> finRecs = new ArrayList<>();
+        for(ArrayList<Object> r:records){
+            if(!seen.contains(r)){
+                finRecs.add(r);
+            }
+            seen.add(r);
+
+        }
+        ResultSet rs = new ResultSet(table.getAttributes(), finRecs);
 
         // RETURN RESULT-SET
-         return rs;
+        return rs;
     }
 
 
