@@ -18,6 +18,7 @@ import storagemanager.StorageManager;
 import filesystem.FileSystem;
 
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Scanner;
 
 /*
@@ -62,18 +63,19 @@ public class Database {
         while(true){
             System.out.println("Enter Statement:");
             String input;
-
+//create table foo( baz double primarykey );insert into foo values (21.2), (1000000.2), (0.0000001);
             do{
                 input = scn.next();
-                statement += "\n" + input;
+                statement += input + " ";
             }
             while(!input.contains(";"));
+            System.out.println(statement.toLowerCase());
 
             if(statement.strip().equals("quit;")){  // end of entering statements
                 System.out.println("SUCCESS, Exiting Now...");
                 break;
             }
-            else if (statement.toLowerCase().startsWith("select")){
+            else if (statement.strip().toLowerCase().startsWith("select")){
                 //TODO kyle is this right to put this here like this??
                 Utilities.prettyPrintResultSet(executeQuery(statement), false, 16);
             }else if(executeStatement(statement)){

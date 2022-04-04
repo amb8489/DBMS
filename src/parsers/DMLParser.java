@@ -305,6 +305,7 @@ public class DMLParser {
             return false;
 
         }
+        System.out.println("Here");
         return true;////////////
     }
 
@@ -519,8 +520,14 @@ public class DMLParser {
         }
         else {
             int fromEnd = StmtTokens.indexOf("where");
+            if (fromEnd == -1){
+                fromEnd = StmtTokens.indexOf("orderby");
+            }
+            if (fromEnd == -1){
+                fromEnd = StmtTokens.size()-1;
+            }
             if (fromEnd == -1) {
-                System.err.println("Invalid select statement: missing 'where'");
+                System.err.println("Invalid select statement: missing \";\"");
                 return null;
             }
             else {
