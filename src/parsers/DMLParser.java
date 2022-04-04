@@ -502,8 +502,8 @@ public class DMLParser {
 
         //ensure formated correctly
         query = Utilities.format(query);
-        String LowerQueryStmt = query.toLowerCase().replace(",", " ");
-        String OriginalQueryStmt = query.replace(",", " ");
+        String LowerQueryStmt = query.toLowerCase().replace(",", " ").replace(";", "");
+        String OriginalQueryStmt = query.replace(",", " ").replace(";", "");
         OriginalQueryStmt = Utilities.format(OriginalQueryStmt);
 
         List<String> StmtTokens = Utilities.mkTokensFromStr(LowerQueryStmt);
@@ -512,7 +512,7 @@ public class DMLParser {
 
         // ----------------- ----------------- FROM | make cartesian prod table -----------------
 
-        int fromStart = StmtTokens.indexOf("from") + 1;
+        int fromStart = StmtTokens.indexOf("from")+1;
         List<String> tables = new ArrayList<>();
         if (fromStart == 0) {
             System.err.println("Invalid select statement: missing 'from'");
@@ -523,7 +523,7 @@ public class DMLParser {
                 fromEnd = StmtTokens.indexOf("orderby");
             }
             if (fromEnd == -1){
-                fromEnd = StmtTokens.size()-1;
+                fromEnd = StmtTokens.size();  // the last token
             }
             if (fromEnd == -1) {
                 System.err.println("Invalid select statement: missing \";\"");
