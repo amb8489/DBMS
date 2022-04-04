@@ -463,10 +463,17 @@ public class DMLParser {
         String [] wantedAttrs = wantedAttrString.split(" |, ");  //lazy regex move, will split on space or ,space
         System.out.println("Debug: " + Arrays.deepToString(wantedAttrs));  //TODO remove debug
 
-        //make a list out of our array, then a hashset out of that list to send to Select function
-        if(!Utilities.Select(table, new HashSet<>(Arrays.asList(wantedAttrs)))){
-            System.out.println("Error with selected attributes");
-            return null;
+        // check for star
+
+        if(wantedAttrs.length > 1 && wantedAttrString.contains("*")){ // there's a star, and it's not the only attribute
+            System.err.println("Improper use of \"*\".  Cannot combine \"*\" with other attributes.");
+        }
+        if(!(wantedAttrs.length == 1 && wantedAttrs[0].equals("*"))) { //if there's a star, leave the table in tact
+            //make a list out of our array, then a hashset out of that list to send to Select function
+            if (!Utilities.Select(table, new HashSet<>(Arrays.asList(wantedAttrs)))) {
+                System.out.println("Error with selected attributes");
+                return null;
+            }
         }
 
         //
