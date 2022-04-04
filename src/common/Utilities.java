@@ -464,6 +464,33 @@ public class Utilities {
         ArrayList<Attribute> atters = (ArrayList<Attribute>) table.getAttributes().clone();
 
 
+        HashSet<String> ConflictCols = Utilities.AmbiguityCols(table);
+        for (String name :KeepNames) {
+            if (ConflictCols.contains(name)){
+                System.err.println("select ambiguous attribute:"+name);
+                return false;
+            }
+
+
+        }
+
+
+
+            for (Attribute attr :table.getAttributes()) {
+            String colname = attr.getAttributeName();
+            if (colname.contains(".")){
+
+                String name = colname.split("\\.")[1];
+                String tableSpecifier = colname.split("\\.")[0];
+
+                if (KeepNames.contains(name)){
+                    KeepNames.add(colname);
+                    KeepNames.remove(name);
+                }
+            }
+        }
+
+
         for (Attribute name : atters) {
             if(!KeepNames.contains(name.getAttributeName())){
                 StorageManager.getStorageManager().dropAttributeValue(table, table.AttribIdxs.get(name.getAttributeName()));

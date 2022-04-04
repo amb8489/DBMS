@@ -408,7 +408,6 @@ public class DMLParser {
     }
 
     public static ITable selectFrom(List<String> tables) {
-//        tables.forEach(t -> t = t.replace(",",""));
 
         HashSet<ArrayList<Object>> seen = new HashSet<>();
         Set<String> set = new HashSet<String>(tables);
@@ -533,14 +532,15 @@ public class DMLParser {
             }
         }
 
-        System.out.println(tables);
+//        System.out.println(tables);
 
         if (tables.size() == 0) {
             System.err.println("Invalid select statement: missing <tables> in 'from'");
             return null;
         }
         tables.forEach(t -> t = t.replace(",", ""));
-        System.out.println(tables);
+//        tables.forEach(t -> t = t.replace(";", ""));
+
         ITable cartProd = selectFrom(tables);
         if (cartProd == null) {
             System.err.println("Something went wrong in getting the cartesian product of tables in 'from'");
@@ -548,7 +548,9 @@ public class DMLParser {
         }
 
 
+
         Table table = (Table) cartProd;
+
 //        StorageManager.getStorageManager().dropAttributeValue(cartProd,0);
 //        ArrayList<ArrayList<Object>> v = StorageManager.getStorageManager().getRecords(table);
 //        ResultSet r = Utilities.ResultSetFromTable(table.getAttributes(), v);
@@ -606,12 +608,15 @@ public class DMLParser {
                 return null;
             }
         }
+        System.out.println( (StorageManager.getStorageManager()).getRecords(table));
 
         //
         //  ----------------- ----------------- ORDER-BY | SORT rows ----------------- -----------------
 
 
         ArrayList<ArrayList<Object>> records = (StorageManager.getStorageManager()).getRecords(table);
+
+
         if (orderbyIdx != -1) {
             String[] sortByAttributeName = query.substring(orderbyIdx).replace(";", "").split(" ");
             if (sortByAttributeName.length < 2) {
