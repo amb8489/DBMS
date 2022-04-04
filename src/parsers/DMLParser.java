@@ -495,6 +495,9 @@ public class DMLParser {
         List<String> StmtTokensOriginal = Utilities.mkTokensFromStr(OriginalQueryStmt);
 
 
+
+        // ----------------- ----------------- FROM | make cartesian prod table -----------------
+
         int fromStart = StmtTokens.indexOf("from") + 1;
         List<String> tables = new ArrayList<>();
         if (fromStart == 0) {
@@ -524,13 +527,9 @@ public class DMLParser {
             System.err.println("Something went wrong in getting the cartesian product of tables in 'from'");
             return null;
         }
-        System.out.println(cartProd.getAttributes());
 
 
-        //TODO
-        // ----------------- ----------------- FROM | make cartesian prod table -----------------
-
-        Table table = null;  //TODO insert table here
+        Table table = (Table) cartProd;
 
         // -----------------WHERE | do where on cartesian prod table-----------------------
 
@@ -551,7 +550,7 @@ public class DMLParser {
                 String WhereStmt = query.substring(whereIdx, stopIdx);
 
                 // parse table unqualified rows
-                //((StorageManager) StorageManager.getStorageManager()).keepWhere(table,WhereStmt,false);
+                ((StorageManager) StorageManager.getStorageManager()).keepWhere(table,WhereStmt,false);
             } else {
                 System.err.println("error in stmt");
                 return null;
@@ -559,7 +558,7 @@ public class DMLParser {
 
         }
 
-        //TODO
+
         //  ----------------- ----------------- SELECT | get only columns we asked for -----------------
 
         // get the string containing only the attributes we want (doesn't include the word "select")
