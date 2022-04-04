@@ -473,20 +473,19 @@ public class DMLParser {
         //  ----------------- ----------------- ORDER-BY | SORT rows ----------------- -----------------
 
 
-//        ArrayList<ArrayList<Object>> records = (StorageManager.getStorageManager()).getRecords(table);
-//        if (orderbyIdx != -1) {
-//            String[] sortByAttributeName = query.substring(orderbyIdx).replace(";","").split(" ");
-//            if(sortByAttributeName.length <2 ){
-//                System.err.println("OrderBy: column name to order by is missing");
-//                return null;
-//            }
-//            records = Utilities.SortBy(table,  records, sortByAttributeName[0], false);
-//        }
-//        ResultSet table = new ResultSet(table.getAttributes(), records);
+        ArrayList<ArrayList<Object>> records = (StorageManager.getStorageManager()).getRecords(table);
+        if (orderbyIdx != -1) {
+            String[] sortByAttributeName = query.substring(orderbyIdx).replace(";","").split(" ");
+            if(sortByAttributeName.length <2 ){
+                System.err.println("OrderBy: column name to order by is missing");
+                return null;
+            }
+            records = Utilities.SortBy(table,  records, sortByAttributeName[0], false);
+        }
+        ResultSet rs = new ResultSet(table.getAttributes(), records);
 
         // RETURN RESULT-SET
-        // return table;
-        return null;
+         return rs;
     }
 
 

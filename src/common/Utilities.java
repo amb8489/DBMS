@@ -449,9 +449,9 @@ public class Utilities {
         }
         sm.keepWhere(t, "where t1.a > 50", false);
 
-        if (!Select(t, "t2.b, t2.uidt2,t1.a")) {
-            return;
-        }
+//        if (!Select(t, "t2.b, t2.uidt2,t1.a")) {
+//            return;
+//        }
 
         rows = Utilities.SortBy(t, sm.getRecords(t), "t2.uidt2", false);
 
@@ -460,21 +460,12 @@ public class Utilities {
         prettyPrintResultSet(table, false, 10);
     }
 
-    public static boolean Select(Table table, String selectStmt) {
-        selectStmt = selectStmt.replace(","," ");
-        List<String> selectStmtTokens =Utilities.mkTokensFromStr(selectStmt);
+    public static boolean Select(Table table, HashSet<String> KeepNames){
+        ArrayList<Attribute> atters = (ArrayList<Attribute>) table.getAttributes().clone();
 
-        // if we get a star then we want all columns
-        if(!selectStmtTokens.get(1).equals("*")) {
-
-            HashSet<String> KeepNames = null;
-
-            ArrayList<Attribute>atters = (ArrayList<Attribute>) table.getAttributes().clone();
-
-            for (Attribute name : atters) {
-                if (!KeepNames.contains(name.getAttributeName())) {
-                    StorageManager.getStorageManager().dropAttributeValue(table, table.AttribIdxs.get(name.getAttributeName()));
-                }
+        for (Attribute name : atters) {
+            if(!KeepNames.contains(name.getAttributeName())){
+                StorageManager.getStorageManager().dropAttributeValue(table, table.AttribIdxs.get(name.getAttributeName()));
             }
         }
         return true;
