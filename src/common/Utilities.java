@@ -455,6 +455,8 @@ public class Utilities {
 
         rows = Utilities.SortBy(t, sm.getRecords(t), "t2.uidt2", false);
 
+
+
         ResultSet table = new ResultSet(t.getAttributes(), rows);
 
         prettyPrintResultSet(table, false, 10);

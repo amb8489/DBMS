@@ -4,6 +4,7 @@
 
 package common;
 
+import catalog.ACatalog;
 import catalog.Catalog;
 
 import java.io.*;
@@ -15,6 +16,9 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import filesystem.FileSystem;
+import pagebuffer.PageBuffer;
+import storagemanager.AStorageManager;
+import storagemanager.StorageManager;
 
 
 /*****************************--page--*****************************
@@ -38,7 +42,7 @@ public class Page {
     private int ptrToNextPage;
 
     // name of the page aka string of what # page this is
-    private String pageName;
+    private final int pageName;
 
     //current page size in bytes
     public int currentSize;
@@ -47,7 +51,7 @@ public class Page {
     private List<ArrayList<Object>> pageRecords = new ArrayList<>();
 
     // the table that this page belongs to
-    public ITable IBelongTo = null;
+    public ITable IBelongTo;
 
     // ****************************--constructors--*****************************
 
@@ -57,7 +61,7 @@ public class Page {
         numPages++;
         // new page has no size
         this.currentSize = 0;
-        this.pageName = String.valueOf(numPages);
+        this.pageName = numPages;
         // first page points to nothing
         this.ptrToNextPage = -1;
         this.IBelongTo = iBelongTo;
@@ -67,7 +71,6 @@ public class Page {
     }
 
     // USED WHEN LOADING A PAGE IN FROM MEM
-    // this will make a new page when splitting
     public Page(int pageName, int ptrToNextPage, int currentSize, List<ArrayList<Object>> pageRecords, ITable iBelongTo) {
         // is this a new page or just a re loaded page from mem
         if (!((Table) iBelongTo).getPagesThatBelongToMe().contains(pageName)) {
@@ -75,11 +78,24 @@ public class Page {
         }
 
         // setting
-        this.pageName = String.valueOf(pageName);
+        this.pageName = pageName;
         this.pageRecords = pageRecords;
         this.IBelongTo = iBelongTo;
         this.currentSize = currentSize;
         this.ptrToNextPage = ptrToNextPage;
+    }
+
+
+    // this will make a new page when splitting
+    public Page(ITable iBelongTo, List<ArrayList<Object>> pageRecords) {
+        // is this a new page or just a re loaded page from mem
+        numPages++;
+
+
+        // setting
+        this.pageName = numPages;
+        this.pageRecords = pageRecords;
+        this.IBelongTo = iBelongTo;
     }
 
     // ************************--getters | setter--*****************************
@@ -94,7 +110,7 @@ public class Page {
     }
 
     public String getPageName() {
-        return pageName;
+        return String.valueOf(pageName);
     }
 
     public void setWasChanged(boolean wasChanged) {
@@ -114,9 +130,7 @@ public class Page {
 
         try {
 
-            //TODO refactor this into table class /////////////////////////////////////////
-            // get schema from table that we need in order to know what type we are reading in
-            // if record has a Char(#) type we need to know how long that char is so we know how many bytes to read in
+
             int charlen = 0;
             ArrayList<String> schema = new ArrayList<>();
             // looping though table attribs to get their types
@@ -159,15 +173,17 @@ public class Page {
             //for each row in the page
             for (int rn = 0; rn < numRecs; rn++) {
 
+                //------------------------ TODO WHAT IS GOING ON WITH THE BIT MASK FOR NULL VALS ------------------------
 
                 // 4) read in int for bit array size (in bytes)
-                int bitArray = dataInputStr.readInt();
+                int bitArraySizeInNumOfbytes = dataInputStr.readInt();
                 currentSize += 4;
 
 
                 // 5) read in bit array
-                BitSet bitMask = BitSet.valueOf(dataInputStr.readNBytes(bitArray));
-                currentSize += bitArray;
+                BitSet bitMask = BitSet.valueOf(dataInputStr.readNBytes(bitArraySizeInNumOfbytes));
+                currentSize += bitArraySizeInNumOfbytes;
+
 
 
                 // row obj this will rep 1 tuple in the table
@@ -233,19 +249,14 @@ public class Page {
     }
 
 
-    // THIS WILL WRITE AND AUTO SPLIT A PAGE
-    // WRITE THE PAGE TO DISK SPLITTING AS FIT
+    // WRITE THE PAGE TO DISK
     public boolean writeToDisk(String location, ITable table) {
         try {
 
             // WHERE TO WRITE OUT PAGE TO
-            // TODO KYLE SHOULD THIS BE CHANGED USING THE FILE SYSTEM???
             location = Catalog.getCatalog().getDbLocation() + "/pages/" + this.pageName;
 
 
-            //TODO AARON -- REFACTOR GETTING SCHEMA INTO TABLE CLASS
-            // get schema from table that we need in order to know what type we are reading in
-            // if record has a Char(#) type we need to know how long that char is so we know how many bytes to read in
             ArrayList<String> schema = new ArrayList<>();
             for (Attribute att : table.getAttributes()) {
                 schema.add(att.getAttributeType());
@@ -254,174 +265,94 @@ public class Page {
 
             // output streams
             VerbosePrint.print(location);
-            DataOutputStream out = FileSystem.createPageDataOutStream(this.pageName);
+            DataOutputStream out = FileSystem.createPageDataOutStream(String.valueOf(this.pageName));
 
             // byte array that we will store at the end(all the records stored as bytes at once to reduce the amount of
             // I/O operations)
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
 
-            // TODO AARON--- REFACTOR THIS PAGE SPLITING
-            ArrayList<Integer> CumSum = calcSizeOfRecordsCumSum(this.pageRecords, this.IBelongTo);
-
-            VerbosePrint.print("here");
-
-            double pSize = CumSum.get(CumSum.size() - 1);
-
-            Double number_of_extra_split_Pages = Math.floor(pSize / Catalog.getCatalog().getPageSize());
-            VerbosePrint.print(number_of_extra_split_Pages);
-            if (number_of_extra_split_Pages == 0) {
-
-                VerbosePrint.print("NO SPLIT NEEDED");
-
-                // WRITE name ,num records to page, and name of next page (nullptr to next = -1)
-                outputStream.write(ByteBuffer.allocate(4).putInt(Integer.parseInt(this.getPageName())).array());
-                outputStream.write(ByteBuffer.allocate(4).putInt(this.pageRecords.size()).array());
-                outputStream.write(ByteBuffer.allocate(4).putInt(this.ptrToNextPage).array());
+            // WRITE name ,num records to page, and name of next page (nullptr to next = -1)
+            outputStream.write(ByteBuffer.allocate(4).putInt(Integer.parseInt(this.getPageName())).array());
+            outputStream.write(ByteBuffer.allocate(4).putInt(this.pageRecords.size()).array());
+            outputStream.write(ByteBuffer.allocate(4).putInt(this.ptrToNextPage).array());
 
 
-                VerbosePrint.print("storing record");
+            VerbosePrint.print("atemping store page to disk");
 
-                //for each row in the table
-                for (int i = 0; i < this.pageRecords.size(); i++) {
+            //for each row in the table
+            for (ArrayList<Object> record : this.pageRecords) {
 
-                    //for each attrib in row store to byte array
-                    ArrayList<Object> record = this.pageRecords.get(i);
+                //for each attrib in row store to byte array
+                // TODO
+                //FIRST LETS TAKE CARE OF NULL VALS :)
+
+                //------------------------ TODO WHAT IS GOING ON WITH THE BIT MASK FOR NULL VALS ------------------------
+
+                int[] nullIndexes = IntStream.range(0, record.size()).filter(N -> record.get(N) == null).toArray();
+                BitSet bitSet = new BitSet(record.size());
+                for (int idx : nullIndexes) {
+                    bitSet.set(idx);
+                }
+
+                byte[] nullMask = bitSet.toByteArray();
+
+                // write out bitmask size int
+                outputStream.write(ByteBuffer.allocate(4).putInt(nullMask.length).array());
+                // write out mask
+                outputStream.write(nullMask);
+                //------------------------ ------------------------ ------------------------
 
 
-                    //FIRST LETS TAKE CARE OF NULL VALS :)
+                // make byte array from record
+                // look though reach attribute and check the schema for its type and convert it to its bytes
+                // and add it to outputStream btye array
+                for (int idx = 0; idx < record.size(); idx++) {
+                    if (record.get(idx) != null) {
+                        switch (schema.get(idx)) {
+                            case "Integer":
+                                //add it to outputStream btye array
+                                outputStream.write(ByteBuffer.allocate(4).putInt((Integer) record.get(idx)).array());
+                                break;
+                            case "Double":
+                                //add it to outputStream btye array
 
-                    int[] nullIndexes = IntStream.range(0, record.size()).filter(N -> record.get(N) == null).toArray();
-                    BitSet bitSet = new BitSet(record.size());
-                    for (int idx : nullIndexes) {
-                        bitSet.set(idx);
-                    }
-
-                    byte[] nullMask = bitSet.toByteArray();
-
-                    // write out bitmask size int
-                    outputStream.write(ByteBuffer.allocate(4).putInt(nullMask.length).array());
-                    // write out mask
-                    outputStream.write(nullMask);
-
-
-                    // make byte array from record
-                    // look though reach attribute and check the schema for its type and convert it to its bytes
-                    // and add it to outputStream btye array
-                    for (int idx = 0; idx < record.size(); idx++) {
-                        if (record.get(idx) != null) {
-                            switch (schema.get(idx)) {
-                                case "Integer":
-                                    //add it to outputStream btye array
-                                    outputStream.write(ByteBuffer.allocate(4).putInt((Integer) record.get(idx)).array());
-                                    break;
-                                case "Double":
-                                    //add it to outputStream btye array
-
-                                    outputStream.write(ByteBuffer.allocate(8).putDouble((Double) record.get(idx)).array());
-                                    break;
-                                case "Boolean":
-                                    //add it to outputStream btye array
-                                    outputStream.write(ByteBuffer.allocate(1).put(new byte[]{(byte) ((Boolean) record.get(idx) ? 1 : 0)}).array());
-                                    break;
-                                default:
-                                    //add it to outputStream btye array
-
-                                    // char vs varchar
-
-                                    // char(#)
-                                    if (schema.get(idx).startsWith("Char(")) {
-                                        outputStream.write(((String) record.get(idx)).getBytes());
-                                    } else {
-                                        // add the len of var char before we write var char
-                                        int VarCharlen = ((String) record.get(idx)).length();
-                                        // write var char len (we need this to know how many bytes to write in when we read disk)
-                                        outputStream.write(ByteBuffer.allocate(4).putInt(VarCharlen).array());
-                                        // write var char
-                                        outputStream.write(((String) record.get(idx)).getBytes());
-                                    }
-                            }
+                                outputStream.write(ByteBuffer.allocate(8).putDouble((Double) record.get(idx)).array());
+                                break;
+                            case "Boolean":
+                                //add it to outputStream btye array
+                                outputStream.write(ByteBuffer.allocate(1).put(new byte[]{(byte) ((Boolean) record.get(idx) ? 1 : 0)}).array());
+                                break;
+                            default:
+                                //add it to outputStream btye array
+                                // char(#)
+                                if (schema.get(idx).startsWith("Char(")) {
+                                    outputStream.write(((String) record.get(idx)).getBytes());
+                                } else {
+                                    // add the len of var char before we write var char
+                                    int VarCharlen = ((String) record.get(idx)).length();
+                                    // write var char len (we need this to know how many bytes to write in when we read disk)
+                                    outputStream.write(ByteBuffer.allocate(4).putInt(VarCharlen).array());
+                                    // write var char
+                                    outputStream.write(((String) record.get(idx)).getBytes());
+                                }
                         }
                     }
                 }
-
-                // all records added to byte array
-                byte[] record_out = outputStream.toByteArray();
-
-                // write out byte array to file
-                out.write(record_out);
-                out.close();
-
-                // clear records
-//                pageRecords.clear();
-                // update page size
-                currentSize = 0;
-                VerbosePrint.print("Store complete");
-                return true;
-
-            } else {
-
-                // TODO AARON--- REFACTOR THIS PAGE SPLITING
-                // MIGHT WANT TO KEEP TRACK OF PAGE SIZE
-                // ALWAYS ON INSERT OR DELTE BY ADDING A INSERT INTO TPAGE FUNCTION
-                // THAT KEEPS TRACK OF THR RECORD SIZE YOURE ADDING IN
-
-
-                //time to split up
-                int start = 0;
-                int adj = 0;
-                int SplitPoint = 0;
-
-                Page WillSplit = this;
-
-                List<ArrayList<Object>> RECORDS = this.pageRecords.subList(0, pageRecords.size());
-
-                CumSum.remove(0);
-                VerbosePrint.print(CumSum);
-                for (int i = 0; i < CumSum.size(); i++) {
-                    if (CumSum.get(i) - adj >= Catalog.getCatalog().getPageSize()) {
-                        int numberOfRecordsForpage = (i - start);
-                        SplitPoint = numberOfRecordsForpage / 2;
-                        adj += CumSum.get(SplitPoint);
-
-                        List<ArrayList<Object>> left = RECORDS.subList(start, start + SplitPoint + 1);
-                        VerbosePrint.print("SPLITTING PAGE");
-
-                        start = start + SplitPoint + 1;
-                        VerbosePrint.print(RECORDS.size());
-
-
-                        // split making new page
-                        WillSplit.pageRecords = left;
-                        VerbosePrint.print(RECORDS.size());
-
-
-                        // new page will need attribs
-
-                        Page nextPage = new Page(table);
-                        nextPage.ptrToNextPage = WillSplit.ptrToNextPage;
-
-                        WillSplit.ptrToNextPage = Integer.parseInt(nextPage.pageName);
-                        //write out
-
-                        WillSplit.writeToDisk(WillSplit.getPageName(), table);
-
-                        WillSplit = nextPage;
-
-
-                    }
-                }
-
-
-                List<ArrayList<Object>> left = RECORDS.subList(start, RECORDS.size());
-                // split making new page
-                WillSplit.pageRecords = left;
-
-                WillSplit.writeToDisk(WillSplit.getPageName(), table);
-
-                return true;
-
             }
+
+            // all records added to byte array
+            byte[] record_out = outputStream.toByteArray();
+
+            // write out byte array to file
+            out.write(record_out);
+            out.close();
+
+            currentSize = 0;
+            VerbosePrint.print("Store complete");
+            return true;
+
+
         } catch (IOException e) {
             System.err.println("COULD NOT Write FILE PAGE " + location);
             return false;
@@ -429,7 +360,10 @@ public class Page {
     }
 
 
-    public ArrayList<Integer> calcSizeOfRecordsCumSum(List<ArrayList<Object>> recs, ITable table) {
+    public int calcPageSize(Page page) {
+
+        ITable table = page.IBelongTo;
+        List<ArrayList<Object>> recs = page.getPageRecords();
         // get schema from table that we need in order to know what type we are reading in
         // if record has a Char(#) type we need to know how long that char is so we know how many bytes to read in
         int charlen = 0;
@@ -438,66 +372,163 @@ public class Page {
         // looping though table attribs to get their types
         for (Attribute att : table.getAttributes()) {
             schema.add(att.getAttributeType());
+            // found a char(#) paring for the number
+            if (att.getAttributeType().startsWith("Char(")) {
+                charlen = Integer.parseInt(att.getAttributeType().substring(5, att.getAttributeType().length() - 1));
+            }
+        }
+        int size = 12;
+
+
+        for (ArrayList<Object> r : recs) {
+
+            //for each attrib in row store to byte array
+            // make byte array from record
+            // look though reach attribute and check the schema for its type and convert it to its bytes
+            // and add it to outputStream btye array
+
+            //TODO ??????
+            size += 2;
+
+            for (int idx = 0; idx < r.size(); idx++) {
+
+                if (r.get(idx) != null) {
+                    switch (schema.get(idx)) {
+                        case "Integer":
+                            size += 4;
+                            break;
+                        case "Double":
+                            size += 8;
+                            break;
+                        case "Boolean":
+                            size += 1;
+                            break;
+                        default:
+
+                            // char(#)
+                            if (schema.get(idx).startsWith("Char(")) {
+                                size += charlen;
+                            } else {
+                                // add the len of var char before we write var char
+                                int VarCharlen = ((String) r.get(idx)).length();
+                                size += (4 + VarCharlen);
+                            }
+                    }
+                }
+            }
+        }
+        return size;
+
+    }
+
+    public int recordSize(ArrayList<Object> rec) {
+
+
+
+        // get schema from table that we need in order to know what type we are reading in
+        // if record has a Char(#) type we need to know how long that char is so we know how many bytes to read in
+        int charlen = 0;
+        ArrayList<String> schema = new ArrayList<>();
+        // looping though table attribs to get their types
+        for (Attribute att : this.IBelongTo.getAttributes()) {
+            schema.add(att.getAttributeType());
 
             // found a char(#) paring for the number
             if (att.getAttributeType().startsWith("Char(")) {
                 charlen = Integer.parseInt(att.getAttributeType().substring(5, att.getAttributeType().length() - 1));
             }
         }
-        ArrayList<Integer> CumSum = new ArrayList<>();
-        CumSum.add(12);
+        int size = 4;
 
 
-        for (int i = 0; i < recs.size(); i++) {
+        for (int idx = 0; idx < rec.size(); idx++) {
 
-            //for each attrib in row store to byte array
-            ArrayList<Object> r = recs.get(i);
+            if (rec.get(idx) != null) {
+                switch (schema.get(idx)) {
+                    case "Integer":
+                        size += 4;
+                        break;
+                    case "Double":
+                        size += 8;
+                        break;
+                    case "Boolean":
+                        size += 1;
+                        break;
+                    default:
 
-            // make byte array from record
-            // look though reach attribute and check the schema for its type and convert it to its bytes
-            // and add it to outputStream btye array
-            int newSize = 0;
-            newSize += 4;
-
-            if (r.contains(null)) {
-                newSize += 2;
-            }
-            for (int idx = 0; idx < r.size(); idx++) {
-
-                if (r.get(idx) != null) {
-                    switch (schema.get(idx)) {
-                        case "Integer":
-                            newSize += 4;
-                            break;
-                        case "Double":
-                            newSize += 8;
-                            break;
-                        case "Boolean":
-                            newSize += 1;
-                            break;
-                        default:
-
-                            // char(#)
-                            if (schema.get(idx).startsWith("Char(")) {
-                                newSize += charlen;
-                            } else {
-                                // add the len of var char before we write var char
-                                int VarCharlen = ((String) r.get(idx)).length();
-                                newSize += (4 + VarCharlen);
-                            }
-                    }
+                        // char(#)
+                        if (schema.get(idx).startsWith("Char(")) {
+                            size += charlen;
+                        } else {
+                            // add the len of var char before we write var char
+                            int VarCharlen = ((String) rec.get(idx)).length();
+                            size += (4 + VarCharlen);
+                        }
                 }
             }
-            CumSum.add(newSize + CumSum.get(CumSum.size() - 1));
         }
-        return CumSum;
+        return size;
+    }
+
+
+    // will return the second half of the page
+    public Page split() {
+
+
+        // changed
+        this.wasChanged = true;
+
+        // split records in half
+        int halfway = pageRecords.size() / 2;
+        List<ArrayList<Object>> splitLeftHalf = new ArrayList<>(pageRecords.subList(0, halfway));
+        List<ArrayList<Object>> splitRightHalf = new ArrayList<>(pageRecords.subList(halfway, pageRecords.size()));
+
+
+        // assign new records
+        this.pageRecords = splitLeftHalf;
+
+
+        // make new page with split records
+        Page splitPage = new Page(this.IBelongTo, splitRightHalf);
+
+
+        // adjusting pointers
+        int temp = this.ptrToNextPage;
+        this.ptrToNextPage = splitPage.pageName;
+        splitPage.ptrToNextPage = temp;
+
+        //new current page size in bytes
+        this.currentSize = calcPageSize(this);
+        splitPage.currentSize = calcPageSize(splitPage);
+
+
+        System.out.println(this.currentSize+" "+splitPage.currentSize);
+
+        // add new page to buffer
+        StorageManager sm = (StorageManager) StorageManager.getStorageManager();
+        if (!sm.getPagebuffer().insertSplitPage(splitPage)) {
+            System.err.println("ERORR SPLITTING PAGE, REVERTING PAGE");
+            return null;
+        }
+        this.writeToDisk(ACatalog.getCatalog().getDbLocation(), this.IBelongTo);
+
+
+        return splitPage;
 
     }
 
 
-    public int calcSizeOfRecords(List<ArrayList<Object>> recs, ITable table) {
-        ArrayList<Integer> sizeBytes = calcSizeOfRecordsCumSum(recs, table);
-        return sizeBytes.get(sizeBytes.size() - 1);
+    public boolean insert(int idx, ArrayList<Object> record) {
+        this.getPageRecords().add(idx, record);
+        this.wasChanged = true;
+        this.currentSize += recordSize(record);
 
+
+        if (currentSize >= Catalog.getCatalog().getPageSize()){
+            System.out.println("SPLITTING");
+            this.split();
+            System.out.println("SPLITTING Dne");
+        }
+        return true;
     }
 }

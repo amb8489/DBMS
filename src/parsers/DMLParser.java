@@ -617,6 +617,9 @@ public class DMLParser {
                 return null;
             }
             records = Utilities.SortBy(table, records, sortByAttributeName[1], false);
+            if (records == null){
+                return null;
+            }
 
 
 

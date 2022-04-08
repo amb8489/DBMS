@@ -68,7 +68,8 @@ public class FileSystem {
     private enum FilePath{
         TABS(DBLocation() + File.separator + "tabs"),
         PAGES(DBLocation() + File.separator + "pages"),
-        CATALOG(DBLocation() + File.separator + "catalog");
+        CATALOG(DBLocation() + File.separator + "catalog"),
+        DB(DBLocation());
 
         // code that allows for the enum to hold values
         // https://www.baeldung.com/java-enum-values
@@ -79,14 +80,26 @@ public class FileSystem {
     }
 
     public static boolean establishFileSystem(String location){
+
+
         if(!setDBLocation(location)){ // checks if File System already has a location, sets dblocation = location if not
             ERROR("File System not established, may already be managing a database.");
             return false;
         }
 
+
+//        try {
+//            Files.createDirectory(Paths.get(FilePath.DB.rel_loc));
+//
+//        }catch (Exception e){
+//            ERROR("File System not established, may already be managing a database.");
+//
+//        }
+
         Path pagePath = Paths.get(FilePath.PAGES.rel_loc);  // DBLocation should be set by first if
         Path tabsPath = Paths.get(FilePath.TABS.rel_loc);
         Path catPath = Paths.get(FilePath.CATALOG.rel_loc);
+
 
 
         // establish pages directory

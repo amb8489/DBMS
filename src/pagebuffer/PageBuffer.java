@@ -113,6 +113,30 @@ public class PageBuffer {
         return newPage;
     }
 
+    // used when a page is split its split page is added to a buffer
+    public boolean insertSplitPage(Page splitPage) {
+        VerbosePrint.print("adding split page " + splitPage.getPageName() + " to buffer");
+
+
+        // if buffer is full
+        if (pageBuffer.size() == maxBufferSize) {
+
+            // write LRU page to disk / check for successful page write
+            Page p = pageBuffer.get(0);
+            VerbosePrint.print("BUFFER FULL writing page [" + p.getPageName() + "] to disk");
+
+            if (!p.writeToDisk(p.getPageName(), p.IBelongTo)) {
+                System.err.println("error loading new page to buffer [LRU write to disk failed]");
+                return false;
+            }
+            // remove page from buffer
+            pageBuffer.remove(0);
+        }
+        pageBuffer.add(splitPage);
+        return true;
+    }
+
+
     /**
      * Deletes pages from the page buffer if they belong to the given table
      * @param table the table whose pages we should forget about

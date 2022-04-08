@@ -1,4 +1,5 @@
 package common;
+
 import catalog.ACatalog;
 import catalog.Catalog;
 
@@ -18,7 +19,7 @@ import filesystem.FileSystem;
 
  */
 
-public class Table implements ITable{
+public class Table implements ITable {
 
     public static int numTables = 0; // tracks how many tables.txt have been created; used to establish table ID
     private String TableName;
@@ -29,24 +30,21 @@ public class Table implements ITable{
     public HashSet<Integer> indicesOfNotNullAttributes = new HashSet<>();
 
     private int pkeyIdx = -1;
-    private ArrayList<ForeignKey> ForeignKeys= new ArrayList<>();
-    private ArrayList<Integer>PagesThatBelongToMe = new ArrayList<>();
+    private ArrayList<ForeignKey> ForeignKeys = new ArrayList<>();
+    private ArrayList<Integer> PagesThatBelongToMe = new ArrayList<>();
 
     public HashMap<String, Integer> AttribIdxs = new HashMap<>();
-
 
 
     // ADD INDEX LIST HERE - FOURTH PHASE
 
 
-
-    public Table(String tableName,ArrayList<Attribute> Attributes,Attribute PrimaryKey ){
+    public Table(String tableName, ArrayList<Attribute> Attributes, Attribute PrimaryKey) {
         ID = numTables;
         numTables++;
         this.Attributes = Attributes;
         this.TableName = tableName;
         this.PrimaryKey = PrimaryKey;
-
 
 
         // mapping the attribute name to the idx of that attribute  needed for later
@@ -55,7 +53,7 @@ public class Table implements ITable{
             String name = Attributes.get(i).getAttributeName();
 
             // . for table specifier in cartesion table prod case
-            if (name.contains(".")){
+            if (name.contains(".")) {
                 String[] splitName = name.split("\\.");
                 String attributeName = splitName[1];
                 AttribIdxs.put(attributeName, i);
@@ -70,8 +68,8 @@ public class Table implements ITable{
 
 
     // gets the index of the pk attribute in Table attributes
-    public int pkIdx(){
-        if (pkeyIdx<0) {
+    public int pkIdx() {
+        if (pkeyIdx < 0) {
             int idx = 0;
             for (Attribute Attrib : Attributes) {
                 if (Attrib.equals(this.PrimaryKey)) {
@@ -98,7 +96,7 @@ public class Table implements ITable{
             String name = Attributes.get(i).getAttributeName();
 
             // . for table specifier in cartesion table prod case
-            if (name.contains(".")){
+            if (name.contains(".")) {
                 String[] splitName = name.split("\\.");
                 String attributeName = splitName[1];
                 AttribIdxs.put(attributeName, i);
@@ -135,7 +133,7 @@ public class Table implements ITable{
     @Override
     public Attribute getAttrByName(String name) {
 
-        for(Attribute attribute:Attributes) {
+        for (Attribute attribute : Attributes) {
             if (attribute.attributeName().equals(name)) {
                 return attribute;
             }
@@ -156,14 +154,14 @@ public class Table implements ITable{
     @Override
     public boolean addAttribute(String name, String type) {
         // test if attribute already exists
-        for(Attribute attribute:Attributes){
-            if (attribute.attributeName().equals(name)){
-                System.err.println(String.format("Error: Cant add attribute [ %s ] because it already exists in table",name));
+        for (Attribute attribute : Attributes) {
+            if (attribute.attributeName().equals(name)) {
+                System.err.println(String.format("Error: Cant add attribute [ %s ] because it already exists in table", name));
                 return false;
             }
         }
-        this.Attributes.add( new Attribute(name,type));
-        AttribIdxs.put(name,Attributes.size()-1);
+        this.Attributes.add(new Attribute(name, type));
+        AttribIdxs.put(name, Attributes.size() - 1);
         return true;
     }
 
@@ -199,8 +197,8 @@ public class Table implements ITable{
 
         int idx = 0;
 
-        for(Attribute attribute:Attributes){
-            if (attribute.attributeName().equals(name)){
+        for (Attribute attribute : Attributes) {
+            if (attribute.attributeName().equals(name)) {
                 this.Attributes.remove(idx);
 
                 HashMap<String, Integer> attributeNameToIdx = new HashMap<>();
@@ -213,7 +211,7 @@ public class Table implements ITable{
             }
             idx++;
         }
-        System.err.println(String.format("Error: Cant drop attribute [ %s ] because it does not exist in the table",name));
+        System.err.println(String.format("Error: Cant drop attribute [ %s ] because it does not exist in the table", name));
         return false;
     }
 
@@ -221,8 +219,8 @@ public class Table implements ITable{
     public boolean addForeignKey(ForeignKey fk) {
 
         // test if fk already exists
-        for(ForeignKey foreignKey :ForeignKeys){
-            if (foreignKey.toString().equals(fk.toString())){
+        for (ForeignKey foreignKey : ForeignKeys) {
+            if (foreignKey.toString().equals(fk.toString())) {
                 System.err.println("Error: Cant add ForeignKey because it already exists");
                 return false;
             }
@@ -231,7 +229,7 @@ public class Table implements ITable{
         return true;
     }
 
-    public void addPageAffiliations(int pageName){
+    public void addPageAffiliations(int pageName) {
         this.PagesThatBelongToMe.add(pageName);
     }
 
@@ -259,7 +257,7 @@ public class Table implements ITable{
             // WRITE table details
 
             // total number of tables.txt
-            outputStream.write(ByteBuffer.allocate(4).putInt(((Catalog)Catalog.getCatalog()).getNumberOFtables()).array());
+            outputStream.write(ByteBuffer.allocate(4).putInt(((Catalog) Catalog.getCatalog()).getNumberOFtables()).array());
 
             VerbosePrint.print(numTables);
 
@@ -269,7 +267,7 @@ public class Table implements ITable{
             // the number of indices stored
             outputStream.write(ByteBuffer.allocate(4).putInt(indicesOfNotNullAttributes.size()).array());
             // storing of the indices
-            for (Integer index:indicesOfNotNullAttributes) {
+            for (Integer index : indicesOfNotNullAttributes) {
                 outputStream.write(ByteBuffer.allocate(4).putInt(index).array());
             }
 
@@ -286,9 +284,9 @@ public class Table implements ITable{
             outputStream.write(ByteBuffer.allocate(4).putInt(numOfAttributes).array());
 
             // for each attribute write it out
-            for (Attribute attrib:  this.Attributes) {
+            for (Attribute attrib : this.Attributes) {
                 String StringAtt = attrib.toString();
-                int StringAttLen =  StringAtt.length();
+                int StringAttLen = StringAtt.length();
                 // write how log the attribute is
                 outputStream.write(ByteBuffer.allocate(4).putInt(StringAttLen).array());
                 // write attribute str
@@ -298,7 +296,7 @@ public class Table implements ITable{
 
             // write primary key (atribute)
             String pkString = this.PrimaryKey.toString();
-            int pkStringLen =  pkString.length();
+            int pkStringLen = pkString.length();
             outputStream.write(ByteBuffer.allocate(4).putInt(pkStringLen).array());
             outputStream.write(pkString.getBytes());
 
@@ -309,11 +307,11 @@ public class Table implements ITable{
             outputStream.write(ByteBuffer.allocate(4).putInt(numOfFks).array());
 
             // for each fk write it out
-            for (ForeignKey FK:  this.ForeignKeys) {
+            for (ForeignKey FK : this.ForeignKeys) {
                 //""
-                int StringFkLen = FK.getAttrName().length()+FK.refTableName().length()+FK.getRefAttribute().length()+2;
+                int StringFkLen = FK.getAttrName().length() + FK.refTableName().length() + FK.getRefAttribute().length() + 2;
 
-                String StringFK = FK.getAttrName()+" "+     FK.getRefTableName()+" "+  FK.getRefAttribute();
+                String StringFK = FK.getAttrName() + " " + FK.getRefTableName() + " " + FK.getRefAttribute();
 
                 // write how log the fk is
                 outputStream.write(ByteBuffer.allocate(4).putInt(StringFkLen).array());
@@ -328,7 +326,7 @@ public class Table implements ITable{
             outputStream.write(ByteBuffer.allocate(4).putInt(numOfpageNames).array());
 
             // for each fk write it out
-            for (int pageName:  this.PagesThatBelongToMe) {
+            for (int pageName : this.PagesThatBelongToMe) {
                 // write page name
                 outputStream.write(ByteBuffer.allocate(4).putInt(pageName).array());
             }
@@ -357,11 +355,10 @@ public class Table implements ITable{
             int numTables = 0;
             try {
                 numTables = dataInputStr.readInt();
-                System.out.println(numTables);
 
-                VerbosePrint.print("-------------["+numTables+"]--------------");
+                VerbosePrint.print("-------------[" + numTables + "]--------------");
 
-            }catch (IOException i){
+            } catch (IOException i) {
                 VerbosePrint.print("no tables found stored in DB");
                 return null;
             }
@@ -393,7 +390,7 @@ public class Table implements ITable{
                     String attribute = new String(dataInputStr.readNBytes(attributeLen));
                     String[] attribVals = attribute.split(" ");
 
-                    tableAttributes.add(new Attribute(attribVals[0],attribVals[1]));
+                    tableAttributes.add(new Attribute(attribVals[0], attribVals[1]));
                 }
 
 
@@ -401,13 +398,13 @@ public class Table implements ITable{
                 int PKattributeLen = dataInputStr.readInt();
                 String PKattribute = new String(dataInputStr.readNBytes(PKattributeLen));
                 String[] PKVals = PKattribute.split(" ");
-                Attribute PK = new Attribute(PKVals[0],PKVals[1]);
+                Attribute PK = new Attribute(PKVals[0], PKVals[1]);
 
 
                 // mk fkeys
-                ArrayList<ForeignKey> ForeignKeys= new ArrayList<>();
+                ArrayList<ForeignKey> ForeignKeys = new ArrayList<>();
                 int numOfFk = dataInputStr.readInt();
-                if(numOfFk>0) {
+                if (numOfFk > 0) {
                     for (int fn = 0; fn < numOfFk; fn++) {
                         int lenFk = dataInputStr.readInt();
                         String[] fk = new String(dataInputStr.readNBytes(lenFk)).split(" ");
@@ -424,9 +421,9 @@ public class Table implements ITable{
                 // get pages
                 int numPagesThatBelongToMe = dataInputStr.readInt();
                 ArrayList<Integer> BelongToMe = new ArrayList<>();
-                Page.numPages +=numPagesThatBelongToMe;
+                Page.numPages += numPagesThatBelongToMe;
 
-                if(numPagesThatBelongToMe>0) {
+                if (numPagesThatBelongToMe > 0) {
 
                     for (int an = 0; an < numPagesThatBelongToMe; an++) {
                         int pageName = dataInputStr.readInt();
@@ -436,7 +433,7 @@ public class Table implements ITable{
 
                 //make table and add it to tables
 
-                Table DiskTable = new Table(tableName,tableAttributes,PK,BelongToMe);
+                Table DiskTable = new Table(tableName, tableAttributes, PK, BelongToMe);
                 DiskTable.setForeignKeys(ForeignKeys);
                 DiskTable.setNotNullIdxs(indices);
                 DiskTable.setID(tableID);
@@ -444,14 +441,15 @@ public class Table implements ITable{
 
                 // not needed but have to do it to read correct bytes
 
-                if(tn < numTables-1) {
-                    System.out.println(tn+" "+numTables);
-                    dataInputStr.readInt();}
+                if (tn < numTables - 1) {
+                    System.out.println(tn + " " + numTables);
+                    dataInputStr.readInt();
+                }
 
             }
             return tables;
 
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
 
             System.err.println("IO Error reading table from disk");

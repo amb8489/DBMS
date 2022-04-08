@@ -18,7 +18,7 @@ import parsers.WhereParser;
 public class StorageManager extends AStorageManager {
 
 
-    private static PageBuffer pb;
+    public static PageBuffer pb;
     private static WhereP3 wp;
 
     public StorageManager() {
@@ -27,6 +27,9 @@ public class StorageManager extends AStorageManager {
         wp = new WhereP3();
     }
 
+    public PageBuffer getPagebuffer() {
+        return pb;
+    }
 
     @Override
     public boolean clearTableData(ITable table) {
@@ -84,10 +87,10 @@ public class StorageManager extends AStorageManager {
 
 
             int fkidx = 0;
-            for (Attribute a:  FkTable.getAttributes()){
-                if (a.getAttributeName().equals(fk.refAttribute())){
+            for (Attribute a : FkTable.getAttributes()) {
+                if (a.getAttributeName().equals(fk.refAttribute())) {
                     break;
-                }else{
+                } else {
                     fkidx++;
                 }
             }
@@ -110,7 +113,7 @@ public class StorageManager extends AStorageManager {
             return false;
 
 
-        }catch (Exception e){
+        } catch (Exception e) {
             System.err.println("could not find val in fk table");
             return false;
         }
@@ -131,21 +134,22 @@ public class StorageManager extends AStorageManager {
             Page headPage = pb.getPageFromBuffer("" + headPtr, table);
             // add all recs
 
-            RECORDS.addAll(headPage.getPageRecords());
+//            RECORDS.addAll(headPage.getPageRecords());
             // next page
             headPtr = headPage.getPtrToNextPage();
         }
         return RECORDS;
     }
 
+
     @Override
     public boolean insertRecord(ITable table, ArrayList<Object> record) {
         try {
 
-
             // page name for head is always at idx zero
             int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
-//        VerbosePrint.print("head page: "+headPtr);
+
+
             // where in a row the pk is
             int pkidx = ((Table) table).pkIdx();
 
@@ -154,7 +158,7 @@ public class StorageManager extends AStorageManager {
             for (Object val : record) {
                 String attribType = table.getAttributes().get(idxx).getAttributeType();
                 if (attribType.endsWith(")")) {
-                    String str =  record.get(idxx).toString();
+                    String str = record.get(idxx).toString();
                     if (str != null && Utilities.isStringTooLong(attribType, str)) {
                         System.err.println("string: " + record.get(idxx) + " too long fr type: " + attribType);
                         return false;
@@ -188,12 +192,14 @@ public class StorageManager extends AStorageManager {
                 Object valueToFindInFKtab = record.get(AttribNamesIdx.get(fkAttribute));
 
                 if (!TableContainsFkVal(fk, valueToFindInFKtab)) {
-                    System.err.println(valueToFindInFKtab+" not in fk "+fk);
+                    System.err.println(valueToFindInFKtab + " not in fk " + fk);
 
                     return false;
                 }
 
             }
+
+
 
             // loop though all the tables pages in order
             Page headPage = null;
@@ -204,27 +210,29 @@ public class StorageManager extends AStorageManager {
 //            VerbosePrint.print("inside: "+headPtr);
 //            VerbosePrint.print(((Table) table).getPagesThatBelongToMe());
 
-                headPage = pb.getPageFromBuffer("" + headPtr, table);
-                // look though all record for that page
-//            VerbosePrint.print("got: "+headPtr);
-//            VerbosePrint.print(headPage.getPageRecords());
+                headPage = pb.getPageFromBuffer(String.valueOf(headPtr), table);
+
+                System.out.println("inserting "+record+" in to "+headPage.getPageName());
+                System.out.println(headPage.getPageRecords());
 
 
-                int idx = 0;
+                int numRecords =  headPage.getPageRecords().size();
 
-                if (headPage.getPageRecords().size() == 0) {
+                System.out.println(numRecords);
+                if (numRecords == 0) {
 //                VerbosePrint.print("head page size 0: "+headPtr);
 
-                    headPage.getPageRecords().add(record);
-                    headPage.wasChanged = true;
+                    headPage.insert(0, record);
+
                     return true;
                 }
 //            VerbosePrint.print("here 1: "+headPtr);
 
-                for (ArrayList<Object> row : headPage.getPageRecords()) {
-//                VerbosePrint.print("here 2: "+headPtr+ " with "+record);
+                boolean doInsert = false;
 
+                for (int i = 0; i < numRecords; i++) {
 
+                    ArrayList<Object> row = headPage.getPageRecords().get(i);
                     int pkid = ((Table) table).pkIdx();
                     String pk_type = table.getAttributes().get(pkid).getAttributeType().toUpperCase();
 
@@ -236,10 +244,7 @@ public class StorageManager extends AStorageManager {
                             }
 
                             if (resI < 0) {
-
-                                headPage.getPageRecords().add(idx, record);
-                                headPage.wasChanged = true;
-                                return true;
+                                doInsert = true;
                             }
                         }
                         case 'D' -> {
@@ -249,9 +254,7 @@ public class StorageManager extends AStorageManager {
                                 return false;
                             }
                             if (resD < 0) {
-                                headPage.getPageRecords().add(idx, record);
-                                headPage.wasChanged = true;
-                                return true;
+                                doInsert = true;
                             }
                         }
                         case 'B' -> {
@@ -260,9 +263,7 @@ public class StorageManager extends AStorageManager {
                                 return false;
                             }
                             if (resB < 0) {
-                                headPage.getPageRecords().add(idx, record);
-                                headPage.wasChanged = true;
-                                return true;
+                                doInsert = true;
                             }
                         }
                         default -> {
@@ -272,35 +273,41 @@ public class StorageManager extends AStorageManager {
                                 return false;
                             }
                             if (resS < 0) {
-
-
-                                headPage.getPageRecords().add(idx, record);
-                                headPage.wasChanged = true;
-                                return true;
+                                doInsert = true;
                             }
                         }
                     }
 
-                    idx++;
+                    if (doInsert) {
+                        System.out.println("here2");
+                        return headPage.insert(i, record);
+                    }
                 }
-                // next page
+                // get next page
 
                 headPtr = headPage.getPtrToNextPage();
+                System.out.println("DID NOT FIT ON THIS PAGE GOING TO "+headPtr);
+
 
             }
             // add to last spot in page in table
-            headPage.getPageRecords().add(record);
-            headPage.wasChanged = true;
+
+            boolean s =  headPage.insert(headPage.getPageRecords().size(), record);
 
 
-            return true;
+            System.out.println(headPage.getPageName()+" <> "+ record+" <> "+ headPage.getPageRecords()+"\n");
+            return s;
+
+
         } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(0);
             System.err.println("Storage manager(insertRecord): error in inserting");
             return false;
         }
     }
 
-    //TODO testing
+    //TODO UPDATE PAGE SIZE based on record
     public boolean deleteRecordWhere(ITable table, String where, Boolean removeAllRecords) {
         try {
 
@@ -319,7 +326,7 @@ public class StorageManager extends AStorageManager {
 
                 for (int i = recSize - 1; i > -1; i--) {
                     ArrayList<Object> row = headPage.getPageRecords().get(i);
-                    if (removeAllRecords || wp.whereIsTrue(where, (Table) table,row)) {
+                    if (removeAllRecords || wp.whereIsTrue(where, (Table) table, row)) {
                         VerbosePrint.print("REMOVING" + row);
 
                         headPage.getPageRecords().remove(i);
@@ -337,6 +344,8 @@ public class StorageManager extends AStorageManager {
         }
     }
 
+
+    //TODO UPDATE PAGE SIZE based on record
     public boolean keepWhere(ITable table, String where, Boolean removeAllRecords) {
         try {
 
@@ -355,7 +364,7 @@ public class StorageManager extends AStorageManager {
 
                 for (int i = recSize - 1; i > -1; i--) {
                     ArrayList<Object> row = headPage.getPageRecords().get(i);
-                    if (removeAllRecords || (!wp.whereIsTrue(where, (Table) table,row))) {
+                    if (removeAllRecords || (!wp.whereIsTrue(where, (Table) table, row))) {
                         VerbosePrint.print("REMOVING" + row);
                         headPage.getPageRecords().remove(i);
                         headPage.wasChanged = true;
@@ -372,6 +381,8 @@ public class StorageManager extends AStorageManager {
         }
     }
 
+
+    //TODO UPDATE PAGE SIZE based on record
     @Override
     public boolean deleteRecord(ITable table, Object primaryKey) {
 
@@ -418,6 +429,9 @@ public class StorageManager extends AStorageManager {
      * @param newRecord the new record data
      * @return
      */
+
+
+    //TODO UPDATE PAGE SIZE based on record
     @Override
     public boolean updateRecord(ITable table, ArrayList<Object> oldRecord, ArrayList<Object> newRecord) {
 
@@ -454,8 +468,7 @@ public class StorageManager extends AStorageManager {
     }
 
 
-    //TODO testing
-    // add val to the end of each row in the table
+    //TODO UPDATE PAGE SIZE based on record
     @Override
     public boolean addAttributeValue(ITable table, Object defaultValue) {
 
@@ -489,6 +502,8 @@ public class StorageManager extends AStorageManager {
     // - TEST reading and writing from updated page
     // - test removing out of bounds of attrib array
 
+
+    //TODO UPDATE PAGE SIZE based on record
     @Override
     public boolean dropAttributeValue(ITable table, int attrIndex) {
         try {
