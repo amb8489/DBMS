@@ -61,8 +61,25 @@ public class Table implements ITable {
             AttribIdxs.put(name, i);
         }
 
-        Page firstPAgeForTable = new Page(this);
-        firstPAgeForTable.writeToDisk(ACatalog.getCatalog().getDbLocation(), this);
+        Page firstPageForTable = new Page(this);
+        firstPageForTable.writeToDisk(ACatalog.getCatalog().getDbLocation(), this);
+
+    }
+
+    // clone table does not add to table count though
+
+    public Table(ITable table) {
+
+        ID = table.getTableId();
+        this.Attributes = new ArrayList<>(table.getAttributes());
+        this.TableName = table.getTableName()+"__CLONE__";
+        this.PrimaryKey = table.getPrimaryKey();
+        this.AttribIdxs = ((Table) table).AttribIdxs;
+        this.indicesOfNotNullAttributes = new HashSet<>(((Table) table).indicesOfNotNullAttributes);
+        this.pkeyIdx = ((Table) table).pkeyIdx;
+        this.ForeignKeys = new ArrayList<>(((Table) table).ForeignKeys);
+        this.PagesThatBelongToMe = new ArrayList<>(((Table) table).getPagesThatBelongToMe());
+
 
     }
 

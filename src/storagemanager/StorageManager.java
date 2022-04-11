@@ -4,12 +4,14 @@ Kyle Ferguson, Aaron Berghash
 
 package storagemanager;
 
+import catalog.ACatalog;
 import catalog.Catalog;
 import common.*;
 import pagebuffer.PageBuffer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import filesystem.FileSystem;
 import parsers.WhereP3;
@@ -22,10 +24,10 @@ public class StorageManager extends AStorageManager {
     private static WhereP3 wp;
 
     public StorageManager() {
-
         pb = new PageBuffer(Catalog.getCatalog().getPageBufferSize());
         wp = new WhereP3();
     }
+
 
     public PageBuffer getPagebuffer() {
         return pb;
@@ -131,13 +133,14 @@ public class StorageManager extends AStorageManager {
         // loop though all the tables pages in order
         while (headPtr != -1) {
 
-            Page headPage = pb.getPageFromBuffer("" + headPtr, table);
+            Page headPage = pb.getPageFromBuffer(String.valueOf(headPtr), table);
             // add all recs
 
-//            RECORDS.addAll(headPage.getPageRecords());
+            RECORDS.addAll(headPage.getPageRecords());
             // next page
             headPtr = headPage.getPtrToNextPage();
         }
+
         return RECORDS;
     }
 
@@ -200,7 +203,6 @@ public class StorageManager extends AStorageManager {
             }
 
 
-
             // loop though all the tables pages in order
             Page headPage = null;
 
@@ -210,15 +212,11 @@ public class StorageManager extends AStorageManager {
 //            VerbosePrint.print("inside: "+headPtr);
 //            VerbosePrint.print(((Table) table).getPagesThatBelongToMe());
 
+
                 headPage = pb.getPageFromBuffer(String.valueOf(headPtr), table);
 
-                System.out.println("inserting "+record+" in to "+headPage.getPageName());
-                System.out.println(headPage.getPageRecords());
 
-
-                int numRecords =  headPage.getPageRecords().size();
-
-                System.out.println(numRecords);
+                int numRecords = headPage.getPageRecords().size();
                 if (numRecords == 0) {
 //                VerbosePrint.print("head page size 0: "+headPtr);
 
@@ -279,24 +277,17 @@ public class StorageManager extends AStorageManager {
                     }
 
                     if (doInsert) {
-                        System.out.println("here2");
                         return headPage.insert(i, record);
                     }
                 }
                 // get next page
 
                 headPtr = headPage.getPtrToNextPage();
-                System.out.println("DID NOT FIT ON THIS PAGE GOING TO "+headPtr);
-
 
             }
             // add to last spot in page in table
 
-            boolean s =  headPage.insert(headPage.getPageRecords().size(), record);
-
-
-            System.out.println(headPage.getPageName()+" <> "+ record+" <> "+ headPage.getPageRecords()+"\n");
-            return s;
+            return headPage.insert(headPage.getPageRecords().size(), record);
 
 
         } catch (Exception e) {
@@ -307,7 +298,6 @@ public class StorageManager extends AStorageManager {
         }
     }
 
-    //TODO UPDATE PAGE SIZE based on record
     public boolean deleteRecordWhere(ITable table, String where, Boolean removeAllRecords) {
         try {
 
@@ -327,10 +317,7 @@ public class StorageManager extends AStorageManager {
                 for (int i = recSize - 1; i > -1; i--) {
                     ArrayList<Object> row = headPage.getPageRecords().get(i);
                     if (removeAllRecords || wp.whereIsTrue(where, (Table) table, row)) {
-                        VerbosePrint.print("REMOVING" + row);
-
-                        headPage.getPageRecords().remove(i);
-                        headPage.wasChanged = true;
+                        headPage.delete(i);
                     }
                 }
 
@@ -344,12 +331,8 @@ public class StorageManager extends AStorageManager {
         }
     }
 
-
-    //TODO UPDATE PAGE SIZE based on record
     public boolean keepWhere(ITable table, String where, Boolean removeAllRecords) {
         try {
-
-
             // page name for head is always at idx zero
             int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
 
@@ -365,9 +348,7 @@ public class StorageManager extends AStorageManager {
                 for (int i = recSize - 1; i > -1; i--) {
                     ArrayList<Object> row = headPage.getPageRecords().get(i);
                     if (removeAllRecords || (!wp.whereIsTrue(where, (Table) table, row))) {
-                        VerbosePrint.print("REMOVING" + row);
-                        headPage.getPageRecords().remove(i);
-                        headPage.wasChanged = true;
+                        headPage.delete(i);
                     }
                 }
 
@@ -382,7 +363,6 @@ public class StorageManager extends AStorageManager {
     }
 
 
-    //TODO UPDATE PAGE SIZE based on record
     @Override
     public boolean deleteRecord(ITable table, Object primaryKey) {
 
@@ -394,18 +374,12 @@ public class StorageManager extends AStorageManager {
 
         // loop though all the tables pages in order
         while (headPtr != -1) {
-
-            Page headPage = pb.getPageFromBuffer("" + headPtr, table);
+            Page headPage = pb.getPageFromBuffer(String.valueOf(headPtr), table);
             // look though all record for that page
             int idx = 0;
             for (ArrayList<Object> row : headPage.getPageRecords()) {
-
                 if (row.get(pkidx).equals(primaryKey)) {
-                    VerbosePrint.print("REMOVING" + row);
-
-                    headPage.getPageRecords().remove(idx);
-
-                    headPage.wasChanged = true;
+                    headPage.delete(idx);
                     return true;
                 }
                 idx++;
@@ -414,7 +388,6 @@ public class StorageManager extends AStorageManager {
             headPtr = headPage.getPtrToNextPage();
         }
         return false;
-
     }
 
     /**
@@ -431,7 +404,6 @@ public class StorageManager extends AStorageManager {
      */
 
 
-    //TODO UPDATE PAGE SIZE based on record
     @Override
     public boolean updateRecord(ITable table, ArrayList<Object> oldRecord, ArrayList<Object> newRecord) {
 
@@ -445,15 +417,25 @@ public class StorageManager extends AStorageManager {
 
         while (headPtr != -1) {
 
-            Page headPage = pb.getPageFromBuffer("" + headPtr, table);
+            Page headPage = pb.getPageFromBuffer(String.valueOf(headPtr), table);
             // look through all record for that page
-
+            int IDX = 0;
             for (ArrayList<Object> currRec : headPage.getPageRecords()) {
                 if (oldRecord.get(pkidx).toString().equals(currRec.get(pkidx).toString())) {
-                    headPage.getPageRecords().remove(oldRecord);
-                    headPage.wasChanged = true;
-                    return insertRecord(table, newRecord);
+
+                    ArrayList<Object> deletedRec = headPage.getPageRecords().get(IDX);
+                    headPage.delete(IDX);
+
+                    boolean successfulInsert = insertRecord(table, newRecord);
+
+                    // restore
+                    if (!successfulInsert) {
+                        insertRecord(table, deletedRec);
+                    }
+
+                    return successfulInsert;
                 }
+                IDX++;
             }
             // next page
             headPtr = headPage.getPtrToNextPage();
@@ -467,40 +449,171 @@ public class StorageManager extends AStorageManager {
         pb.PurgeBuffer();
     }
 
-
-    //TODO UPDATE PAGE SIZE based on record
+//    @Override
+//    public boolean addAttributeValue(ITable table, Object defaultValue) {
+//
+//
+//
+//
+//        try {
+//
+//
+//            // page name for head is always at idx zero
+//            int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
+//
+//
+////            System.exit(2);
+//
+//            // loop though all the tables pages in order
+//
+//            int next = 1;
+//            while (headPtr != -1) {
+//
+//                Page headPage = null;
+//
+//                System.out.println(headPtr);
+//
+//                // if page is not loaded in yet it needs to be before we add the new attrb
+//                // asssumes its already been added by the time this function funtion runs
+//                if (!pb.isPageInBuffer(String.valueOf(headPtr))){
+//
+//                    //get last
+//                    Attribute newAtter = table.getAttributes().remove(table.getAttributes().size()-1);
+//
+//
+//                    //load page into buffer
+//                    pb.getPageFromBuffer(String.valueOf(headPtr), table);
+//
+//
+//                    // readd attrib
+//                    table.getAttributes().add(newAtter);
+//
+//
+//                }
+//
+//
+//                headPage = pb.getPageFromBuffer(String.valueOf(headPtr), table);
+//
+//
+//                // next page before we split
+//
+//                headPtr =headPage.getPtrToNextPage();
+//
+//                //                                                      hmmmmmmm v
+//                ArrayList<ArrayList<Object>> tempRecs = new ArrayList<>(headPage.getPageRecords());
+//                headPage.ClearRecords();
+//
+//                //add the new atttribute to all the recs
+//
+//                // recs being double added
+//
+//                tempRecs.forEach(row -> row.add(defaultValue));
+//
+//
+//
+//                // reinsert into page
+//
+//                for (ArrayList<Object> tempRec : tempRecs) {
+//                    headPage.insert(tempRec);
+//                }
+//
+//            }
+//
+//            return true;
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            System.err.println("failure adding attribute from table " + table.getTableName());
+//            return false;
+//        }
+//    }
     @Override
     public boolean addAttributeValue(ITable table, Object defaultValue) {
 
+
+
+
         try {
 
+            System.out.println(((Table) table).getPagesThatBelongToMe());
 
             // page name for head is always at idx zero
-            int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
+            ArrayList<Integer> pages = ((Table) table).getPagesThatBelongToMe();
+            int headPtr = pages.get(0);
+            Table Clone = new Table(table);
 
-            // loop though all the tables pages in order
+            Clone.getPagesThatBelongToMe().clear();
+
+            Page firstPageForTable = new Page(Clone);
+            Clone.getPagesThatBelongToMe().add(Integer.valueOf(firstPageForTable.getPageName()));
+            firstPageForTable.writeToDisk(ACatalog.getCatalog().getDbLocation(), Clone);
+
+
+            //TODO OPTIMISE BY SETTING ALL PAGES THAT BELONG TO OLD TABLE TO WASNOT CHANGED in PageBuffer
+
+            // or just clone the table and clear the table data and page by page from old table
+            // re insert into new empty clone
+
+            table.getAttributes().remove(table.getAttributes().size()-1);
+
             while (headPtr != -1) {
 
-                Page headPage = pb.getPageFromBuffer("" + headPtr, table);
 
-                // for each row in page records append defult val
-                headPage.getPageRecords().forEach(row -> row.add(defaultValue));
-                headPage.wasChanged = true;
-                // next page
+                // if page is not loaded in yet it needs to be before we add the new attrb
+                // asssumes its already been added by the time this function funtion runs
+
+                Page headPage = pb.getPageFromBuffer(String.valueOf(headPtr), table);
+
+                // next page before we split
+
+//                List<ArrayList<Object>> newRecs = new ArrayList<>(headPage.getPageRecords());
+
+//                headPage.getPageRecords().clear();
+
+                // whast happening is that when we insert into new tabele clone
+                // old pages from old table are being pushed out of page buffer  and trying to be written with nnew rows
+
+
+                // cloning old table page records
+                ArrayList<ArrayList<Object>> newRecs = new ArrayList<>();
+
+                for(ArrayList<Object> row : headPage.getPageRecords()){
+                    newRecs.add(new ArrayList<>(row));
+                }
+                // adding new value
+
+                newRecs.forEach(row -> row.add(defaultValue));
+
+
+
+                // reinsert into new table
+
+                for (ArrayList<Object> tempRec : newRecs) {
+                    StorageManager.getStorageManager().insertRecord(Clone,tempRec);
+                }
+
+
+                // getting next page from old table
                 headPtr = headPage.getPtrToNextPage();
+
             }
+
+            String ClonesNewName = table.getTableName();
+            // DROP old TABLE MAKE SURE ALL OLD PAGES IN HARDWEAR ARE REMOVED
+            StorageManager.getStorageManager().clearTableData(table);
+            // set new table name to old table
+            Clone.setTableName(ClonesNewName);
+
+            // ADD CLONE TABLE TO CATALOG
+            ((Catalog) Catalog.getCatalog()).addExistingTable(Clone);
 
 
             return true;
         } catch (Exception e) {
+            e.printStackTrace();
             System.err.println("failure adding attribute from table " + table.getTableName());
             return false;
         }
     }
-
-    //TODO
-    // - TEST reading and writing from updated page
-    // - test removing out of bounds of attrib array
 
 
     //TODO UPDATE PAGE SIZE based on record
@@ -521,7 +634,7 @@ public class StorageManager extends AStorageManager {
             // loop though all the tables pages in order
             while (headPtr != -1) {
 
-                Page headPage = pb.getPageFromBuffer("" + headPtr, table);
+                Page headPage = pb.getPageFromBuffer(String.valueOf(headPtr), table);
                 // delete that col from all recs
 
                 // for each row in rows remove row[i] from the row

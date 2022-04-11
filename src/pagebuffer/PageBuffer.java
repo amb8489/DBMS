@@ -42,26 +42,33 @@ public class PageBuffer {
     }
 
     public Page getPageFromBuffer(String name, ITable table) {
-        int idx = 0;
+        try {
 
-        // loooking to see if page we want is already loaded in the buffer
-        for (Page p : pageBuffer) {
-            if (name.equals(p.getPageName())) {
+            int idx = 0;
+
+            // loooking to see if page we want is already loaded in the buffer
+            for (Page p : pageBuffer) {
+                if (name.equals(p.getPageName())) {
 
 
-                // to update LRU order
-                pageBuffer.add(pageBuffer.remove(idx));
-                //gets the last element in list
-                VerbosePrint.print("found page [" + p.getPageName() + "] in buffer");
-                return pageBuffer.get(pageBuffer.size() - 1);
+                    // to update LRU order
+                    pageBuffer.add(pageBuffer.remove(idx));
+                    //gets the last element in list
+                    VerbosePrint.print("found page [" + p.getPageName() + "] in buffer");
+                    return pageBuffer.get(pageBuffer.size() - 1);
+                }
+                idx++;
             }
-            idx++;
-        }
 
-        // if not found we need to load it in
-        // loadNewPageToBuffer will place it in the buffer for us and auto make space and will place new page
-        // where it should be in the array to keep LRU in order
-        return loadNewPageToBuffer(name, table);
+            // if not found we need to load it in
+            // loadNewPageToBuffer will place it in the buffer for us and auto make space and will place new page
+            // where it should be in the array to keep LRU in order
+            return loadNewPageToBuffer(name, table);
+        }catch (Exception e){
+            e.printStackTrace();
+            System.err.println("ERROR IN BUFFER");
+            return null;
+        }
     }
 
     //write all pages in the buffer to disk and empty th e buffer
@@ -111,6 +118,16 @@ public class PageBuffer {
         pageBuffer.add(newPage);
 
         return newPage;
+    }
+
+    public boolean isPageInBuffer(String name){
+        // loooking to see if page we want is already loaded in the buffer
+        for (Page p : pageBuffer) {
+            if (name.equals(p.getPageName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // used when a page is split its split page is added to a buffer

@@ -73,6 +73,9 @@ public class Page {
     // USED WHEN LOADING A PAGE IN FROM MEM
     public Page(int pageName, int ptrToNextPage, int currentSize, List<ArrayList<Object>> pageRecords, ITable iBelongTo) {
         // is this a new page or just a re loaded page from mem
+        this.IBelongTo = iBelongTo;
+
+
         if (!((Table) iBelongTo).getPagesThatBelongToMe().contains(pageName)) {
             numPages++;
         }
@@ -80,7 +83,6 @@ public class Page {
         // setting
         this.pageName = pageName;
         this.pageRecords = pageRecords;
-        this.IBelongTo = iBelongTo;
         this.currentSize = currentSize;
         this.ptrToNextPage = ptrToNextPage;
     }
@@ -96,6 +98,8 @@ public class Page {
         this.pageName = numPages;
         this.pageRecords = pageRecords;
         this.IBelongTo = iBelongTo;
+        ((Table) this.IBelongTo).addPageAffiliations(numPages);
+
     }
 
     // ************************--getters | setter--*****************************
@@ -120,6 +124,8 @@ public class Page {
     public boolean isChanged() {
         return wasChanged;
     }
+
+
 
     // ****************************--methods--*****************************
 
@@ -198,7 +204,9 @@ public class Page {
 
                         // 6) read in what the schema says is next
                         switch (schema.get(idx)) {
+
                             case "Integer":
+                                System.out.println(schema+" "+table.getAttributes().size());
                                 rec.add(dataInputStr.readInt());
                                 currentSize += 4;
                                 break;
@@ -241,6 +249,7 @@ public class Page {
 
             // failure to find page or read fail
         } catch (IOException e) {
+            e.printStackTrace();
             System.err.println("FAILURE TO READ IN PAGE: " + location);
             return null;
         }
@@ -309,6 +318,8 @@ public class Page {
                 // and add it to outputStream btye array
                 for (int idx = 0; idx < record.size(); idx++) {
                     if (record.get(idx) != null) {
+
+                        System.out.println(schema+" "+record+" "+table.getTableName());
                         switch (schema.get(idx)) {
                             case "Integer":
                                 //add it to outputStream btye array
@@ -440,6 +451,7 @@ public class Page {
         }
         int size = 4;
 
+        System.out.println(rec+"        "+schema);
 
         for (int idx = 0; idx < rec.size(); idx++) {
 
@@ -476,7 +488,7 @@ public class Page {
 
 
         // changed
-        this.wasChanged = true;
+
 
         // split records in half
         int halfway = pageRecords.size() / 2;
@@ -501,20 +513,29 @@ public class Page {
         this.currentSize = calcPageSize(this);
         splitPage.currentSize = calcPageSize(splitPage);
 
-
-        System.out.println(this.currentSize+" "+splitPage.currentSize);
-
         // add new page to buffer
         StorageManager sm = (StorageManager) StorageManager.getStorageManager();
         if (!sm.getPagebuffer().insertSplitPage(splitPage)) {
-            System.err.println("ERORR SPLITTING PAGE, REVERTING PAGE");
+            System.err.println("ERORR SPLITTING PAGE, REVERTING PAGE (TODO)");
             return null;
         }
+        splitPage.writeToDisk(ACatalog.getCatalog().getDbLocation(), this.IBelongTo);
         this.writeToDisk(ACatalog.getCatalog().getDbLocation(), this.IBelongTo);
 
 
         return splitPage;
 
+    }
+
+    public boolean insert(ArrayList<Object> record) {
+        this.getPageRecords().add(record);
+        this.wasChanged = true;
+        this.currentSize += recordSize(record);
+
+        if (currentSize >= Catalog.getCatalog().getPageSize()){
+            this.split();
+        }
+        return true;
     }
 
 
@@ -525,10 +546,21 @@ public class Page {
 
 
         if (currentSize >= Catalog.getCatalog().getPageSize()){
-            System.out.println("SPLITTING");
             this.split();
-            System.out.println("SPLITTING Dne");
         }
         return true;
+    }
+
+
+    public boolean delete(int idx) {
+        VerbosePrint.print("REMOVING Record");
+        this.currentSize -= recordSize(this.getPageRecords().remove(idx));
+        this.wasChanged = true;
+        return true;
+    }
+
+    public void ClearRecords() {
+        this.pageRecords.clear();
+        this.wasChanged = true;
     }
 }
