@@ -175,7 +175,7 @@ public class WhereP3 {
 
 
         if (typeL == null || !typeL.equals(typeR)) {
-            throw new Exception("COMPARING DIFFERENT TYPES:" + typeL + " with " + typeR);
+            throw new Exception("COMPARING DIFFERENT TYPES:" + left + " with " + right);
         }
 
 
@@ -242,7 +242,7 @@ public class WhereP3 {
         // tokenize the string by spaces
         List<String> tokens = Utilities.mkTokensFromStr(whereStmt);
 
-        System.out.println(whereStmt);
+//        System.out.println(whereStmt);
 //        System.exit(1);
 
 

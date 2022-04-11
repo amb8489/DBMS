@@ -305,7 +305,6 @@ public class DMLParser {
             return false;
 
         }
-        System.out.println("Here");
         return true;////////////
     }
 
@@ -408,7 +407,6 @@ public class DMLParser {
     }
 
     public static ITable selectFrom(List<String> tables) {
-//        tables.forEach(t -> t = t.replace(",",""));
 
         HashSet<ArrayList<Object>> seen = new HashSet<>();
         Set<String> set = new HashSet<String>(tables);
@@ -443,13 +441,9 @@ public class DMLParser {
             for (ArrayList<Object> row : StorageManager.getStorageManager().getRecords(table0)) {
                 ArrayList<Object> record = new ArrayList<>();
                 record.add(serial);
-                System.out.println(record);
 
                 record.addAll(row);
-                //TODO -------
-                System.out.println(record);
-                System.out.println(row);
-                System.out.println("");
+
 
                 StorageManager.getStorageManager().insertRecord(cartProd, record);
                 serial++;
@@ -533,14 +527,15 @@ public class DMLParser {
             }
         }
 
-        System.out.println(tables);
+//        System.out.println(tables);
 
         if (tables.size() == 0) {
             System.err.println("Invalid select statement: missing <tables> in 'from'");
             return null;
         }
         tables.forEach(t -> t = t.replace(",", ""));
-        System.out.println(tables);
+//        tables.forEach(t -> t = t.replace(";", ""));
+
         ITable cartProd = selectFrom(tables);
         if (cartProd == null) {
             System.err.println("Something went wrong in getting the cartesian product of tables in 'from'");
@@ -548,7 +543,9 @@ public class DMLParser {
         }
 
 
+
         Table table = (Table) cartProd;
+
 //        StorageManager.getStorageManager().dropAttributeValue(cartProd,0);
 //        ArrayList<ArrayList<Object>> v = StorageManager.getStorageManager().getRecords(table);
 //        ResultSet r = Utilities.ResultSetFromTable(table.getAttributes(), v);
@@ -559,8 +556,7 @@ public class DMLParser {
         // -----------------WHERE | do where on cartesian prod table-----------------------
 
         // ----------------- will remove all unqualified rows -----------------------------
-        System.out.println(LowerQueryStmt);
-        System.out.println(query);
+
 
         int whereIdx = LowerQueryStmt.indexOf("where");
         int fromIdx = LowerQueryStmt.indexOf("from");
@@ -612,6 +608,8 @@ public class DMLParser {
 
 
         ArrayList<ArrayList<Object>> records = (StorageManager.getStorageManager()).getRecords(table);
+
+
         if (orderbyIdx != -1) {
             String[] sortByAttributeName = query.substring(orderbyIdx).replace(";", "").split(" ");
             if (sortByAttributeName.length < 2) {

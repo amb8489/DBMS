@@ -54,10 +54,8 @@ public class Phase3TestSelect {
         }
 
         String statement = """
-                           select t1.a, t2.c
-                           from t1, t2, t3
-                           where t1.a > "a"
-                           orderby t2.c;
+                           select uidt3
+                           from t1, t3;
                            """;
         // deleted execution here because of conflicts Database.executeQuery(statement);
 
