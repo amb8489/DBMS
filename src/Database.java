@@ -1,4 +1,4 @@
-package database; /**
+/**
  * A class for the Database object.  It's contains the core main loop that makes up a database.
  *
  * The program will be ran as:

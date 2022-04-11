@@ -1,13 +1,10 @@
 package common;
 
 import catalog.Catalog;
-import database.Database;
-import parsers.ResultSet;
 import phase2tests.Phase2Testers;
 import storagemanager.StorageManager;
-
 import java.util.ArrayList;
-import java.util.Scanner;
+// import Database; commented out because it doesn't work anymore
 
 public class Phase3TestSelect {
 
@@ -62,6 +59,7 @@ public class Phase3TestSelect {
                            where t1.a > "a"
                            orderby t2.c;
                            """;
-        Database.executeQuery(statement);
+        // deleted execution here because of conflicts Database.executeQuery(statement);
+
     }
 }
