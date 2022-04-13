@@ -170,4 +170,14 @@ public class PageBuffer {
     }
 
 
+    public void setPageToNotChangedInBuffer(String pName) {
+        // loooking to see if page we want is already loaded in the buffer
+        for (Page p : pageBuffer) {
+            if (pName.equals(p.getPageName())) {
+                System.out.println(p.getPageName());
+                if (p.wasChanged)
+                p.wasChanged = false;
+            }
+        }
+    }
 }

@@ -65,6 +65,7 @@ public class Page {
         // first page points to nothing
         this.ptrToNextPage = -1;
         this.IBelongTo = iBelongTo;
+        this.wasChanged = true;
         // adding this page to the table
         ((Table) this.IBelongTo).addPageAffiliations(numPages);
 
@@ -98,6 +99,7 @@ public class Page {
         this.pageName = numPages;
         this.pageRecords = pageRecords;
         this.IBelongTo = iBelongTo;
+        this.wasChanged = true;
         ((Table) this.IBelongTo).addPageAffiliations(numPages);
 
     }
@@ -206,7 +208,8 @@ public class Page {
                         switch (schema.get(idx)) {
 
                             case "Integer":
-                                System.out.println(schema+" "+table.getAttributes().size());
+
+
                                 rec.add(dataInputStr.readInt());
                                 currentSize += 4;
                                 break;
@@ -261,113 +264,117 @@ public class Page {
     // WRITE THE PAGE TO DISK
     public boolean writeToDisk(String location, ITable table) {
         try {
+            if (this.wasChanged) {
 
-            // WHERE TO WRITE OUT PAGE TO
-            location = Catalog.getCatalog().getDbLocation() + "/pages/" + this.pageName;
-
-
-            ArrayList<String> schema = new ArrayList<>();
-            for (Attribute att : table.getAttributes()) {
-                schema.add(att.getAttributeType());
-            }
+                // WHERE TO WRITE OUT PAGE TO
+                location = Catalog.getCatalog().getDbLocation() + "/pages/" + this.pageName;
 
 
-            // output streams
-            VerbosePrint.print(location);
-            DataOutputStream out = FileSystem.createPageDataOutStream(String.valueOf(this.pageName));
-
-            // byte array that we will store at the end(all the records stored as bytes at once to reduce the amount of
-            // I/O operations)
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
-
-            // WRITE name ,num records to page, and name of next page (nullptr to next = -1)
-            outputStream.write(ByteBuffer.allocate(4).putInt(Integer.parseInt(this.getPageName())).array());
-            outputStream.write(ByteBuffer.allocate(4).putInt(this.pageRecords.size()).array());
-            outputStream.write(ByteBuffer.allocate(4).putInt(this.ptrToNextPage).array());
-
-
-            VerbosePrint.print("atemping store page to disk");
-
-            //for each row in the table
-            for (ArrayList<Object> record : this.pageRecords) {
-
-                //for each attrib in row store to byte array
-                // TODO
-                //FIRST LETS TAKE CARE OF NULL VALS :)
-
-                //------------------------ TODO WHAT IS GOING ON WITH THE BIT MASK FOR NULL VALS ------------------------
-
-                int[] nullIndexes = IntStream.range(0, record.size()).filter(N -> record.get(N) == null).toArray();
-                BitSet bitSet = new BitSet(record.size());
-                for (int idx : nullIndexes) {
-                    bitSet.set(idx);
+                ArrayList<String> schema = new ArrayList<>();
+                for (Attribute att : table.getAttributes()) {
+                    schema.add(att.getAttributeType());
                 }
 
-                byte[] nullMask = bitSet.toByteArray();
 
-                // write out bitmask size int
-                outputStream.write(ByteBuffer.allocate(4).putInt(nullMask.length).array());
-                // write out mask
-                outputStream.write(nullMask);
-                //------------------------ ------------------------ ------------------------
+                // output streams
+                VerbosePrint.print(location);
+                DataOutputStream out = FileSystem.createPageDataOutStream(String.valueOf(this.pageName));
+
+                // byte array that we will store at the end(all the records stored as bytes at once to reduce the amount of
+                // I/O operations)
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
 
-                // make byte array from record
-                // look though reach attribute and check the schema for its type and convert it to its bytes
-                // and add it to outputStream btye array
-                for (int idx = 0; idx < record.size(); idx++) {
-                    if (record.get(idx) != null) {
+                // WRITE name ,num records to page, and name of next page (nullptr to next = -1)
+                outputStream.write(ByteBuffer.allocate(4).putInt(Integer.parseInt(this.getPageName())).array());
+                outputStream.write(ByteBuffer.allocate(4).putInt(this.pageRecords.size()).array());
+                outputStream.write(ByteBuffer.allocate(4).putInt(this.ptrToNextPage).array());
 
-                        System.out.println(schema+" "+record+" "+table.getTableName());
-                        switch (schema.get(idx)) {
-                            case "Integer":
-                                //add it to outputStream btye array
-                                outputStream.write(ByteBuffer.allocate(4).putInt((Integer) record.get(idx)).array());
-                                break;
-                            case "Double":
-                                //add it to outputStream btye array
 
-                                outputStream.write(ByteBuffer.allocate(8).putDouble((Double) record.get(idx)).array());
-                                break;
-                            case "Boolean":
-                                //add it to outputStream btye array
-                                outputStream.write(ByteBuffer.allocate(1).put(new byte[]{(byte) ((Boolean) record.get(idx) ? 1 : 0)}).array());
-                                break;
-                            default:
-                                //add it to outputStream btye array
-                                // char(#)
-                                if (schema.get(idx).startsWith("Char(")) {
-                                    outputStream.write(((String) record.get(idx)).getBytes());
-                                } else {
-                                    // add the len of var char before we write var char
-                                    int VarCharlen = ((String) record.get(idx)).length();
-                                    // write var char len (we need this to know how many bytes to write in when we read disk)
-                                    outputStream.write(ByteBuffer.allocate(4).putInt(VarCharlen).array());
-                                    // write var char
-                                    outputStream.write(((String) record.get(idx)).getBytes());
-                                }
+                VerbosePrint.print("atemping store page "+pageName+" to disk");
+
+
+                //for each row in the table
+
+                for (ArrayList<Object> record : this.pageRecords) {
+
+                    //for each attrib in row store to byte array
+                    // TODO
+                    //FIRST LETS TAKE CARE OF NULL VALS :)
+
+                    //------------------------ TODO WHAT IS GOING ON WITH THE BIT MASK FOR NULL VALS ------------------------
+
+                    int[] nullIndexes = IntStream.range(0, record.size()).filter(N -> record.get(N) == null).toArray();
+                    BitSet bitSet = new BitSet(record.size());
+                    for (int idx : nullIndexes) {
+                        bitSet.set(idx);
+                    }
+
+                    byte[] nullMask = bitSet.toByteArray();
+
+                    // write out bitmask size int
+                    outputStream.write(ByteBuffer.allocate(4).putInt(nullMask.length).array());
+                    // write out mask
+                    outputStream.write(nullMask);
+                    //------------------------ ------------------------ ------------------------
+
+
+                    // make byte array from record
+                    // look though reach attribute and check the schema for its type and convert it to its bytes
+                    // and add it to outputStream btye array
+                    for (int idx = 0; idx < record.size(); idx++) {
+                        if (record.get(idx) != null) {
+
+                            switch (schema.get(idx)) {
+                                case "Integer":
+                                    //add it to outputStream btye array
+                                    outputStream.write(ByteBuffer.allocate(4).putInt((Integer) record.get(idx)).array());
+                                    break;
+                                case "Double":
+                                    //add it to outputStream btye array
+
+                                    outputStream.write(ByteBuffer.allocate(8).putDouble((Double) record.get(idx)).array());
+                                    break;
+                                case "Boolean":
+                                    //add it to outputStream btye array
+                                    outputStream.write(ByteBuffer.allocate(1).put(new byte[]{(byte) ((Boolean) record.get(idx) ? 1 : 0)}).array());
+                                    break;
+                                default:
+                                    //add it to outputStream btye array
+                                    // char(#)
+                                    if (schema.get(idx).startsWith("Char(")) {
+                                        outputStream.write(((String) record.get(idx)).getBytes());
+                                    } else {
+                                        // add the len of var char before we write var char
+                                        int VarCharlen = ((String) record.get(idx)).length();
+                                        // write var char len (we need this to know how many bytes to write in when we read disk)
+                                        outputStream.write(ByteBuffer.allocate(4).putInt(VarCharlen).array());
+                                        // write var char
+                                        outputStream.write(((String) record.get(idx)).getBytes());
+                                    }
+                            }
                         }
                     }
                 }
+
+                // all records added to byte array
+                byte[] record_out = outputStream.toByteArray();
+
+                // write out byte array to file
+                out.write(record_out);
+                out.close();
+
+                currentSize = 0;
+                VerbosePrint.print("Store complete");
+                return true;
             }
-
-            // all records added to byte array
-            byte[] record_out = outputStream.toByteArray();
-
-            // write out byte array to file
-            out.write(record_out);
-            out.close();
-
-            currentSize = 0;
-            VerbosePrint.print("Store complete");
-            return true;
-
 
         } catch (IOException e) {
             System.err.println("COULD NOT Write FILE PAGE " + location);
             return false;
         }
+        return true;
+
     }
 
 
@@ -450,8 +457,6 @@ public class Page {
             }
         }
         int size = 4;
-
-        System.out.println(rec+"        "+schema);
 
         for (int idx = 0; idx < rec.size(); idx++) {
 
