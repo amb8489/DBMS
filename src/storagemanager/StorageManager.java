@@ -621,7 +621,10 @@ public class StorageManager extends AStorageManager {
                         " table doesn't have that many attributes");
                 return false;
             }
-
+            if (attrIndex == ((Table)table).pkIdx()) {
+                System.err.println("ERROR: tryig to drop the primary key");
+                return false;
+            }
 
             // page name for head is always at idx zero
             ArrayList<Integer> pages = ((Table) table).getPagesThatBelongToMe();
@@ -635,8 +638,6 @@ public class StorageManager extends AStorageManager {
             Clone.getPagesThatBelongToMe().add(Integer.valueOf(firstPageForTable.getPageName()));
             firstPageForTable.writeToDisk(ACatalog.getCatalog().getDbLocation(), Clone);
 
-
-            table.getAttributes().remove(table.getAttributes().size() - 1);
 
 
             while (headPtr != -1) {

@@ -3,7 +3,7 @@ package phase2tests;
 import catalog.Catalog;
 import common.Attribute;
 import common.Table;
-import database.Database;
+
 import parsers.ResultSet;
 import phase2tests.Phase2Testers;
 import storagemanager.StorageManager;
@@ -19,7 +19,7 @@ public class Phase3TestSelect {
         // Startup time!  Establish a catalog and a storage manager for us to work with
 
         //TOD WHY WONT BP SET TO ! WORK
-        Catalog.createCatalog("DB",120 ,10);
+        Catalog.createCatalog("DB", 120, 10);
         StorageManager.createStorageManager();
 
         //////////////////////////////--TABS--/////////////////////////////////////////
@@ -29,7 +29,7 @@ public class Phase3TestSelect {
         attrs.add(new Attribute("a", "Integer"));
         attrs.add(new Attribute("b", "Varchar(10)"));
 
-        Catalog.getCatalog().addTable("t1",attrs,attrs.get(0));
+        Catalog.getCatalog().addTable("t1", attrs, attrs.get(0));
 
 
         // testing page splitting
@@ -37,7 +37,7 @@ public class Phase3TestSelect {
         for (int i = 0; i < 10; i++) {
             ArrayList<Object> row = Phase2Testers.mkRandomRec(attrs);
             boolean b = StorageManager.getStorageManager().insertRecord(Catalog.getCatalog().getTable("t1"), row);
-            System.out.println("INSERT "+b+" "+row);
+            System.out.println("INSERT " + b + " " + row);
 
         }
 //        System.out.println(StorageManager.getStorageManager().getRecords(Catalog.getCatalog().getTable("t1")));
@@ -46,21 +46,18 @@ public class Phase3TestSelect {
         System.out.println("DONE INSERTING ");
 
 
-
-
-
         if (Catalog.getCatalog().getTable("t1").addAttribute("int", "Integer")) {
             // add default val
 
-            StorageManager.getStorageManager().addAttributeValue(Catalog.getCatalog().getTable("t1"), 1000);
+            StorageManager.getStorageManager().addAttributeValue(Catalog.getCatalog().getTable("t1"), null);
         }
 
 
-        System.out.println(StorageManager.getStorageManager().getRecords( Catalog.getCatalog().getTable("t1")));
+        System.out.println(StorageManager.getStorageManager().getRecords(Catalog.getCatalog().getTable("t1")));
 
         StorageManager.getStorageManager().dropAttributeValue(Catalog.getCatalog().getTable("t1"), 2);
 
-        System.out.println(StorageManager.getStorageManager().getRecords( Catalog.getCatalog().getTable("t1")));
+        System.out.println(StorageManager.getStorageManager().getRecords(Catalog.getCatalog().getTable("t1")));
 
     }
 }
