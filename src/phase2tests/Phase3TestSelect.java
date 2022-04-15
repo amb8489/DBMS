@@ -19,15 +19,14 @@ public class Phase3TestSelect {
         // Startup time!  Establish a catalog and a storage manager for us to work with
 
         //TOD WHY WONT BP SET TO ! WORK
-        Catalog.createCatalog("DB", 120, 10);
+        Catalog.createCatalog("DB", 120, 1);
         StorageManager.createStorageManager();
 
         //////////////////////////////--TABS--/////////////////////////////////////////
 
         //t1
         ArrayList<Attribute> attrs = new ArrayList<>();
-        attrs.add(new Attribute("a", "Integer"));
-        attrs.add(new Attribute("b", "Varchar(10)"));
+        attrs.add(new Attribute("attr1", "Double"));
 
         Catalog.getCatalog().addTable("t1", attrs, attrs.get(0));
 
@@ -40,22 +39,21 @@ public class Phase3TestSelect {
             System.out.println("INSERT " + b + " " + row);
 
         }
-//        System.out.println(StorageManager.getStorageManager().getRecords(Catalog.getCatalog().getTable("t1")));
-//        StorageManager.pb.PurgeBuffer();
+        System.out.println(StorageManager.getStorageManager().getRecords(Catalog.getCatalog().getTable("t1")));
+        StorageManager.pb.PurgeBuffer();
 
         System.out.println("DONE INSERTING ");
 
 
-        if (Catalog.getCatalog().getTable("t1").addAttribute("int", "Integer")) {
+        if (Catalog.getCatalog().getTable("t1").addAttribute("attr2", "Double")) {
             // add default val
-
-            StorageManager.getStorageManager().addAttributeValue(Catalog.getCatalog().getTable("t1"), null);
+            StorageManager.getStorageManager().addAttributeValue(Catalog.getCatalog().getTable("t1"), 2.0);
         }
 
 
         System.out.println(StorageManager.getStorageManager().getRecords(Catalog.getCatalog().getTable("t1")));
 
-        StorageManager.getStorageManager().dropAttributeValue(Catalog.getCatalog().getTable("t1"), 2);
+        StorageManager.getStorageManager().dropAttributeValue(Catalog.getCatalog().getTable("t1"), 1);
 
         System.out.println(StorageManager.getStorageManager().getRecords(Catalog.getCatalog().getTable("t1")));
 
