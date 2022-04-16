@@ -1,9 +1,9 @@
 /**
  * A class for the Database object.  It's contains the core main loop that makes up a database.
- *
+ * <p>
  * The program will be ran as:
- *  java Database <db_loc> <page_size> <buffer_size>
- *
+ * java Database <db_loc> <page_size> <buffer_size>
+ * <p>
  * authors: Scott Johnson, Kyle Ferguson
  */
 
@@ -60,27 +60,26 @@ public class Database {
                 Exit using the statement "quit;".""");
         Scanner scn = new Scanner(System.in);
         String statement = "";
-        while(true){
+        while (true) {
             System.out.println("Enter Statement:");
             String input;
 //create table foo( baz double primarykey );insert into foo values (21.2), (1000000.2), (0.0000001);
-            do{
+            do {
                 input = scn.next();
                 statement += input + " ";
             }
-            while(!input.contains(";"));
+            while (!input.contains(";"));
             System.out.println(statement.toLowerCase());
 
-            if(statement.strip().equals("quit;")){  // end of entering statements
+            if (statement.strip().equals("quit;")) {  // end of entering statements
                 System.out.println("SUCCESS, Exiting Now...");
                 break;
-            }
-            else if (statement.strip().toLowerCase().startsWith("select")){
+            } else if (statement.strip().toLowerCase().startsWith("select")) {
                 //TODO kyle is this right to put this here like this??
                 Utilities.prettyPrintResultSet(executeQuery(statement), false, 16);
-            }else if(executeStatement(statement)){
+            } else if (executeStatement(statement)) {
                 System.out.println("SUCCESS");
-            } else{
+            } else {
                 System.err.println("ERROR");
             }
 
@@ -103,12 +102,11 @@ public class Database {
      * @param stmt the statement to be executed
      * @return True if successful, False otherwise
      */
-    public static boolean executeStatement(String stmt){
-        if(DDLParser.parseDDLStatement(stmt)){
+    public static boolean executeStatement(String stmt) {
+        if (DDLParser.parseDDLStatement(stmt)) {
             System.out.println("ddl");
             return true;
-        }
-        else{
+        } else {
             return DMLParser.parseDMLStatement(stmt);
         }
     }
@@ -119,13 +117,13 @@ public class Database {
      * @param queryStmt The query to be executed
      * @return The table of data
      */
-    public static ResultSet executeQuery(String queryStmt){
+    public static ResultSet executeQuery(String queryStmt) {
         ResultSet QueryResultTable = DMLParser.parseDMLQuery(queryStmt);
-        if(QueryResultTable == null){
-            System.err.println("query: "+ queryStmt +" failed");
+        if (QueryResultTable == null) {
+            System.err.println("query: " + queryStmt + " failed");
             return null;
         }
-        Utilities.prettyPrintResultSet(QueryResultTable,false,15);
+        Utilities.prettyPrintResultSet(QueryResultTable, false, 15);
         return QueryResultTable;
     }
 
@@ -134,7 +132,7 @@ public class Database {
      * Stores any needed data needed to restart the database to physical hardware.
      * @return True if successful, False otherwise
      */
-    public static boolean terminateDatabase(){
+    public static boolean terminateDatabase() {
 
         // purge sm buffer so that any changes in buffer are committed
         StorageManager.getStorageManager().purgePageBuffer();

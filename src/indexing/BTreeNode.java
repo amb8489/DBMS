@@ -29,10 +29,9 @@ public class BTreeNode<T> {
         this.N = N;
 
         // TODO number of childen is always # of keys + 1
-        System.out.println("N"+N);
-        for (int i = 0; i < N+1; i++) {
-            children.add(null);
-        }
+        for (int i = 0; i < N+1; i++,children.add(null));
+        for (int i = 0; i < N; i++,keys.add(null));
+
     }
 }
 
