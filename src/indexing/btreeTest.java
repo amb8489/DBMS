@@ -42,6 +42,7 @@ public class btreeTest {
         System.out.println("found for "+searchKey+":  "+btree.search(searchKey));
 
         btree.print(btree.treeRoot,"");
+        System.out.println(   btree.searchRange(12,false,false));
 
 
 

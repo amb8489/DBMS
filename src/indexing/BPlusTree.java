@@ -28,7 +28,6 @@ import java.util.ArrayList;
 public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
     public int nextIndex = 0;
 
-    public boolean preemptiveSplit = false;
     public int max_keys;
     public int min_keys;
     public int split_index;
@@ -54,11 +53,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
     // for testing
     public BPlusTree(int n) {
-
         this.TreeNsize = n;
-
-//        this.nextIndex = 3;
-
         this.max_degree = n;
         this.max_keys = n - 1;
         this.min_keys = (int) Math.floor((n + 1) / 2.0) - 1;
@@ -106,7 +101,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
             ArrayList<RecordPointer> found = new ArrayList<>();
             if (equalTo) {
                 return search(searchKey);
-            } else if (lessThan) {
+            } else if (lessThan){
 
 
                 var curr = getStartingLeaf(treeRoot);
@@ -123,24 +118,35 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
                     while (IsALTB(val, searchKey)) {
 
                         //TODO add rp to found
+                        System.out.print(val+" ");
 
                         // get next value
-                        val = curr.keys.get(idx);
+
+
 
                         // if we are out of values for thus leaf go to next leaf
-                        if (idx + 1 == curr.numKeys) {
+                        if (idx+1 == curr.numKeys) {
                             curr = curr.next;
+                            idx=0;
                             // if next is null (last leaf in tree)
                             if (curr == null) {
                                 return found;
                             }
+                        }else{
+                            idx ++;
                         }
+                        val = curr.keys.get(idx);
+
                     }
                 }
 
 
             } else {
-                var curr = getStartingLeaf(treeRoot);
+
+                //TODO find leaf that is 12 or anything between or > 12
+                var curr = getFirstNodeContaining(treeRoot,searchKey);
+
+                System.out.println(curr.keys);
 
                 if (curr.numKeys > 0) {
 
@@ -152,25 +158,42 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
                     // get to the first gt val in the leaf and start there
                     while (IsALTB(val, searchKey)) {
-                        idx++;
                         val = curr.keys.get(idx);
+                        System.out.println("---"+val);
+                        if (idx+1 == curr.numKeys){
+                            curr=curr.next;
+                            idx = 0;
+                            if (curr == null){
+                                return found;
+                            }
+                        }else {
+                            idx++;
+                        }
                     }
+                    System.out.println("+++"+val);
 
+                    todo incriment to next val
                     while (IsAGTB(val, searchKey)) {
+                        System.out.println("+++"+val);
 
                         //TODO add rp to found
+                        System.out.print(val+"  ");
 
-                        // get next value
-                        val = curr.keys.get(idx);
+
 
                         // if we are out of values for thus leaf go to next leaf
                         if (idx + 1 == curr.numKeys) {
                             curr = curr.next;
+                            idx = 0;
                             // if next is null (last leaf in tree)
                             if (curr == null) {
                                 return found;
                             }
+                        }else{
+                            idx++;
                         }
+                        // get next value
+                        val = curr.keys.get(idx);
                     }
                 }
 
@@ -179,9 +202,29 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
             return found;
 
         } catch (Exception e) {
+            e.printStackTrace();
             System.err.println("here in search range");
             return null;
         }
+    }
+
+    private BTreeNode<T> getFirstNodeContaining(BTreeNode<T> tree, T searchKey) {
+
+
+        if (tree.isLeaf) {
+            return tree;
+
+        } else {
+            var findIndex = 0;
+            while (findIndex < tree.numKeys && IsALTB(tree.keys.get(findIndex), searchKey)) {
+                findIndex++;
+            }
+
+            return this.getFirstNodeContaining(tree.children.get(findIndex), searchKey);
+        }
+
+
+
     }
 
 
@@ -261,8 +304,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
             BTreeNode<T> currentParent = tree.parent;
 
-            for (; parentIndex < currentParent.numKeys + 1 && currentParent.children.get(parentIndex) != tree; parentIndex++)
-                ;
+            for (; parentIndex < currentParent.numKeys + 1 && currentParent.children.get(parentIndex) != tree; parentIndex++) ;
 
             if (parentIndex == currentParent.numKeys + 1) {
                 throw new Error("Couldn't find which child we were!");
@@ -372,66 +414,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
     }
 
 
-    //TOdo wrong search for starting node for startInc then incriment from there
-    //dont just start from the first node
-    public void printRange(BTreeNode<T> ROOT, int startInc, int endInc) {
-
-        // based on < > = start will change
-        BTreeNode<T> starting = findstStartingLeaf(this.treeRoot, startInc);
-
-        //keep looping though all values
-
-        if (endInc < startInc) {
-            return;
-        }
-
-        if (ROOT != null) {
-
-            if (ROOT.isLeaf) {
-
-                var curr = ROOT;
-
-                int i = 0;
-                while (i < startInc) {
-                    if (i > curr.numKeys) {
-                        curr = curr.next;
-                    }
-                    i++;
-                }
-
-                int b = i;
-
-                while (i < endInc) {
-
-                    if (b == curr.numKeys) {
-                        curr = curr.next;
-                        // out of range
-                        if (curr == null) {
-                            return;
-                        }
-                        b = 0;
-                    }
-                    System.out.print(curr.keys.get(b) + " ");
-
-                    i++;
-                    b++;
-                }
-
-
-            } else {
-
-
-                this.printRange(ROOT.children.get(0), startInc, endInc);
-
-
-            }
-        }
-    }
-
-
     // delete
-
-
     public boolean deleteElement(RecordPointer rp, T deletedValue) {
 
         this.doDelete(this.treeRoot, deletedValue);
