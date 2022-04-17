@@ -4,8 +4,28 @@ import common.RecordPointer;
 
 import java.util.ArrayList;
 
+//------------- TODO's ------------------
+
+//TODO comment up code
+
+//TODO STORE/RESORE TO/FROM MEMORY--
+
+//TODO put throws on all functions
+
+//TODO do we even need nextIndex??? i dont think so
+
+//TODO ADD GETTING AND PUTTING RECORD PTS
+
+//TODO TESTING
+
+//TODO give a table a b+ tree for its attributes, mk tree for pk always
+
+// QUESTION : how does a page spit effect the tree ?
+
+//-------------------------------------
+
+
 public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
-    //TODO??
     public int nextIndex = 0;
 
     public boolean preemptiveSplit = false;
@@ -61,14 +81,107 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
     @Override
     public ArrayList<RecordPointer> search(T searchKey) {
-
+        //TODO RETURN RPS
         System.out.println(findElemen(searchKey));
+        return null;
+    }
+
+    // gets the left most leaf
+    public BTreeNode<T> getStartingLeaf(BTreeNode<T> ROOT) {
+        if (ROOT != null) {
+            if (ROOT.isLeaf) {
+                return ROOT;
+            } else {
+                return getStartingLeaf(ROOT.children.get(0));
+            }
+        }
         return null;
     }
 
     @Override
     public ArrayList<RecordPointer> searchRange(T searchKey, boolean lessThan, boolean equalTo) {
-        return null;
+        try {
+
+
+            ArrayList<RecordPointer> found = new ArrayList<>();
+            if (equalTo) {
+                return search(searchKey);
+            } else if (lessThan) {
+
+
+                var curr = getStartingLeaf(treeRoot);
+
+                if (curr.numKeys > 0) {
+
+                    // getting the first val of node
+                    int idx = 0;
+                    T val = curr.keys.get(idx);
+
+                    // while each value on leaf if < search key add to found
+                    // might not be true at first val in node but will be at some point in the leaf
+
+                    while (IsALTB(val, searchKey)) {
+
+                        //TODO add rp to found
+
+                        // get next value
+                        val = curr.keys.get(idx);
+
+                        // if we are out of values for thus leaf go to next leaf
+                        if (idx + 1 == curr.numKeys) {
+                            curr = curr.next;
+                            // if next is null (last leaf in tree)
+                            if (curr == null) {
+                                return found;
+                            }
+                        }
+                    }
+                }
+
+
+            } else {
+                var curr = getStartingLeaf(treeRoot);
+
+                if (curr.numKeys > 0) {
+
+                    // getting the first val of node
+                    int idx = 0;
+                    T val = curr.keys.get(idx);
+
+                    // while each value on leaf if < search key add to found
+
+                    // get to the first gt val in the leaf and start there
+                    while (IsALTB(val, searchKey)) {
+                        idx++;
+                        val = curr.keys.get(idx);
+                    }
+
+                    while (IsAGTB(val, searchKey)) {
+
+                        //TODO add rp to found
+
+                        // get next value
+                        val = curr.keys.get(idx);
+
+                        // if we are out of values for thus leaf go to next leaf
+                        if (idx + 1 == curr.numKeys) {
+                            curr = curr.next;
+                            // if next is null (last leaf in tree)
+                            if (curr == null) {
+                                return found;
+                            }
+                        }
+                    }
+                }
+
+            }
+
+            return found;
+
+        } catch (Exception e) {
+            System.err.println("here in search range");
+            return null;
+        }
     }
 
 
@@ -148,7 +261,8 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
             BTreeNode<T> currentParent = tree.parent;
 
-            for (; parentIndex < currentParent.numKeys + 1 && currentParent.children.get(parentIndex) != tree; parentIndex++) ;
+            for (; parentIndex < currentParent.numKeys + 1 && currentParent.children.get(parentIndex) != tree; parentIndex++)
+                ;
 
             if (parentIndex == currentParent.numKeys + 1) {
                 throw new Error("Couldn't find which child we were!");
@@ -231,14 +345,6 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
     }
 
 
-    private boolean IsAGTB(T key1, T key2) {
-        return key1.compareTo(key2) > 0;
-    }
-
-    private boolean IsALTB(T key1, T key2) {
-        return key1.compareTo(key2) < 0;
-    }
-
 
     public void print(BTreeNode<T> ROOT, String tab) {
 
@@ -269,6 +375,11 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
     //TOdo wrong search for starting node for startInc then incriment from there
     //dont just start from the first node
     public void printRange(BTreeNode<T> ROOT, int startInc, int endInc) {
+
+        // based on < > = start will change
+        BTreeNode<T> starting = findstStartingLeaf(this.treeRoot, startInc);
+
+        //keep looping though all values
 
         if (endInc < startInc) {
             return;
@@ -337,6 +448,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
             var i = 0;
             for (i = 0; i < tree.numKeys && IsALTB(tree.keys.get(i), val); i++) ;
+
             if (i == tree.numKeys) {
                 if (!tree.isLeaf) {
 
@@ -385,7 +497,8 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
                             parentNode.keys.set(parentIndex - 1, nextSmallest);
                         }
                         var grandParent = parentNode.parent;
-                        for (parentIndex = 0; grandParent != null && grandParent.children.get(parentIndex) != parentNode; parentIndex++) ;
+                        for (parentIndex = 0; grandParent != null && grandParent.children.get(parentIndex) != parentNode; parentIndex++)
+                            ;
                         parentNode = grandParent;
 
                     }
@@ -582,7 +695,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
     }
 
 
-    public ArrayList<T>  findElemen(T findValue) {
+    public ArrayList<T> findElemen(T findValue) {
 
         return this.findInTree(this.treeRoot, findValue);
 
@@ -590,7 +703,6 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
 
     public ArrayList<T> findInTree(BTreeNode<T> tree, T searchVal) {
-
 
 
         //steps
@@ -613,15 +725,17 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
                 while (start != -1) {
 
-                    for (T key: curr.keys.subList(0,curr.numKeys)) {
-                        if (isEql(key,searchVal)){
+                    for (T key : curr.keys.subList(0, curr.numKeys)) {
+                        if (isEql(key, searchVal)) {
                             foundKeys.add(key);
                         }
                     }
 
                     curr = curr.next;
-                    if (curr == null){return foundKeys;}
-                    start = curr.keys.subList(0, curr.numKeys+1).indexOf(searchVal);
+                    if (curr == null) {
+                        return foundKeys;
+                    }
+                    start = curr.keys.subList(0, curr.numKeys + 1).indexOf(searchVal);
                 }
             }
 
@@ -637,12 +751,19 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
         }
 
 
+    }
 
+
+    private boolean IsAGTB(T key1, T key2) {
+        return key1.compareTo(key2) > 0;
+    }
+
+    private boolean IsALTB(T key1, T key2) {
+        return key1.compareTo(key2) < 0;
     }
 
     private boolean isEql(T key, T searchVal) {
         return key.compareTo(searchVal) == 0;
     }
-
 
 }
