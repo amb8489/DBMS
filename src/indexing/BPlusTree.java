@@ -157,9 +157,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
                     // while each value on leaf if < search key add to found
 
                     // get to the first gt val in the leaf and start there
-                    while (IsALTB(val, searchKey)) {
-                        val = curr.keys.get(idx);
-                        System.out.println("---"+val);
+                    while (IsALTB(val, searchKey) || isEql(val, searchKey)) {
                         if (idx+1 == curr.numKeys){
                             curr=curr.next;
                             idx = 0;
@@ -169,12 +167,13 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
                         }else {
                             idx++;
                         }
-                    }
-                    System.out.println("+++"+val);
+                        val = curr.keys.get(idx);
 
-                    todo incriment to next val
+                    }
+
+
+
                     while (IsAGTB(val, searchKey)) {
-                        System.out.println("+++"+val);
 
                         //TODO add rp to found
                         System.out.print(val+"  ");
