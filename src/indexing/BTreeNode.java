@@ -31,6 +31,8 @@ public class BTreeNode<T> {
         // TODO number of childen is always # of keys + 1
         for (int i = 0; i < N+1; i++,children.add(null));
         for (int i = 0; i < N; i++,keys.add(null));
+        for (int i = 0; i < N+1; i++,rps.add(null));
+
 
     }
 }

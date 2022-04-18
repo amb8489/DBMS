@@ -10,39 +10,111 @@ public class btreeTest {
     public static void main(String[] args) {
 
 
-
         var btree = new BPlusTree<Integer>(5);
 
 
         System.out.println("-------- inserting ----------");
 
+
         Random rand = new Random();
-        int N = 20;
+        int N = 14;
         for (int i = 1; i <= N; i++) {
             int int_random = rand.nextInt(20);
             System.out.println(int_random);
-            btree.insertRecordPointer(new RecordPointer(int_random,int_random),int_random);
+            btree.insertRecordPointer(new RecordPointer(0, i), i);
+//            btree.insertRecordPointer(new RecordPointer(int_random,int_random),int_random);
+
         }
 
 
-        btree.print(btree.treeRoot,"");
+        btree.print(btree.treeRoot, "");
 
 
-        System.out.println("-------- deleting ----------");
-
+//        System.out.println("-------- deleting ----------");
+//
 //        for (int i = 1; i <= N; i++) {
-//            int int_random = rand.nextInt(100);
+//            int int_random = rand.nextInt(20);
+//            System.out.println(int_random);
+//
 //            btree.removeRecordPointer(new RecordPointer(int_random,int_random),int_random);
 //        }
+//
+//        btree.print(btree.treeRoot, "");
 
 
-        System.out.println("-------- searching ----------");
+        System.out.println("\n\n-------- searching in----------\n\n");
 
-        int searchKey = 12;
-        System.out.println("found for "+searchKey+":  "+btree.search(searchKey));
+        int key = 12;
+        System.out.println("-------- > "+key+" ----------");
 
-        btree.print(btree.treeRoot,"");
-        System.out.println(   btree.searchRange(12,false,true));
+        System.out.println(btree.searchRange(key, false, false));
+
+        System.out.println("-------- >= "+key+" ----------");
+
+        System.out.println(btree.searchRange(key, false, true));
+
+        System.out.println("-------- < "+key+" ----------");
+
+        System.out.println(btree.searchRange(key, true, false));
+
+        System.out.println("-------- <= "+key+" ----------");
+        System.out.println(btree.searchRange(key, true, true));
+
+        System.out.println("-------- = "+key+" ----------");
+
+        System.out.println(btree.search(key));
+
+
+        System.out.println("\n\n-------- searching NOT in----------\n\n");
+
+        key = 15;
+        System.out.println("-------- > "+key+" ----------");
+
+        System.out.println(btree.searchRange(key, false, false));
+
+        System.out.println("-------- >= "+key+" ----------");
+
+        System.out.println(btree.searchRange(key, false, true));
+
+        System.out.println("-------- < "+key+" ----------");
+
+        System.out.println(btree.searchRange(key, true, false));
+
+        System.out.println("-------- <= "+key+" ----------");
+        System.out.println(btree.searchRange(key, true, true));
+
+        System.out.println("-------- = "+key+" ----------");
+
+        System.out.println(btree.search(key));
+
+
+        System.out.println("\n\n-------- searching dups----------\n\n");
+
+        N = 10;
+        for (int i = 1; i <= N; i++) {
+            btree.insertRecordPointer(new RecordPointer(0, i), i);
+
+        }
+
+        key = 10;
+        System.out.println("-------- > "+key+" ----------");
+
+        System.out.println(btree.searchRange(key, false, false));
+
+        System.out.println("-------- >= "+key+" ----------");
+
+        System.out.println(btree.searchRange(key, false, true));
+
+        System.out.println("-------- < "+key+" ----------");
+
+        System.out.println(btree.searchRange(key, true, false));
+
+        System.out.println("-------- <= "+key+" ----------");
+        System.out.println(btree.searchRange(key, true, true));
+
+        System.out.println("-------- = "+key+" ----------");
+
+        System.out.println(btree.search(key));
 
 
 

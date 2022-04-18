@@ -30,4 +30,9 @@ public record RecordPointer(int page, int index) {
             return false;
         return rp.page == this.page && rp.index == this.index;
     }
+
+    @Override
+    public String toString(){
+        return "R"+index;
+    }
 }

@@ -6,13 +6,13 @@ import java.util.ArrayList;
 
 //------------- TODO's ------------------
 
+
+// ERROR IN DELETE WERE LAST NODE IS SAVE A DUP POINTER
 //TODO comment up code
 
 //TODO STORE/RESORE TO/FROM MEMORY--
 
 //TODO put throws on all functions
-
-//TODO do we even need nextIndex??? i dont think so
 
 //TODO ADD GETTING AND PUTTING RECORD PTS
 
@@ -46,7 +46,6 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
         this.max_keys = TreeNsize - 1;
         this.min_keys = (int) Math.floor((TreeNsize + 1) / 2.0) - 1;
         this.split_index = (int) Math.floor((TreeNsize) / 2.0);
-        System.out.println(split_index);
 
     }
 
@@ -76,9 +75,8 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
     @Override
     public ArrayList<RecordPointer> search(T searchKey) {
-        //TODO RETURN RPS
-        System.out.println(findElemen(searchKey));
-        return null;
+
+        return findElemen(searchKey);
     }
 
     // gets the left most leaf
@@ -93,15 +91,15 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
         return null;
     }
 
+
+    //TODO fix equal to add those vals >= or <= search key
     @Override
     public ArrayList<RecordPointer> searchRange(T searchKey, boolean lessThan, boolean equalTo) {
         try {
 
 
             ArrayList<RecordPointer> found = new ArrayList<>();
-            if (equalTo) {
-                return search(searchKey);
-            } else if (lessThan){
+             if (lessThan) {
 
 
                 var curr = getStartingLeaf(treeRoot);
@@ -115,25 +113,25 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
                     // while each value on leaf if < search key add to found
                     // might not be true at first val in node but will be at some point in the leaf
 
-                    while (IsALTB(val, searchKey)) {
 
-                        //TODO add rp to found
-                        System.out.print(val+" ");
+                    while (IsALTB(val, searchKey,equalTo)) {
+
+                        //add rp to found
+                        found.add(curr.rps.get(idx));
 
                         // get next value
 
 
-
                         // if we are out of values for thus leaf go to next leaf
-                        if (idx+1 == curr.numKeys) {
+                        if (idx + 1 == curr.numKeys) {
                             curr = curr.next;
-                            idx=0;
+                            idx = 0;
                             // if next is null (last leaf in tree)
                             if (curr == null) {
                                 return found;
                             }
-                        }else{
-                            idx ++;
+                        } else {
+                            idx++;
                         }
                         val = curr.keys.get(idx);
 
@@ -143,10 +141,8 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
             } else {
 
-                //TODO find leaf that is 12 or anything between or > 12
-                var curr = getFirstNodeContaining(treeRoot,searchKey);
+                var curr = getFirstNodeContaining(treeRoot, searchKey);
 
-                System.out.println(curr.keys);
 
                 if (curr.numKeys > 0) {
 
@@ -157,14 +153,14 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
                     // while each value on leaf if < search key add to found
 
                     // get to the first gt val in the leaf and start there
-                    while (IsALTB(val, searchKey) || isEql(val, searchKey)) {
-                        if (idx+1 == curr.numKeys){
-                            curr=curr.next;
+                    while (IsALTB(val, searchKey,!equalTo) ) {
+                        if (idx + 1 == curr.numKeys) {
+                            curr = curr.next;
                             idx = 0;
-                            if (curr == null){
+                            if (curr == null) {
                                 return found;
                             }
-                        }else {
+                        } else {
                             idx++;
                         }
                         val = curr.keys.get(idx);
@@ -172,11 +168,10 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
                     }
 
 
+                    while (IsAGTB(val, searchKey,equalTo)) {
 
-                    while (IsAGTB(val, searchKey)) {
-
-                        //TODO add rp to found
-                        System.out.print(val+"  ");
+                        //add rp to found
+                        found.add(curr.rps.get(idx));
 
 
 
@@ -188,7 +183,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
                             if (curr == null) {
                                 return found;
                             }
-                        }else{
+                        } else {
                             idx++;
                         }
                         // get next value
@@ -215,13 +210,12 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
         } else {
             var findIndex = 0;
-            while (findIndex < tree.numKeys && IsALTB(tree.keys.get(findIndex), searchKey)) {
+            while (findIndex < tree.numKeys && IsALTB(tree.keys.get(findIndex), searchKey,false)) {
                 findIndex++;
             }
 
             return this.getFirstNodeContaining(tree.children.get(findIndex), searchKey);
         }
-
 
 
     }
@@ -233,7 +227,8 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
         if (this.treeRoot == null) {
             this.treeRoot = new BTreeNode<T>(this.nextIndex++, this.TreeNsize);
             this.treeRoot.keys.set(0, insertedValue);
-            //TODO add rp
+            this.treeRoot.rps.set(0, rp);
+
             return true;
         } else {
             return insert(this.treeRoot, insertedValue, rp);
@@ -252,18 +247,26 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
         if (tree.isLeaf) {
             tree.numKeys++;
             var insertIndex = tree.numKeys - 1;
-            while (insertIndex > 0 && IsAGTB(tree.keys.get(insertIndex - 1), insertValue)) {
+
+            // find where to insert new value in leaf
+            while (insertIndex > 0 && IsAGTB(tree.keys.get(insertIndex - 1), insertValue,false)) {
                 tree.keys.set(insertIndex, tree.keys.get(insertIndex - 1));
+                tree.rps.set(insertIndex, tree.rps.get(insertIndex - 1));
                 insertIndex--;
             }
+
+            // insert value
             tree.keys.set(insertIndex, insertValue);
+            tree.rps.set(insertIndex, rp);
+
 
 
             return this.insertRepair(tree);
 
+            // finding what child to move to
         } else {
             var findIndex = 0;
-            while (findIndex < tree.numKeys && IsALTB(tree.keys.get(findIndex), insertValue)) {
+            while (findIndex < tree.numKeys && IsALTB(tree.keys.get(findIndex), insertValue,false)) {
                 findIndex++;
             }
 
@@ -272,18 +275,21 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
     }
 
     public boolean insertRepair(BTreeNode<T> tree) {
+        // all is okay no fix needed
         if (tree.numKeys <= this.max_keys) {
             return true;
+
             //root
         } else if (tree.parent == null) {
-//            System.out.println("1 need to repair node " + tree.keys);
 
             this.treeRoot = this.split(tree);
             return true;
+            // non root
         } else {
-//            System.out.println("2 need to repair node " + tree.keys);
 
             BTreeNode<T> newNode = this.split(tree);
+
+            // keep going till all is fixed
             return this.insertRepair(newNode);
         }
     }
@@ -291,32 +297,40 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
     public BTreeNode<T> split(BTreeNode<T> tree) {
 
+        // right split
+
         var rightNode = new BTreeNode<T>(this.nextIndex++, this.TreeNsize);
 
+        // node that goes to the parent
         T risingNode = tree.keys.get(this.split_index);
-//        System.out.println("risingNode:  " + risingNode);
 
         int i;
         int parentIndex = 0;
+
+        // if not root
         if (tree.parent != null) {
 
 
             BTreeNode<T> currentParent = tree.parent;
-
+            // finding what parent node to go to
             for (; parentIndex < currentParent.numKeys + 1 && currentParent.children.get(parentIndex) != tree; parentIndex++) ;
 
+
+            // error checking
             if (parentIndex == currentParent.numKeys + 1) {
                 throw new Error("Couldn't find which child we were!");
             }
+
+            // adding the rising node to the parent, finding where to place it
             for (i = currentParent.numKeys; i > parentIndex; i--) {
                 currentParent.children.set(i + 1, currentParent.children.get(i));
-
                 currentParent.keys.set(i, currentParent.keys.get(i - 1));
             }
+            // inserting into parent
             currentParent.numKeys++;
             currentParent.keys.set(parentIndex, risingNode);
 
-
+            //updating
             currentParent.children.set(parentIndex + 1, rightNode);
             rightNode.parent = currentParent;
 
@@ -329,6 +343,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
         if (tree.isLeaf) {
 
             rightSplit = this.split_index;
+
             rightNode.next = tree.next;
             tree.next = rightNode;
         } else {
@@ -337,7 +352,6 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
         rightNode.numKeys = tree.numKeys - rightSplit;
 
-//        System.out.println("rightNode.numKeys " + rightNode.numKeys);
 
 
         //////// ---------  moving children for right node  --------- ////////
@@ -345,6 +359,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
         for (i = rightSplit; i < tree.numKeys + 1; i++) {
 
             rightNode.children.set(i - rightSplit, tree.children.get(i));
+            rightNode.rps.set(i - rightSplit, tree.rps.get(i));
 
             if (tree.children.get(i) != null) {
                 rightNode.isLeaf = false;
@@ -352,12 +367,16 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
                     tree.children.get(i).parent = rightNode;
                 }
                 tree.children.set(i, null);
+                tree.rps.set(i, null);
+
             }
 
         }
         // add keys to right node
         for (i = rightSplit; i < tree.numKeys; i++) {
             rightNode.keys.set(i - rightSplit, tree.keys.get(i));
+            rightNode.rps.set(i - rightSplit, tree.rps.get(i));
+
         }
 
 
@@ -386,13 +405,12 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
     }
 
 
-
     public void print(BTreeNode<T> ROOT, String tab) {
 
         if (ROOT != null) {
 
             if (ROOT.isLeaf) {
-                System.out.println(tab + "|--" + ROOT.keys.subList(0, ROOT.numKeys));
+                System.out.println(tab + "|--" + ROOT.rps.subList(0, ROOT.numKeys));
 
             } else {
                 if (ROOT.parent != null) {
@@ -402,7 +420,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
                     System.out.println(tab + ROOT.keys.subList(0, ROOT.numKeys));
 
                 }
-                for (BTreeNode<T> child : ROOT.children) {
+                for (BTreeNode<T> child : ROOT.children.subList(0,ROOT.numKeys+1)) {
 
 
                     this.print(child, tab + "|  ");
@@ -418,6 +436,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
         this.doDelete(this.treeRoot, deletedValue);
         if (this.treeRoot.numKeys == 0) {
+            System.out.println("removing root");
             this.treeRoot = this.treeRoot.children.get(0);
             this.treeRoot.parent = null;
         }
@@ -429,17 +448,15 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
         if (tree != null) {
 
             var i = 0;
-            for (i = 0; i < tree.numKeys && IsALTB(tree.keys.get(i), val); i++) ;
+            for (i = 0; i < tree.numKeys && IsALTB(tree.keys.get(i), val,false); i++);
 
             if (i == tree.numKeys) {
                 if (!tree.isLeaf) {
-
                     this.doDelete(tree.children.get(tree.numKeys), val);
                 }
-
             } else if (!tree.isLeaf && tree.keys.get(i) == val) {
-
                 this.doDelete(tree.children.get(i + 1), val);
+
             } else if (!tree.isLeaf) {
 
                 this.doDelete(tree.children.get(i), val);
@@ -447,6 +464,8 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
                 for (var j = i; j < tree.numKeys - 1; j++) {
                     tree.keys.set(j, tree.keys.get(j + 1));
+                    tree.rps.set(j, tree.rps.get(j + 1));
+
                 }
                 tree.numKeys--;
 
@@ -457,6 +476,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
                     //????
                     T nextSmallest = null;
+                    RecordPointer nsRp = null;
                     var parentNode = tree.parent;
                     var parentIndex = 0;
                     for (parentIndex = 0; parentNode.children.get(parentIndex) != tree; parentIndex++) ;
@@ -465,22 +485,27 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
                     if (tree.numKeys == 0) {
                         if (parentIndex == parentNode.numKeys) {
 
-                            //????
                             nextSmallest = null;
+                            nsRp = null;
+
                         } else {
                             nextSmallest = parentNode.children.get(parentIndex + 1).keys.get(0);
+                            nsRp = parentNode.children.get(parentIndex + 1).rps.get(0);
                         }
                     } else {
                         nextSmallest = tree.keys.get(0);
+                        nsRp = tree.rps.get(0);
+
                     }
 
                     while (parentNode != null) {
                         if (parentIndex > 0 && parentNode.keys.get(parentIndex - 1) == val) {
                             parentNode.keys.set(parentIndex - 1, nextSmallest);
+                            parentNode.rps.set(parentIndex - 1, nsRp);
+
                         }
                         var grandParent = parentNode.parent;
-                        for (parentIndex = 0; grandParent != null && grandParent.children.get(parentIndex) != parentNode; parentIndex++)
-                            ;
+                        for (parentIndex = 0; grandParent != null && grandParent.children.get(parentIndex) != parentNode; parentIndex++) ;
                         parentNode = grandParent;
 
                     }
@@ -501,7 +526,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
         // less then the min required
         if (tree.numKeys < this.min_keys) {
 
-            // roor
+            // root
             if (tree.parent == null) {
                 // removing all keys in tree
                 if (tree.numKeys == 0) {
@@ -516,7 +541,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
             } else {
                 BTreeNode<T> parentNode = tree.parent;
                 int parentIndex;
-                for (parentIndex = 0; parentNode.children.get(parentIndex) != tree; parentIndex++) ;
+                for (parentIndex = 0; parentNode.children.get(parentIndex) != tree; parentIndex++);
 
 
                 if (parentIndex > 0 && parentNode.children.get(parentIndex - 1).numKeys > this.min_keys) {
@@ -530,6 +555,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
                     var nextNode = this.mergeRight(tree);
                     this.repairAfterDelete(nextNode.parent);
                 } else {
+
                     // Merge with left sibling
                     var nextNode = this.mergeRight(parentNode.children.get(parentIndex - 1));
                     this.repairAfterDelete(nextNode.parent);
@@ -547,12 +573,14 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
         var parentNode = tree.parent;
         var parentIndex = 0;
-        for (parentIndex = 0; parentNode.children.get(parentIndex) != tree; parentIndex++) ;
+        for (parentIndex = 0; parentNode.children.get(parentIndex) != tree; parentIndex++);
         var rightSib = parentNode.children.get(parentIndex + 1);
 
         if (!tree.isLeaf) {
 
             tree.keys.set(tree.numKeys, parentNode.keys.get(parentIndex));
+            tree.rps.set(tree.numKeys, parentNode.rps.get(parentIndex));
+
         }
 
 
@@ -565,6 +593,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
                 insertIndex -= 1;
             }
             tree.keys.set(insertIndex, rightSib.keys.get(i));
+            tree.rps.set(insertIndex, rightSib.rps.get(i));
 
 
         }
@@ -572,6 +601,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
         if (!tree.isLeaf) {
             for (int i = 0; i <= rightSib.numKeys; i++) {
+
                 tree.children.set(tree.numKeys + 1 + i, rightSib.children.get(i));
                 tree.children.get(tree.numKeys + 1 + i).parent = tree;
 
@@ -580,16 +610,21 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
         } else {
             tree.numKeys = tree.numKeys + rightSib.numKeys;
-
             tree.next = rightSib.next;
 
         }
+
+        ///////------------------ parentNode.numKeys too big by 1
         for (int i = parentIndex + 1; i < parentNode.numKeys; i++) {
+
             parentNode.children.set(i, parentNode.children.get(i + 1));
 
             parentNode.keys.set(i - 1, parentNode.keys.get(i));
+            parentNode.rps.set(i - 1, parentNode.rps.get(i));
+
         }
-        parentNode.numKeys--;
+        parentNode.numKeys-=1;
+
 
 
         return tree;
@@ -608,10 +643,14 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
         if (tree.isLeaf) {
 
             tree.keys.set(tree.numKeys - 1, rightSib.keys.get(0));
+            tree.rps.set(tree.numKeys - 1, rightSib.rps.get(0));
+
             parentNode.keys.set(parentIndex, rightSib.keys.get(1));
+            parentNode.rps.set(parentIndex, rightSib.rps.get(1));
+
 
         } else {
-
+            // todo--
             tree.keys.set(tree.numKeys - 1, parentNode.keys.get(parentIndex));
             parentNode.keys.set(parentIndex, rightSib.keys.get(0));
         }
@@ -630,6 +669,8 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
         }
         for (int i = 1; i < rightSib.numKeys; i++) {
             rightSib.keys.set(i - 1, rightSib.keys.get(i));
+            rightSib.rps.set(i - 1, rightSib.rps.get(i));
+
         }
         rightSib.numKeys--;
 
@@ -647,6 +688,8 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
         for (int i = tree.numKeys - 1; i > 0; i--) {
             tree.keys.set(i, tree.keys.get(i - 1));
+            tree.rps.set(i, tree.rps.get(i - 1));
+
         }
         var leftSib = parentNode.children.get(parentIndex - 1);
 
@@ -654,8 +697,13 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
         if (tree.isLeaf) {
 
             tree.keys.set(0, leftSib.keys.get(leftSib.numKeys - 1));
+            tree.rps.set(0, leftSib.rps.get(leftSib.numKeys - 1));
+
             parentNode.keys.set(parentIndex - 1, leftSib.keys.get(leftSib.numKeys - 1));
+            parentNode.rps.set(parentIndex - 1, leftSib.rps.get(leftSib.numKeys - 1));
+
         } else {
+            // todo--
 
             tree.keys.set(0, parentNode.keys.get(parentIndex - 1));
             parentNode.keys.set(parentIndex - 1, leftSib.keys.get(leftSib.numKeys - 1));
@@ -677,14 +725,14 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
     }
 
 
-    public ArrayList<T> findElemen(T findValue) {
+    public ArrayList<RecordPointer> findElemen(T findValue) {
 
         return this.findInTree(this.treeRoot, findValue);
 
     }
 
 
-    public ArrayList<T> findInTree(BTreeNode<T> tree, T searchVal) {
+    public ArrayList<RecordPointer> findInTree(BTreeNode<T> tree, T searchVal) {
 
 
         //steps
@@ -695,7 +743,6 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
 
             ArrayList<RecordPointer> found = new ArrayList<>();
-            ArrayList<T> foundKeys = new ArrayList<>();
 
             //12
 
@@ -706,26 +753,27 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
                 int start = curr.keys.subList(0, curr.numKeys + 1).indexOf(searchVal);
 
                 while (start != -1) {
-
+                    int rpIdx = 0;
                     for (T key : curr.keys.subList(0, curr.numKeys)) {
                         if (isEql(key, searchVal)) {
-                            foundKeys.add(key);
+                            found.add(curr.rps.get(rpIdx));
                         }
+                        rpIdx++;
                     }
 
                     curr = curr.next;
                     if (curr == null) {
-                        return foundKeys;
+                        return found;
                     }
                     start = curr.keys.subList(0, curr.numKeys + 1).indexOf(searchVal);
                 }
             }
 
-            return foundKeys;
+            return found;
 
         } else {
             var findIndex = 0;
-            while (findIndex < tree.numKeys && IsALTB(tree.keys.get(findIndex), searchVal)) {
+            while (findIndex < tree.numKeys && IsALTB(tree.keys.get(findIndex), searchVal,false)) {
                 findIndex++;
             }
 
@@ -736,11 +784,19 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
     }
 
 
-    private boolean IsAGTB(T key1, T key2) {
+    private boolean IsAGTB(T key1, T key2,boolean equalTo) {
+
+        if (equalTo){
+            return key1.compareTo(key2) > 0 || key1.compareTo(key2) == 0;
+        }
         return key1.compareTo(key2) > 0;
     }
 
-    private boolean IsALTB(T key1, T key2) {
+    private boolean IsALTB(T key1, T key2,boolean equalTo) {
+
+        if (equalTo){
+            return key1.compareTo(key2) < 0 || key1.compareTo(key2) == 0;
+        }
         return key1.compareTo(key2) < 0;
     }
 
