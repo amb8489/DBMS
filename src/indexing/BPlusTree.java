@@ -14,12 +14,9 @@ import java.util.ArrayList;
 
 //TODO put throws on all functions
 
-//TODO ADD GETTING AND PUTTING RECORD PTS
-
-//TODO TESTING
-
 //TODO give a table a b+ tree for its attributes, mk tree for pk always
 
+// TODO optimization could add binary search to find values in nodes and not linear scan
 // QUESTION : how does a page spit effect the tree ?
 
 //-------------------------------------
@@ -51,12 +48,12 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
 
     // for testing
-    public BPlusTree(int n) {
-        this.TreeNsize = n;
-        this.max_degree = n;
-        this.max_keys = n - 1;
-        this.min_keys = (int) Math.floor((n + 1) / 2.0) - 1;
-        this.split_index = (int) Math.floor((n) / 2.0);
+    public BPlusTree(int degree) {
+        this.TreeNsize = degree;
+        this.max_degree = degree;
+        this.max_keys = degree - 1;
+        this.min_keys = (int) Math.floor((degree + 1) / 2.0) - 1;
+        this.split_index = (int) Math.floor((degree) / 2.0);
         System.out.println(split_index);
     }
 
@@ -92,7 +89,6 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
     }
 
 
-    //TODO fix equal to add those vals >= or <= search key
     @Override
     public ArrayList<RecordPointer> searchRange(T searchKey, boolean lessThan, boolean equalTo) {
         try {
@@ -196,7 +192,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
             return found;
 
         } catch (Exception e) {
-            e.printStackTrace();
+
             System.err.println("here in search range");
             return null;
         }

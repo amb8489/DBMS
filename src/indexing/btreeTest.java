@@ -88,7 +88,9 @@ public class btreeTest {
         System.out.println(btree.search(key));
 
 
-        System.out.println("\n\n-------- searching dups----------\n\n");
+        System.out.println("\n\n-------- searching dups----------");
+
+        System.out.println("(adding in numbers 1 - 10 again)\n\n");
 
         N = 10;
         for (int i = 1; i <= N; i++) {
