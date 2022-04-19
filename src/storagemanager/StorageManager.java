@@ -160,7 +160,7 @@ public class StorageManager extends AStorageManager {
             for (Object val : record) {
                 String attribType = table.getAttributes().get(idxx).getAttributeType();
                 if (attribType.endsWith(")")) {
-                    String str =(String)record.get(idxx);
+                    String str = (String) record.get(idxx);
                     if (str != null && Utilities.isStringTooLong(attribType, str)) {
                         System.err.println("string: " + record.get(idxx) + " too long fr type: " + attribType);
                         return false;
@@ -184,12 +184,9 @@ public class StorageManager extends AStorageManager {
 
 
             HashMap<String, Integer> AttribNamesIdx = ((Table) table).AttribIdxs;
-//            ArrayList<Attribute> attrs = table.getAttributes();
-//            for (int i = 0; i < table.getAttributes().size(); i++) {
-//                AttribNamesIdx.put(attrs.get(i).getAttributeName(), i);
-//            }
 
 
+            // checking fk in other table will need to optimize search
             for (ForeignKey fk : (table).getForeignKeys()) {
                 String fkAttribute = fk.getAttrName();
                 Object valueToFindInFKtab = record.get(AttribNamesIdx.get(fkAttribute));
@@ -209,97 +206,68 @@ public class StorageManager extends AStorageManager {
             while (headPtr != -1) {
 
 
-//            VerbosePrint.print("inside: "+headPtr);
-//            VerbosePrint.print(((Table) table).getPagesThatBelongToMe());
-
-
                 headPage = pb.getPageFromBuffer(String.valueOf(headPtr), table);
 
 
                 int numRecords = headPage.getPageRecords().size();
                 if (numRecords == 0) {
-//                VerbosePrint.print("head page size 0: "+headPtr);
-
                     headPage.insert(0, record);
-
                     return true;
                 }
-//            VerbosePrint.print("here 1: "+headPtr);
-
-                boolean doInsert = false;
 
                 // binary search for pk on page
+                var pkIdx = ((Table) table).pkIdx();
+                String pk_type = table.getAttributes().get(pkIdx).getAttributeType().toUpperCase();
+                int index;
 
-                //
 
-//                int index = Collections.binarySearch(list, element, Comparator.comparing(TestClass::getName));
-//                if (index < 0) {
-//                    index = -index - 1;
+                //TODO if pk is > the the last row for this page then go to next page
+                // be careful that next page is -1
+//                if(headPage.getPageRecords().get(index)){
+//
+//
+//
 //                }
-//                list.add(index, element);
 
-                //
 
-                for (int i = 0; i < numRecords; i++) {
+                switch (pk_type.charAt(0)) {
+                    case 'I' -> index = Collections.binarySearch(headPage.getPageRecords(), record, Comparator.comparing(row -> (Integer) row.get(pkIdx)));
+                    case 'D' -> index = Collections.binarySearch(headPage.getPageRecords(), record, Comparator.comparing(row -> (Double) row.get(pkIdx)));
+                    case 'B' -> index = Collections.binarySearch(headPage.getPageRecords(), record, Comparator.comparing(row -> (Boolean) row.get(pkIdx)));
+                    default -> index = Collections.binarySearch(headPage.getPageRecords(), record, Comparator.comparing(row -> (String) row.get(pkIdx)));
+                }
 
-                    ArrayList<Object> row = headPage.getPageRecords().get(i);
-                    int pkid = ((Table) table).pkIdx();
-                    String pk_type = table.getAttributes().get(pkid).getAttributeType().toUpperCase();
 
-                    switch (pk_type.charAt(0)) {
-                        case 'I' -> {
-                            int resI = ((Integer) record.get(pkidx)).compareTo((Integer) row.get(pkidx));
-                            if (resI == 0) {
-                                return false;
-                            }
+                // if we should insert last i.e records.size() then go to next page
+                // else if it says to insert then check at that location no dubs exist (error)
+                // if on last page and for last element then add to end of page
 
-                            if (resI < 0) {
-                                doInsert = true;
-                            }
-                        }
-                        case 'D' -> {
-                            int resD = ((Double) record.get(pkidx)).compareTo((Double) row.get(pkidx));
+                if (index >= 0) {
+                    // check for dup
+                        System.err.println("duplicate primary key value trying to be insert");
+                        return false;
 
-                            if (resD == 0) {
-                                return false;
-                            }
-                            if (resD < 0) {
-                                doInsert = true;
-                            }
-                        }
-                        case 'B' -> {
-                            int resB = ((Boolean) record.get(pkidx)).compareTo((Boolean) row.get(pkidx));
-                            if (resB == 0) {
-                                return false;
-                            }
-                            if (resB < 0) {
-                                doInsert = true;
-                            }
-                        }
-                        default -> {
-                            int resS = ((record.get(pkidx).toString()).compareTo(row.get(pkidx).toString()));
+                } else {
+                    index = -index - 1;
 
-                            if (resS == 0) {
-                                return false;
-                            }
-                            if (resS < 0) {
-                                doInsert = true;
-                            }
-                        }
-                    }
-
-                    if (doInsert) {
-                        return headPage.insert(i, record);
+                    // wanting to inset into the last element of the page
+                    // go to next page to insert
+                    if (index != headPage.getPageRecords().size()) {
+                        return headPage.insert(index, record);
+                    }else if(headPage.getPtrToNextPage() == -1){
+                        return headPage.insert(index, record);
                     }
                 }
-                // get next page
 
                 headPtr = headPage.getPtrToNextPage();
 
             }
-            // add to last spot in page in table
+            // add to last spot in last page in table
 
-            return headPage.insert(headPage.getPageRecords().size(), record);
+            // not sure if we need this anymore
+//            System.out.println("here2 end " + headPage.getPageRecords().size());
+//
+//            return headPage.insert(headPage.getPageRecords().size(), record);
 
 
         } catch (Exception e) {
@@ -308,6 +276,7 @@ public class StorageManager extends AStorageManager {
             System.err.println("Storage manager(insertRecord): error in inserting");
             return false;
         }
+        return false;
     }
 
     public boolean deleteRecordWhere(ITable table, String where, Boolean removeAllRecords) {
@@ -461,83 +430,6 @@ public class StorageManager extends AStorageManager {
         pb.PurgeBuffer();
     }
 
-    //    @Override
-//    public boolean addAttributeValue(ITable table, Object defaultValue) {
-//
-//
-//
-//
-//        try {
-//
-//
-//            // page name for head is always at idx zero
-//            int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
-//
-//
-////            System.exit(2);
-//
-//            // loop though all the tables pages in order
-//
-//            int next = 1;
-//            while (headPtr != -1) {
-//
-//                Page headPage = null;
-//
-//                System.out.println(headPtr);
-//
-//                // if page is not loaded in yet it needs to be before we add the new attrb
-//                // asssumes its already been added by the time this function funtion runs
-//                if (!pb.isPageInBuffer(String.valueOf(headPtr))){
-//
-//                    //get last
-//                    Attribute newAtter = table.getAttributes().remove(table.getAttributes().size()-1);
-//
-//
-//                    //load page into buffer
-//                    pb.getPageFromBuffer(String.valueOf(headPtr), table);
-//
-//
-//                    // readd attrib
-//                    table.getAttributes().add(newAtter);
-//
-//
-//                }
-//
-//
-//                headPage = pb.getPageFromBuffer(String.valueOf(headPtr), table);
-//
-//
-//                // next page before we split
-//
-//                headPtr =headPage.getPtrToNextPage();
-//
-//                //                                                      hmmmmmmm v
-//                ArrayList<ArrayList<Object>> tempRecs = new ArrayList<>(headPage.getPageRecords());
-//                headPage.ClearRecords();
-//
-//                //add the new atttribute to all the recs
-//
-//                // recs being double added
-//
-//                tempRecs.forEach(row -> row.add(defaultValue));
-//
-//
-//
-//                // reinsert into page
-//
-//                for (ArrayList<Object> tempRec : tempRecs) {
-//                    headPage.insert(tempRec);
-//                }
-//
-//            }
-//
-//            return true;
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            System.err.println("failure adding attribute from table " + table.getTableName());
-//            return false;
-//        }
-//    }
     @Override
     public boolean addAttributeValue(ITable table, Object defaultValue) {
 
@@ -633,7 +525,7 @@ public class StorageManager extends AStorageManager {
                         " table doesn't have that many attributes");
                 return false;
             }
-            if (attrIndex == ((Table)table).pkIdx()) {
+            if (attrIndex == ((Table) table).pkIdx()) {
                 System.err.println("ERROR: tryig to drop the primary key");
                 return false;
             }
@@ -649,7 +541,6 @@ public class StorageManager extends AStorageManager {
             Page firstPageForTable = new Page(Clone);
             Clone.getPagesThatBelongToMe().add(Integer.valueOf(firstPageForTable.getPageName()));
             firstPageForTable.writeToDisk(ACatalog.getCatalog().getDbLocation(), Clone);
-
 
 
             while (headPtr != -1) {
@@ -713,7 +604,7 @@ public class StorageManager extends AStorageManager {
     }
 
 
-    public BPlusTree newIndex(Table table, BPlusTree bpTree,int attributeIdx){
+    public BPlusTree newIndex(Table table, BPlusTree bpTree, int attributeIdx) {
 
         // page name for head is always at idx zero
         int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
@@ -732,21 +623,21 @@ public class StorageManager extends AStorageManager {
 
             idx = 0;
             for (ArrayList<Object> row : headPage.getPageRecords()) {
-                RecordPointer rp = new RecordPointer(headPtr,idx);
+                RecordPointer rp = new RecordPointer(headPtr, idx);
 
 
-                switch (bpTree.Type){
+                switch (bpTree.Type) {
                     case "integer":
-                        bpTree.insertRecordPointer(rp,  (Integer) row.get(attributeIdx));
+                        bpTree.insertRecordPointer(rp, (Integer) row.get(attributeIdx));
                         break;
                     case "double":
-                        bpTree.insertRecordPointer(rp,  (Double) row.get(attributeIdx));
+                        bpTree.insertRecordPointer(rp, (Double) row.get(attributeIdx));
                         break;
                     case "boolean":
-                        bpTree.insertRecordPointer(rp,  (Boolean) row.get(attributeIdx));
+                        bpTree.insertRecordPointer(rp, (Boolean) row.get(attributeIdx));
                         break;
                     default:
-                        bpTree.insertRecordPointer(rp,  (String) row.get(attributeIdx));
+                        bpTree.insertRecordPointer(rp, (String) row.get(attributeIdx));
                         break;
                 }
 
@@ -759,7 +650,7 @@ public class StorageManager extends AStorageManager {
         return bpTree;
     }
 
-    public PageBuffer getPb(){
+    public PageBuffer getPb() {
         return pb;
     }
 

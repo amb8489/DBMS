@@ -8,6 +8,7 @@ import phase2tests.Phase2Testers;
 import storagemanager.StorageManager;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import catalog.Catalog;
 import common.Attribute;
@@ -17,29 +18,29 @@ public class tableTobpTreeTest {
     public static void main(String[] args) {
 
 
-        Catalog.createCatalog("DB", 10000, 100);
+        Catalog.createCatalog("DB", 4880, 10);
         StorageManager.createStorageManager();
 
         //////////////////////////////--TABS--/////////////////////////////////////////
 
         //t1
         ArrayList<Attribute> attrs = new ArrayList<>();
-        attrs.add(new Attribute("attr1", "Double"));
+        attrs.add(new Attribute("attr1", "Integer"));
         attrs.add(new Attribute("attr2", "Varchar(5)"));
-
         Catalog.getCatalog().addTable("t1", attrs, attrs.get(0));
 
 
-        // testing page splitting
-
-        for (int i = 0; i < 100000; i++) {
+        // testing table inseting
+        Random rand = new Random();
+        for (int i = 0; i < 100; i++) {
             ArrayList<Object> row = Phase2Testers.mkRandomRec(attrs);
+            row.set(0,rand.nextInt(1000));
             boolean b = StorageManager.getStorageManager().insertRecord(Catalog.getCatalog().getTable("t1"), row);
-            if(i%10000==0) {
                 System.out.println("INSERT " + b + " " + row);
-            }
+
         }
         System.out.println(StorageManager.getStorageManager().getRecords(Catalog.getCatalog().getTable("t1")));
+        System.exit(1);
         StorageManager.pb.PurgeBuffer();
 
         System.out.println("DONE INSERTING ");
