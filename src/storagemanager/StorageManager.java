@@ -10,9 +10,7 @@ import common.*;
 import indexing.BPlusTree;
 import pagebuffer.PageBuffer;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import filesystem.FileSystem;
 import parsers.WhereP3;
@@ -162,11 +160,12 @@ public class StorageManager extends AStorageManager {
             for (Object val : record) {
                 String attribType = table.getAttributes().get(idxx).getAttributeType();
                 if (attribType.endsWith(")")) {
-                    String str = record.get(idxx).toString();
+                    String str =(String)record.get(idxx);
                     if (str != null && Utilities.isStringTooLong(attribType, str)) {
                         System.err.println("string: " + record.get(idxx) + " too long fr type: " + attribType);
                         return false;
                     }
+
                     if (str != null) {
                         // removing " before plaving in db
                         record.set(idxx, str.replace("\"", ""));
@@ -175,7 +174,7 @@ public class StorageManager extends AStorageManager {
                 idxx++;
             }
 
-
+            // looking for inserting null when it shouldnt be
             for (Integer i : ((Table) table).indicesOfNotNullAttributes) {
                 if (record.get(i) == null) {
                     System.err.println("attribute: " + table.getAttributes().get(i).getAttributeName() + " cant be null");
@@ -184,11 +183,11 @@ public class StorageManager extends AStorageManager {
             }
 
 
-            HashMap<String, Integer> AttribNamesIdx = new HashMap<>();
-            ArrayList<Attribute> attrs = table.getAttributes();
-            for (int i = 0; i < table.getAttributes().size(); i++) {
-                AttribNamesIdx.put(attrs.get(i).getAttributeName(), i);
-            }
+            HashMap<String, Integer> AttribNamesIdx = ((Table) table).AttribIdxs;
+//            ArrayList<Attribute> attrs = table.getAttributes();
+//            for (int i = 0; i < table.getAttributes().size(); i++) {
+//                AttribNamesIdx.put(attrs.get(i).getAttributeName(), i);
+//            }
 
 
             for (ForeignKey fk : (table).getForeignKeys()) {
@@ -228,6 +227,18 @@ public class StorageManager extends AStorageManager {
 //            VerbosePrint.print("here 1: "+headPtr);
 
                 boolean doInsert = false;
+
+                // binary search for pk on page
+
+                //
+
+//                int index = Collections.binarySearch(list, element, Comparator.comparing(TestClass::getName));
+//                if (index < 0) {
+//                    index = -index - 1;
+//                }
+//                list.add(index, element);
+
+                //
 
                 for (int i = 0; i < numRecords; i++) {
 

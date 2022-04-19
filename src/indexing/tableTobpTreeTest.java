@@ -17,7 +17,7 @@ public class tableTobpTreeTest {
     public static void main(String[] args) {
 
 
-        Catalog.createCatalog("DB", 1200, 1);
+        Catalog.createCatalog("DB", 10000, 100);
         StorageManager.createStorageManager();
 
         //////////////////////////////--TABS--/////////////////////////////////////////
@@ -32,11 +32,12 @@ public class tableTobpTreeTest {
 
         // testing page splitting
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 100000; i++) {
             ArrayList<Object> row = Phase2Testers.mkRandomRec(attrs);
             boolean b = StorageManager.getStorageManager().insertRecord(Catalog.getCatalog().getTable("t1"), row);
-            System.out.println("INSERT " + b + " " + row);
-
+            if(i%10000==0) {
+                System.out.println("INSERT " + b + " " + row);
+            }
         }
         System.out.println(StorageManager.getStorageManager().getRecords(Catalog.getCatalog().getTable("t1")));
         StorageManager.pb.PurgeBuffer();
@@ -51,34 +52,34 @@ public class tableTobpTreeTest {
         tree.print();
 
         PageBuffer pb = ((StorageManager)StorageManager.getStorageManager()).getPb();
+//
+//        for(ArrayList<Object> row :StorageManager.getStorageManager().getRecords(table)){
+//
+//            ArrayList<RecordPointer> rps = tree.search( ((String)row.get(idxI)) );
+//            for(RecordPointer rp:rps){
+//
+//
+//                int pageName =rp.page();
+//                int idxInPage =rp.index();
+//
+//                Page page = pb.getPageFromBuffer(String.valueOf(pageName),table);
+//
+//
+//
+//                System.out.println("should be equal <"+row.get(idxI)+" "+page.getPageRecords().get(idxInPage).get(idxI)+">");
+//
+//            }
+//
+//
+//
+//
+//
+//
+//        }
+//
+//
 
-        for(ArrayList<Object> row :StorageManager.getStorageManager().getRecords(table)){
-
-            ArrayList<RecordPointer> rps = tree.search( ((String)row.get(idxI)) );
-            for(RecordPointer rp:rps){
-
-
-                int pageName =rp.page();
-                int idxInPage =rp.index();
-
-                Page page = pb.getPageFromBuffer(String.valueOf(pageName),table);
-
-
-
-                System.out.println("should be equal <"+row.get(idxI)+" "+page.getPageRecords().get(idxInPage).get(idxI)+">");
-
-            }
-
-
-
-
-
-
-        }
-
-
-
-
+        tree.writeToDisk();
 
 
 

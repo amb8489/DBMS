@@ -39,7 +39,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
     public BPlusTree(int MaxPageSize, int MaxAttributeSize) {
 
-        this.TreeNsize = (int) (Math.floor(MaxPageSize / ((double)(4 + MaxAttributeSize)) - 1));
+        this.TreeNsize = (int) (Math.floor(MaxPageSize / ((double) (4 + MaxAttributeSize)) - 1));
 //        this.nextIndex = 3;
 
 
@@ -403,7 +403,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
     }
 
     public void print() {
-        print_h(this.treeRoot," ");
+        print_h(this.treeRoot, " ");
     }
 
     public void print_h(BTreeNode<T> ROOT, String tab) {
@@ -806,11 +806,11 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
     }
 
 
-    public static BPlusTree TreeFromTableAttribute(Table table,int AttributeIdx){
+    public static BPlusTree TreeFromTableAttribute(Table table, int AttributeIdx) {
 
         // check for out of bounds exception
-        if(AttributeIdx >= table.getAttributes().size() ||AttributeIdx < 0){
-            System.out.println(AttributeIdx+" out of bounds for size of "+ table.getAttributes().size());
+        if (AttributeIdx >= table.getAttributes().size() || AttributeIdx < 0) {
+            System.out.println(AttributeIdx + " out of bounds for size of " + table.getAttributes().size());
             return null;
         }
 
@@ -818,25 +818,25 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
         // finding out what type of tree to make
         BPlusTree bpTree = null;
 
-        String type =  table.getAttributes().get(AttributeIdx).getAttributeType().toLowerCase();
+        String type = table.getAttributes().get(AttributeIdx).getAttributeType().toLowerCase();
 
         // gettting the init params for tree
 
         int maxPageSize = Catalog.getCatalog().getPageSize();
         int maxAttributeSize = table.getMaxAttributeSize();
 
-        switch (type){
+        switch (type) {
             case "integer":
-                bpTree = new BPlusTree<Integer>(maxPageSize,maxAttributeSize);
+                bpTree = new BPlusTree<Integer>(maxPageSize, maxAttributeSize);
                 break;
             case "double":
-                bpTree = new BPlusTree<Double>(maxPageSize,maxAttributeSize);
+                bpTree = new BPlusTree<Double>(maxPageSize, maxAttributeSize);
                 break;
             case "boolean":
-                bpTree = new BPlusTree<Boolean>(maxPageSize,maxAttributeSize);
+                bpTree = new BPlusTree<Boolean>(maxPageSize, maxAttributeSize);
                 break;
             default:
-                bpTree = new  BPlusTree<String>(maxPageSize,maxAttributeSize);
+                bpTree = new BPlusTree<String>(maxPageSize, maxAttributeSize);
                 break;
         }
         // set the type
@@ -844,8 +844,37 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
         // making the tree
 
-        return ((StorageManager)StorageManager.getStorageManager()).newIndex(table,bpTree,AttributeIdx);
+        return ((StorageManager) StorageManager.getStorageManager()).newIndex(table, bpTree, AttributeIdx);
 
+
+    }
+
+
+    public void writeToDisk() {
+        writeToDisk_h(this.treeRoot);
+    }
+
+    private String writeToDisk_h(BTreeNode<T> ROOT) {
+
+        if (ROOT != null) {
+
+
+            if (ROOT.parent != null) {
+                System.out.println( ROOT.writeOut());
+
+            } else {
+                System.out.println(ROOT.writeOut());
+
+            }
+            for (BTreeNode<T> child : ROOT.children.subList(0, ROOT.numKeys + 1)) {
+
+
+                this.writeToDisk_h(child);
+
+            }
+
+        }
+        return null;
 
     }
 
