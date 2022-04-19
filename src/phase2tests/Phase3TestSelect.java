@@ -18,7 +18,7 @@ public class Phase3TestSelect {
 
         // Startup time!  Establish a catalog and a storage manager for us to work with
 
-        Catalog.createCatalog("DB", 120, 1);
+        Catalog.createCatalog("DB", 4048, 1);
         StorageManager.createStorageManager();
 
         //////////////////////////////--TABS--/////////////////////////////////////////

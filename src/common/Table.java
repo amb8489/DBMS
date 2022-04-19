@@ -517,7 +517,7 @@ public class Table implements ITable {
                     break;
                 default:
 
-                    attributeSize = Integer.parseInt(attributeType.substring(attributeType.indexOf("("), attributeType.length() - 1));
+                    attributeSize = Integer.parseInt(attributeType.substring(attributeType.indexOf("(")+1, attributeType.length() - 1));
 
 
 

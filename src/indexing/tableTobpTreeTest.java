@@ -17,7 +17,7 @@ public class tableTobpTreeTest {
     public static void main(String[] args) {
 
 
-        Catalog.createCatalog("DB", 120, 1);
+        Catalog.createCatalog("DB", 1200, 1);
         StorageManager.createStorageManager();
 
         //////////////////////////////--TABS--/////////////////////////////////////////
@@ -25,12 +25,14 @@ public class tableTobpTreeTest {
         //t1
         ArrayList<Attribute> attrs = new ArrayList<>();
         attrs.add(new Attribute("attr1", "Double"));
+        attrs.add(new Attribute("attr2", "Varchar(5)"));
+
         Catalog.getCatalog().addTable("t1", attrs, attrs.get(0));
 
 
         // testing page splitting
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 100; i++) {
             ArrayList<Object> row = Phase2Testers.mkRandomRec(attrs);
             boolean b = StorageManager.getStorageManager().insertRecord(Catalog.getCatalog().getTable("t1"), row);
             System.out.println("INSERT " + b + " " + row);
@@ -43,7 +45,7 @@ public class tableTobpTreeTest {
 
         Table table = (Table) Catalog.getCatalog().getTable("t1");
 
-        int idxI = 0;
+        int idxI = 1;
         BPlusTree tree = BPlusTree.TreeFromTableAttribute(table,idxI);
 
         tree.print();
@@ -52,7 +54,7 @@ public class tableTobpTreeTest {
 
         for(ArrayList<Object> row :StorageManager.getStorageManager().getRecords(table)){
 
-            ArrayList<RecordPointer> rps = tree.search( ((double)row.get(idxI)) );
+            ArrayList<RecordPointer> rps = tree.search( ((String)row.get(idxI)) );
             for(RecordPointer rp:rps){
 
 
@@ -63,7 +65,7 @@ public class tableTobpTreeTest {
 
 
 
-                System.out.println("should be equal <"+row.get(idxI)+" "+page.getPageRecords().get(idxInPage)+">");
+                System.out.println("should be equal <"+row.get(idxI)+" "+page.getPageRecords().get(idxInPage).get(idxI)+">");
 
             }
 
