@@ -1,22 +1,21 @@
-package phase2tests;
+package indexing;
 
+import catalog.ACatalog;
 import catalog.Catalog;
-import common.Attribute;
-import common.Table;
-
-import parsers.ResultSet;
+import common.*;
+import pagebuffer.PageBuffer;
 import phase2tests.Phase2Testers;
 import storagemanager.StorageManager;
 
 import java.util.ArrayList;
-import java.util.Scanner;
 
-public class Phase3TestSelect {
+import catalog.Catalog;
+import common.Attribute;
 
+public class tableTobpTreeTest {
 
     public static void main(String[] args) {
 
-        // Startup time!  Establish a catalog and a storage manager for us to work with
 
         Catalog.createCatalog("DB", 120, 1);
         StorageManager.createStorageManager();
@@ -26,7 +25,6 @@ public class Phase3TestSelect {
         //t1
         ArrayList<Attribute> attrs = new ArrayList<>();
         attrs.add(new Attribute("attr1", "Double"));
-
         Catalog.getCatalog().addTable("t1", attrs, attrs.get(0));
 
 
@@ -43,18 +41,44 @@ public class Phase3TestSelect {
 
         System.out.println("DONE INSERTING ");
 
+        Table table = (Table) Catalog.getCatalog().getTable("t1");
 
-        if (Catalog.getCatalog().getTable("t1").addAttribute("attr2", "Double")) {
-            // add default val
-            StorageManager.getStorageManager().addAttributeValue(Catalog.getCatalog().getTable("t1"), 2.0);
+        int idxI = 0;
+        BPlusTree tree = BPlusTree.TreeFromTableAttribute(table,idxI);
+
+        tree.print();
+
+        PageBuffer pb = ((StorageManager)StorageManager.getStorageManager()).getPb();
+
+        for(ArrayList<Object> row :StorageManager.getStorageManager().getRecords(table)){
+
+            ArrayList<RecordPointer> rps = tree.search( ((double)row.get(idxI)) );
+            for(RecordPointer rp:rps){
+
+
+                int pageName =rp.page();
+                int idxInPage =rp.index();
+
+                Page page = pb.getPageFromBuffer(String.valueOf(pageName),table);
+
+
+
+                System.out.println("should be equal <"+row.get(idxI)+" "+page.getPageRecords().get(idxInPage)+">");
+
+            }
+
+
+
+
+
+
         }
 
 
-        System.out.println(StorageManager.getStorageManager().getRecords(Catalog.getCatalog().getTable("t1")));
 
-        StorageManager.getStorageManager().dropAttributeValue(Catalog.getCatalog().getTable("t1"), 1);
 
-        System.out.println(StorageManager.getStorageManager().getRecords(Catalog.getCatalog().getTable("t1")));
+
+
 
     }
 }

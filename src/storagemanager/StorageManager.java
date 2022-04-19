@@ -7,6 +7,7 @@ package storagemanager;
 import catalog.ACatalog;
 import catalog.Catalog;
 import common.*;
+import indexing.BPlusTree;
 import pagebuffer.PageBuffer;
 
 import java.util.ArrayList;
@@ -699,4 +700,56 @@ public class StorageManager extends AStorageManager {
             return false;
         }
     }
+
+
+    public BPlusTree newIndex(Table table, BPlusTree bpTree,int attributeIdx){
+
+        // page name for head is always at idx zero
+        int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
+
+        // where in a row the pk is
+        int pkidx = ((Table) table).pkIdx();
+
+
+        // loop though all the tables pages in order
+        int idx = 0;
+
+        while (headPtr != -1) {
+
+            Page headPage = pb.getPageFromBuffer("" + headPtr, table);
+            // look though all record for that page
+
+            idx = 0;
+            for (ArrayList<Object> row : headPage.getPageRecords()) {
+                RecordPointer rp = new RecordPointer(headPtr,idx);
+
+
+                switch (bpTree.Type){
+                    case "integer":
+                        bpTree.insertRecordPointer(rp,  (Integer) row.get(attributeIdx));
+                        break;
+                    case "double":
+                        bpTree.insertRecordPointer(rp,  (Double) row.get(attributeIdx));
+                        break;
+                    case "boolean":
+                        bpTree.insertRecordPointer(rp,  (Boolean) row.get(attributeIdx));
+                        break;
+                    default:
+                        bpTree.insertRecordPointer(rp,  (String) row.get(attributeIdx));
+                        break;
+                }
+
+                idx++;
+
+            }
+            // next page
+            headPtr = headPage.getPtrToNextPage();
+        }
+        return bpTree;
+    }
+
+    public PageBuffer getPb(){
+        return pb;
+    }
+
 }

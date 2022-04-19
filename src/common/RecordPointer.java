@@ -33,6 +33,6 @@ public record RecordPointer(int page, int index) {
 
     @Override
     public String toString(){
-        return "R"+index;
+        return "<idx "+index+" page "+page+">";
     }
 }

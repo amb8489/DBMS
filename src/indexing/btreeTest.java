@@ -27,7 +27,7 @@ public class btreeTest {
         }
 
 
-        btree.print(btree.treeRoot, "");
+        btree.print_h(btree.treeRoot, "");
 
 
 //        System.out.println("-------- deleting ----------");
@@ -117,6 +117,7 @@ public class btreeTest {
         System.out.println("-------- = "+key+" ----------");
 
         System.out.println(btree.search(key));
+
 
 
 

@@ -5,12 +5,14 @@ import catalog.Catalog;
 
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
 import filesystem.FileSystem;
+import indexing.BPlusTree;
 
 /*
   Implementation of the ITable interface.  The interface
@@ -35,8 +37,9 @@ public class Table implements ITable {
 
     public HashMap<String, Integer> AttribIdxs = new HashMap<>();
 
+    //DONT forget to add and delere as we add and delete attriues
+    public HashMap<Attribute, BPlusTree> IndexedAttributes = new HashMap<>();
 
-    // ADD INDEX LIST HERE - FOURTH PHASE
 
 
     public Table(String tableName, ArrayList<Attribute> Attributes, Attribute PrimaryKey) {
@@ -252,6 +255,16 @@ public class Table implements ITable {
 
     @Override
     public boolean addIndex(String attributeName) {
+
+
+        // check attribute exits in table
+
+        // make new b+ tree with that attrib
+
+
+
+
+
         return false;
     }
 
@@ -480,5 +493,39 @@ public class Table implements ITable {
 
     public void setNotNullIdxs(Set<Integer> notNullIndexs) {
         this.indicesOfNotNullAttributes = (HashSet<Integer>) notNullIndexs;
+    }
+
+    public int getMaxAttributeSize() {
+        int Max = 0;
+        for (Attribute attribute : Attributes) {
+
+            String attributeType = attribute.getAttributeType().toLowerCase();
+
+
+
+            int attributeSize = 0;
+
+            switch (attributeType) {
+                case "integer":
+                    attributeSize = 4;
+                    break;
+                case "double":
+                    attributeSize = 8;
+                    break;
+                case "boolean":
+                    attributeSize = 1;
+                    break;
+                default:
+
+                    attributeSize = Integer.parseInt(attributeType.substring(attributeType.indexOf("("), attributeType.length() - 1));
+
+
+
+            }
+            Max = Math.max(Max,attributeSize);
+
+
+        }
+        return Max;
     }
 }

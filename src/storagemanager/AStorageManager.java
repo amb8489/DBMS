@@ -18,6 +18,8 @@ package storagemanager;
 import common.Attribute;
 import common.ITable;
 import common.RecordPointer;
+import common.Table;
+import indexing.BPlusTree;
 
 import java.util.ArrayList;
 
@@ -146,4 +148,6 @@ public abstract class AStorageManager {
      * @return true if successful; false otherwise
      */
     public abstract boolean dropAttributeValue(ITable table, int attrIndex);
+
+
 }
