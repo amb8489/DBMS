@@ -237,6 +237,7 @@ public class StorageManager extends AStorageManager {
             // inserting to actual page
             // error comming from not updating records in tree after a page split
             page.insert(rp.index(),record);
+            tree.print();
 
             // TODO what about updating the tree with updating shifted indexs for the other rp fir that page
             // also, page splitting updating ?

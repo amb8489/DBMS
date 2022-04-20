@@ -6,6 +6,7 @@ import common.Table;
 import storagemanager.StorageManager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 //------------- TODO's ------------------
 
@@ -35,6 +36,11 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
     public int max_degree;
     public BTreeNode<T> treeRoot = null;
     public String Type;
+
+
+    // maps what rp belong to what pages
+    // used to quickly find what records to change when splitting a page
+    public HashMap<Integer,ArrayList<RecordPointer>> PageIDToRps = new HashMap<>();
 
 
     public BPlusTree(int MaxPageSize, int MaxAttributeSize) {
@@ -220,10 +226,24 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
 
         // first element in the tree
+
+        if(PageIDToRps.containsKey(rp.page())){
+
+            PageIDToRps.get(rp.page()).add(rp);
+
+
+        }else {
+            var lstOfRps = new ArrayList<RecordPointer>();
+            lstOfRps.add(rp);
+            PageIDToRps.put(rp.page(),lstOfRps);
+        }
+
         if (this.treeRoot == null) {
             this.treeRoot = new BTreeNode<T>(this.nextIndex++, this.TreeNsize);
             this.treeRoot.keys.set(0, insertedValue);
             this.treeRoot.rps.set(0, rp);
+
+
 
             return true;
         } else {
@@ -467,6 +487,13 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
     // delete
     public boolean deleteElement(RecordPointer rp, T deletedValue) {
+
+        if(PageIDToRps.containsKey(rp.page())){
+            PageIDToRps.get(rp.page()).remove(rp);
+            if(PageIDToRps.get(rp.page()).size() == 0){
+                PageIDToRps.remove(rp.page());
+            }
+        }
 
         this.doDelete(this.treeRoot, deletedValue);
         if (this.treeRoot.numKeys == 0) {
@@ -980,6 +1007,15 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
             return this.findInserPostion_h(tree.children.get(findIndex), pkValue);
         }
+    }
+
+
+    public ArrayList<RecordPointer> getRecordsForPage(int pageName){
+
+        if(PageIDToRps.containsKey(pageName)){
+            return PageIDToRps.get(pageName);
+        }
+        return null;
     }
 
 

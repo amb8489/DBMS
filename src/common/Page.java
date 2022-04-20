@@ -128,7 +128,6 @@ public class Page {
     }
 
 
-
     // ****************************--methods--*****************************
 
 
@@ -190,7 +189,6 @@ public class Page {
                 // 5) read in bit array
                 BitSet bitMask = BitSet.valueOf(dataInputStr.readNBytes(bitArraySizeInNumOfbytes));
                 currentSize += bitArraySizeInNumOfbytes;
-
 
 
                 // row obj this will rep 1 tuple in the table
@@ -290,7 +288,7 @@ public class Page {
                 outputStream.write(ByteBuffer.allocate(4).putInt(this.ptrToNextPage).array());
 
 
-                VerbosePrint.print("atemping store page "+pageName+" to disk");
+                VerbosePrint.print("atemping store page " + pageName + " to disk");
 
 
                 //for each row in the table
@@ -441,7 +439,6 @@ public class Page {
     public int recordSize(ArrayList<Object> rec) {
 
 
-
         // get schema from table that we need in order to know what type we are reading in
         // if record has a Char(#) type we need to know how long that char is so we know how many bytes to read in
         int charlen = 0;
@@ -536,8 +533,28 @@ public class Page {
         this.wasChanged = true;
         this.currentSize += recordSize(record);
 
-        if (currentSize >= Catalog.getCatalog().getPageSize()){
+        if (currentSize >= Catalog.getCatalog().getPageSize()) {
+            System.err.println("SPLIT");
+
             this.split();
+
+            // TODO update trees
+
+            var indexedAttributes = ((Table) this.IBelongTo).IndexedAttributes;
+
+            for (String attributeName : indexedAttributes.keySet()) {
+                var tree = indexedAttributes.get(attributeName);
+
+                ArrayList<RecordPointer> rps = tree.getRecordsForPage(pageName);
+                if (rps != null) {
+                    for (RecordPointer rp : rps) {
+
+                        rp = new RecordPointer(-1,-1);
+                    }
+                }
+
+
+            }
         }
         return true;
     }
@@ -549,8 +566,32 @@ public class Page {
         this.currentSize += recordSize(record);
 
 
-        if (currentSize >= Catalog.getCatalog().getPageSize()){
+        if (currentSize >= Catalog.getCatalog().getPageSize()) {
             this.split();
+
+            // TODO update trees
+
+            var indexedAttributes = ((Table) this.IBelongTo).IndexedAttributes;
+
+            for (String attributeName : indexedAttributes.keySet()) {
+                var tree = indexedAttributes.get(attributeName);
+
+                ArrayList<RecordPointer> rps = tree.getRecordsForPage(pageName);
+                if (rps != null) {
+                    int idxRp = 0;
+                    for (RecordPointer rp : rps) {
+                        System.out.println("SPLIT");
+                        tree.getRecordsForPage(pageName).set(idxRp,new RecordPointer(-1,-1));
+                        idxRp++;
+                    }
+                }
+
+
+            }
+            System.out.println("---");
+            System.out.println(((Table) this.IBelongTo).getPkTree().getRecordsForPage(pageName));
+            ((Table) this.IBelongTo).getPkTree().print();
+
         }
         return true;
     }

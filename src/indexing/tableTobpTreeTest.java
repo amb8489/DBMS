@@ -35,7 +35,7 @@ public class tableTobpTreeTest {
 
         // testing table inseting
         Random rand = new Random();
-        for (int i = 0; i < 12; i++) {
+        for (int i = 0; i < 10; i++) {
             ArrayList<Object> row = Phase2Testers.mkRandomRec(attrs);
             row.set(0, rand.nextInt(1000));
             boolean b = StorageManager.getStorageManager().insertRecord(Catalog.getCatalog().getTable("t1"), row);
