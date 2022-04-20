@@ -232,9 +232,9 @@ public class StorageManager extends AStorageManager {
 
                 switch (pk_type.charAt(0)) {
                     case 'I' -> index = Collections.binarySearch(headPage.getPageRecords(), record, Comparator.comparing(row -> (Integer) row.get(pkIdx)));
-                    case 'D' -> index = Collections.binarySearch(headPage.getPageRecords(), record, Comparator.comparing(row -> (Double) row.get(pkIdx)));
+                    case 'D' -> index = Collections.binarySearch(headPage.getPageRecords(), record, Comparator.comparing(row -> (Double)  row.get(pkIdx)));
                     case 'B' -> index = Collections.binarySearch(headPage.getPageRecords(), record, Comparator.comparing(row -> (Boolean) row.get(pkIdx)));
-                    default -> index = Collections.binarySearch(headPage.getPageRecords(), record, Comparator.comparing(row -> (String) row.get(pkIdx)));
+                    default -> index =  Collections.binarySearch(headPage.getPageRecords(), record, Comparator.comparing(row -> (String)  row.get(pkIdx)));
                 }
 
 

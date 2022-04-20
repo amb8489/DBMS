@@ -38,7 +38,10 @@ public class Table implements ITable {
     public HashMap<String, Integer> AttribIdxs = new HashMap<>();
 
     //DONT forget to add and delere as we add and delete attriues
-    public HashMap<Attribute, BPlusTree> IndexedAttributes = new HashMap<>();
+
+
+    // Attribute name , tree
+    public HashMap<String, BPlusTree> IndexedAttributes = new HashMap<>();
 
 
 
