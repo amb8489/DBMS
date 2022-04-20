@@ -531,4 +531,8 @@ public class Table implements ITable {
         }
         return Max;
     }
+
+    public BPlusTree getPkTree() {
+        return IndexedAttributes.get(Attributes.get(pkeyIdx).getAttributeName());
+    }
 }

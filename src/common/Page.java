@@ -153,7 +153,6 @@ public class Page {
 
             /////////////////////////////////////////////////////////////////////////////
 
-            VerbosePrint.print("reading records from page " + location);
 
             // read in streams
             DataInputStream dataInputStr = FileSystem.createPageDataInStream(location);

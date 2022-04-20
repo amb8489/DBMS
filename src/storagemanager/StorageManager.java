@@ -49,31 +49,30 @@ public class StorageManager extends AStorageManager {
         return false;
     }
 
+    // DONE
 
     @Override
     public ArrayList<Object> getRecord(ITable table, Object pkValue) {
 
-        // page name for head is always at idx zero
-        int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
+        // getting the pk index tree
 
-        // where in a row the pk is
-        int pkidx = ((Table) table).pkIdx();
+        BPlusTree tree = ((Table) table).getPkTree();
 
+        // searching the tree
+        ArrayList<RecordPointer> rps = switch (tree.Type) {
+            case "integer" -> tree.search((Integer) pkValue);
+            case "double" -> tree.search((Double) pkValue);
+            case "boolean" -> tree.search((Boolean) pkValue);
+            default -> tree.search((String) pkValue);
+        };
+        // getting the page
+        int pageName = rps.get(0).page();
+        int idxInPage = rps.get(0).index();
+        Page page = pb.getPageFromBuffer(String.valueOf(pageName), table);
 
-        // loop though all the tables pages in order
-        while (headPtr != -1) {
+        // getting the record in the page
+        return page.getPageRecords().get(idxInPage);
 
-            Page headPage = pb.getPageFromBuffer("" + headPtr, table);
-            // look though all record for that page
-            for (ArrayList<Object> row : headPage.getPageRecords()) {
-                if (row.get(pkidx).equals(pkValue)) {
-                    return row;
-                }
-            }
-            // next page
-            headPtr = headPage.getPtrToNextPage();
-        }
-        return null;
     }
 
 
@@ -120,7 +119,7 @@ public class StorageManager extends AStorageManager {
         }
     }
 
-
+    // DONE
     @Override
     public ArrayList<ArrayList<Object>> getRecords(ITable table) {
 
@@ -147,6 +146,10 @@ public class StorageManager extends AStorageManager {
     @Override
     public boolean insertRecord(ITable table, ArrayList<Object> record) {
         try {
+
+
+
+            ////////////////////// pre preprocessing before inset //////////////////////
 
             // page name for head is always at idx zero
             int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
@@ -185,8 +188,9 @@ public class StorageManager extends AStorageManager {
 
             HashMap<String, Integer> AttribNamesIdx = ((Table) table).AttribIdxs;
 
+            //TODO why is this happening here???--------------------------------------------
 
-            // checking fk in other table will need to optimize search
+            // checking if fk in other table will need to optimize search
             for (ForeignKey fk : (table).getForeignKeys()) {
                 String fkAttribute = fk.getAttrName();
                 Object valueToFindInFKtab = record.get(AttribNamesIdx.get(fkAttribute));
@@ -199,75 +203,59 @@ public class StorageManager extends AStorageManager {
 
             }
 
+            ////////////////////// inserting phase //////////////////////
 
-            // loop though all the tables pages in order
-            Page headPage = null;
+            BPlusTree tree = ((Table) table).getPkTree();
 
-            while (headPtr != -1) {
-
-
-                headPage = pb.getPageFromBuffer(String.valueOf(headPtr), table);
+            // searching where in the tree this would go ????
 
 
-                int numRecords = headPage.getPageRecords().size();
-                if (numRecords == 0) {
-                    headPage.insert(0, record);
-                    return true;
-                }
+            var pkValue = record.get(((Table) table).pkIdx());
 
-                // binary search for pk on page
-                var pkIdx = ((Table) table).pkIdx();
-                String pk_type = table.getAttributes().get(pkIdx).getAttributeType().toUpperCase();
-                int index;
-
-
-                //TODO if pk is > the the last row for this page then go to next page
-                // be careful that next page is -1
-//                if(headPage.getPageRecords().get(index)){
-//
-//
-//
-//                }
+            RecordPointer rp = switch (tree.Type) {
+                case "integer" -> tree.findInserPostion((Integer) pkValue);
+                case "double" ->  tree.findInserPostion((Double) pkValue);
+                case "boolean" ->  tree.findInserPostion((Boolean) pkValue);
+                // String
+                default ->        tree.findInserPostion((String) pkValue);
+            };
 
 
-                switch (pk_type.charAt(0)) {
-                    case 'I' -> index = Collections.binarySearch(headPage.getPageRecords(), record, Comparator.comparing(row -> (Integer) row.get(pkIdx)));
-                    case 'D' -> index = Collections.binarySearch(headPage.getPageRecords(), record, Comparator.comparing(row -> (Double)  row.get(pkIdx)));
-                    case 'B' -> index = Collections.binarySearch(headPage.getPageRecords(), record, Comparator.comparing(row -> (Boolean) row.get(pkIdx)));
-                    default -> index =  Collections.binarySearch(headPage.getPageRecords(), record, Comparator.comparing(row -> (String)  row.get(pkIdx)));
-                }
+//            // insering into page getting the page
+            int pageName = rp.page();
+            int idxInPage = rp.index();
 
-
-                // if we should insert last i.e records.size() then go to next page
-                // else if it says to insert then check at that location no dubs exist (error)
-                // if on last page and for last element then add to end of page
-
-                if (index >= 0) {
-                    // check for dup
-                        System.err.println("duplicate primary key value trying to be insert");
-                        return false;
-
-                } else {
-                    index = -index - 1;
-
-                    // wanting to inset into the last element of the page
-                    // go to next page to insert
-                    if (index != headPage.getPageRecords().size()) {
-                        return headPage.insert(index, record);
-                    }else if(headPage.getPtrToNextPage() == -1){
-                        return headPage.insert(index, record);
-                    }
-                }
-
-                headPtr = headPage.getPtrToNextPage();
-
+            // -1 means inset into that tables first page at index 0
+            if (pageName < 0){
+                pageName = ((Table) table).getPagesThatBelongToMe().get(0);
+                rp = new RecordPointer(pageName,idxInPage);
             }
-            // add to last spot in last page in table
 
-            // not sure if we need this anymore
-//            System.out.println("here2 end " + headPage.getPageRecords().size());
-//
-//            return headPage.insert(headPage.getPageRecords().size(), record);
+            // get the page to insert to
+            Page page = pb.getPageFromBuffer(String.valueOf(rp.page()), table);
+
+            // inserting to actual page
+            // error comming from not updating records in tree after a page split
+            page.insert(rp.index(),record);
+
+            // TODO what about updating the tree with updating shifted indexs for the other rp fir that page
+            // also, page splitting updating ?
+            // also could be faster if the leaf node was returned and we affed right to that inseted of having to
+            // re-search the tree for it again
+
+            System.out.println("inserting "+pkValue+" on page "+ rp.page()+" at idx "+rp.index());
+            return switch (tree.Type) {
+                case "integer" -> tree.insertRecordPointer(rp,(Integer)pkValue);
+                case "double" ->  tree.insertRecordPointer(rp,(Double)pkValue);
+                case "boolean" -> tree.insertRecordPointer(rp,(Boolean)pkValue);
+                default ->        tree.insertRecordPointer(rp,(String)pkValue);
+            };
+
+
+            // update btree for spits and indexes being moved after inserst
+
+
+
 
 
         } catch (Exception e) {
@@ -276,7 +264,6 @@ public class StorageManager extends AStorageManager {
             System.err.println("Storage manager(insertRecord): error in inserting");
             return false;
         }
-        return false;
     }
 
     public boolean deleteRecordWhere(ITable table, String where, Boolean removeAllRecords) {

@@ -17,7 +17,7 @@ public class btreeTest {
 
 
         Random rand = new Random();
-        int N = 14;
+        int N = 100;
         for (int i = 1; i <= N; i++) {
             int int_random = rand.nextInt(20);
             System.out.println(int_random);

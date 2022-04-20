@@ -40,9 +40,6 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
     public BPlusTree(int MaxPageSize, int MaxAttributeSize) {
 
         this.TreeNsize = (int) (Math.floor(MaxPageSize / ((double) (4 + MaxAttributeSize)) - 1));
-//        this.nextIndex = 3;
-
-
         this.max_degree = TreeNsize;
         this.max_keys = TreeNsize - 1;
         this.min_keys = (int) Math.floor((TreeNsize + 1) / 2.0) - 1;
@@ -58,7 +55,6 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
         this.max_keys = degree - 1;
         this.min_keys = (int) Math.floor((degree + 1) / 2.0) - 1;
         this.split_index = (int) Math.floor((degree) / 2.0);
-        System.out.println(split_index);
     }
 
 
@@ -223,6 +219,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
     public boolean insertElement(RecordPointer rp, T insertedValue) {
 
 
+        // first element in the tree
         if (this.treeRoot == null) {
             this.treeRoot = new BTreeNode<T>(this.nextIndex++, this.TreeNsize);
             this.treeRoot.keys.set(0, insertedValue);
@@ -256,9 +253,39 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
             // insert value
             tree.keys.set(insertIndex, insertValue);
+
             tree.rps.set(insertIndex, rp);
 
+            // update the other record pointers that are > this record and on the same page
+            // TODO u page splitting update?
 
+            int currRpIdx = insertIndex+1;
+            var currNode = tree;
+            int updatePageName = rp.page();
+            System.out.println(currNode.numKeys-1+" <1> "+currRpIdx);
+
+            if (currRpIdx > currNode.numKeys-1) {
+                currRpIdx = 0;
+                currNode = currNode.next;
+                if (currNode == null) {
+                    return this.insertRepair(tree);
+                }
+            }
+
+            while(currNode.rps.get(currRpIdx).page() == updatePageName) {
+
+                currNode.rps.set(currRpIdx, new RecordPointer(updatePageName,currNode.rps.get(currRpIdx).index()+1));
+                currRpIdx++;
+                if (currRpIdx > currNode.numKeys-1) {
+                    currRpIdx = 0;
+                    currNode = currNode.next;
+                    if (currNode == null) {
+                        return this.insertRepair(tree);
+                    }
+                }
+            }
+
+            // repairing tree
             return this.insertRepair(tree);
 
             // finding what child to move to
@@ -411,14 +438,20 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
         if (ROOT != null) {
 
             if (ROOT.isLeaf) {
-                System.out.println(tab + "|--" + ROOT.keys.subList(0, ROOT.numKeys));
+                if (ROOT.parent == null) {
+                    System.out.println("ROOT" + ROOT.keys.subList(0, ROOT.numKeys));
+                    System.out.println("ROOT" + ROOT.rps.subList(0, ROOT.numKeys));
 
+                }else {
+                    System.out.println(tab + "|--" + ROOT.keys.subList(0, ROOT.numKeys));
+                }
             } else {
                 if (ROOT.parent != null) {
+
                     System.out.println(tab + "|-" + ROOT.keys.subList(0, ROOT.numKeys));
 
                 } else {
-                    System.out.println(tab + ROOT.keys.subList(0, ROOT.numKeys));
+                    System.out.println("ROOT" + ROOT.keys.subList(0, ROOT.numKeys));
 
                 }
                 for (BTreeNode<T> child : ROOT.children.subList(0, ROOT.numKeys + 1)) {
@@ -860,7 +893,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
 
             if (ROOT.parent != null) {
-                System.out.println( ROOT.writeOut());
+                System.out.println(ROOT.writeOut());
 
             } else {
                 System.out.println(ROOT.writeOut());
@@ -877,5 +910,77 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
         return null;
 
     }
+
+    public RecordPointer findInserPostion(T pkValue) {
+
+
+
+        if (this.treeRoot == null) {
+            // -1 means inset into that tables first page at index 0
+            return new RecordPointer(-1,0);
+        } else {
+            return findInserPostion_h(this.treeRoot, pkValue);
+        }
+
+
+
+
+    }
+
+    private RecordPointer findInserPostion_h(BTreeNode<T> tree, T pkValue) {
+        //steps
+        // search for leaf node where insert belongs
+        // insert
+        // repair
+
+        RecordPointer where = null;
+        if (tree.isLeaf) {
+            var insertIndex = tree.numKeys;
+
+            // find where to insert new value in leaf
+            while (insertIndex > 0 && IsAGTB(tree.keys.get(insertIndex - 1), pkValue, false)) {
+                insertIndex--;
+            }
+
+            // get where it would inset
+            //
+
+            // carful for -1 idx or when  at the first element in leaf, that means
+            // we want to insert before the first and not between
+
+            RecordPointer prev =null;
+
+            int onPageIndex = 0;
+
+            // before the first element in the leaf
+            if (insertIndex == 0){
+                prev = tree.rps.get(insertIndex);
+                // first element and first index on page check
+                if(prev.index()-1 >= 0) {
+                    onPageIndex = prev.index() - 1;
+                }
+            }else{
+                prev = tree.rps.get(insertIndex-1);
+                onPageIndex = prev.index() + 1;
+
+            }
+
+
+            where = new RecordPointer(prev.page(),onPageIndex);
+
+            System.out.println("\n\nwould want to insert at "+where+" ("+pkValue+")");
+            return where;
+
+
+        } else {
+            var findIndex = 0;
+            while (findIndex < tree.numKeys && IsALTB(tree.keys.get(findIndex), pkValue, false)) {
+                findIndex++;
+            }
+
+            return this.findInserPostion_h(tree.children.get(findIndex), pkValue);
+        }
+    }
+
 
 }

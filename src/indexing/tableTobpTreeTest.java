@@ -18,7 +18,7 @@ public class tableTobpTreeTest {
     public static void main(String[] args) {
 
 
-        Catalog.createCatalog("DB", 4880, 10);
+        Catalog.createCatalog("DB", 120, 10);
         StorageManager.createStorageManager();
 
         //////////////////////////////--TABS--/////////////////////////////////////////
@@ -30,29 +30,35 @@ public class tableTobpTreeTest {
         Catalog.getCatalog().addTable("t1", attrs, attrs.get(0));
 
 
+        Table table = (Table) Catalog.getCatalog().getTable("t1");
+        table.IndexedAttributes.put(table.getAttributes().get(table.pkIdx()).getAttributeName(), BPlusTree.TreeFromTableAttribute(table, 0));
+
         // testing table inseting
         Random rand = new Random();
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 12; i++) {
             ArrayList<Object> row = Phase2Testers.mkRandomRec(attrs);
-            row.set(0,rand.nextInt(1000));
+            row.set(0, rand.nextInt(1000));
             boolean b = StorageManager.getStorageManager().insertRecord(Catalog.getCatalog().getTable("t1"), row);
-                System.out.println("INSERT " + b + " " + row);
+            System.out.println("INSERT " + b + " " + row);
 
         }
         System.out.println(StorageManager.getStorageManager().getRecords(Catalog.getCatalog().getTable("t1")));
+        System.out.println("DONE INSERTING ");
+        table.getPkTree().print();
         System.exit(1);
+
+
+
+
         StorageManager.pb.PurgeBuffer();
 
-        System.out.println("DONE INSERTING ");
-
-        Table table = (Table) Catalog.getCatalog().getTable("t1");
 
         int idxI = 1;
-        BPlusTree tree = BPlusTree.TreeFromTableAttribute(table,idxI);
+        BPlusTree tree = BPlusTree.TreeFromTableAttribute(table, idxI);
 
         tree.print();
 
-        PageBuffer pb = ((StorageManager)StorageManager.getStorageManager()).getPb();
+        PageBuffer pb = ((StorageManager) StorageManager.getStorageManager()).getPb();
 //
 //        for(ArrayList<Object> row :StorageManager.getStorageManager().getRecords(table)){
 //
@@ -81,7 +87,6 @@ public class tableTobpTreeTest {
 //
 
         tree.writeToDisk();
-
 
 
     }
