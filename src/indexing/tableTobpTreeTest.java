@@ -18,7 +18,7 @@ public class tableTobpTreeTest {
     public static void main(String[] args) {
 
 
-        Catalog.createCatalog("DB", 120, 10);
+        Catalog.createCatalog("DB", 100000, 100);
         StorageManager.createStorageManager();
 
         //////////////////////////////--TABS--/////////////////////////////////////////
@@ -35,11 +35,19 @@ public class tableTobpTreeTest {
 
         // testing table inseting
         Random rand = new Random();
-        for (int i = 0; i < 10; i++) {
+
+        //TEST
+        //  - key is null error
+        //   [933, XCAXY] [374, UWMH7]  [10, OAP] [733, A013] [139, MPFKL] [622, WKI4] [489 aaaaa]
+        // also - idx out of bounds eorr
+        // [481, 1][114, P][133, QW1P][826, G5][390, MX3][67, 7][577, B5K][580, OUW][332, A8W][649, A]
+        for (int i = 0; i < 100000; i++) {
             ArrayList<Object> row = Phase2Testers.mkRandomRec(attrs);
-            row.set(0, rand.nextInt(1000));
+//            row.set(0, rand.nextInt(1000));
+            row.set(0, i);
+
             boolean b = StorageManager.getStorageManager().insertRecord(Catalog.getCatalog().getTable("t1"), row);
-            System.out.println("INSERT " + b + " " + row);
+            System.out.println("INSERT (#"+i+") "+  b + " " + row);
 
         }
         System.out.println(StorageManager.getStorageManager().getRecords(Catalog.getCatalog().getTable("t1")));

@@ -1,6 +1,7 @@
 package indexing;
 
 import catalog.Catalog;
+import common.Page;
 import common.RecordPointer;
 import common.Table;
 import storagemanager.StorageManager;
@@ -38,9 +39,8 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
     public String Type;
 
 
-    // maps what rp belong to what pages
-    // used to quickly find what records to change when splitting a page
-    public HashMap<Integer,ArrayList<RecordPointer>> PageIDToRps = new HashMap<>();
+    // maps the start end end of pages that nodes
+    public HashMap<Integer, ArrayList<BTreeNode>> PageStartEndNodes = new HashMap<>();
 
 
     public BPlusTree(int MaxPageSize, int MaxAttributeSize) {
@@ -207,6 +207,12 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
 
         if (tree.isLeaf) {
+
+//            int idxInNode = tree.keys.subList(0,tree.numKeys).indexOf(searchKey);
+//            if (idxInNode == -1){
+//                return  tree.next;
+//            }
+
             return tree;
 
         } else {
@@ -227,22 +233,11 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
         // first element in the tree
 
-        if(PageIDToRps.containsKey(rp.page())){
-
-            PageIDToRps.get(rp.page()).add(rp);
-
-
-        }else {
-            var lstOfRps = new ArrayList<RecordPointer>();
-            lstOfRps.add(rp);
-            PageIDToRps.put(rp.page(),lstOfRps);
-        }
 
         if (this.treeRoot == null) {
             this.treeRoot = new BTreeNode<T>(this.nextIndex++, this.TreeNsize);
             this.treeRoot.keys.set(0, insertedValue);
             this.treeRoot.rps.set(0, rp);
-
 
 
             return true;
@@ -274,35 +269,42 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
             // insert value
             tree.keys.set(insertIndex, insertValue);
 
+
             tree.rps.set(insertIndex, rp);
 
             // update the other record pointers that are > this record and on the same page
-            // TODO u page splitting update?
 
-            int currRpIdx = insertIndex+1;
+            int currRpIdx = insertIndex + 1;
             var currNode = tree;
             int updatePageName = rp.page();
-            System.out.println(currNode.numKeys-1+" <1> "+currRpIdx);
 
-            if (currRpIdx > currNode.numKeys-1) {
+
+            if (currRpIdx > currNode.numKeys - 1) {
                 currRpIdx = 0;
                 currNode = currNode.next;
                 if (currNode == null) {
+
                     return this.insertRepair(tree);
                 }
             }
 
-            while(currNode.rps.get(currRpIdx).page() == updatePageName) {
+            while (currNode.rps.get(currRpIdx).page() == updatePageName) {
 
-                currNode.rps.set(currRpIdx, new RecordPointer(updatePageName,currNode.rps.get(currRpIdx).index()+1));
+
+                currNode.rps.set(currRpIdx, new RecordPointer(updatePageName, currNode.rps.get(currRpIdx).index() + 1));
                 currRpIdx++;
-                if (currRpIdx > currNode.numKeys-1) {
+
+                if (currRpIdx > currNode.numKeys - 1) {
                     currRpIdx = 0;
+
+
+
                     currNode = currNode.next;
                     if (currNode == null) {
                         return this.insertRepair(tree);
                     }
                 }
+
             }
 
             // repairing tree
@@ -460,10 +462,12 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
             if (ROOT.isLeaf) {
                 if (ROOT.parent == null) {
                     System.out.println("ROOT" + ROOT.keys.subList(0, ROOT.numKeys));
-                    System.out.println("ROOT" + ROOT.rps.subList(0, ROOT.numKeys));
 
-                }else {
+                } else {
+                    // sromthing wtong with spitting ??
+//                    System.out.println(tab + "|--" + ROOT.rps.subList(0, ROOT.numKeys));
                     System.out.println(tab + "|--" + ROOT.keys.subList(0, ROOT.numKeys));
+
                 }
             } else {
                 if (ROOT.parent != null) {
@@ -488,16 +492,10 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
     // delete
     public boolean deleteElement(RecordPointer rp, T deletedValue) {
 
-        if(PageIDToRps.containsKey(rp.page())){
-            PageIDToRps.get(rp.page()).remove(rp);
-            if(PageIDToRps.get(rp.page()).size() == 0){
-                PageIDToRps.remove(rp.page());
-            }
-        }
 
         this.doDelete(this.treeRoot, deletedValue);
         if (this.treeRoot.numKeys == 0) {
-            System.out.println("removing root");
+
             this.treeRoot = this.treeRoot.children.get(0);
             this.treeRoot.parent = null;
         }
@@ -870,7 +868,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
         // check for out of bounds exception
         if (AttributeIdx >= table.getAttributes().size() || AttributeIdx < 0) {
-            System.out.println(AttributeIdx + " out of bounds for size of " + table.getAttributes().size());
+            System.err.println(AttributeIdx + " out of bounds for size of " + table.getAttributes().size());
             return null;
         }
 
@@ -941,15 +939,12 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
     public RecordPointer findInserPostion(T pkValue) {
 
 
-
         if (this.treeRoot == null) {
             // -1 means inset into that tables first page at index 0
-            return new RecordPointer(-1,0);
+            return new RecordPointer(-1, 0);
         } else {
             return findInserPostion_h(this.treeRoot, pkValue);
         }
-
-
 
 
     }
@@ -975,27 +970,26 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
             // carful for -1 idx or when  at the first element in leaf, that means
             // we want to insert before the first and not between
 
-            RecordPointer prev =null;
+            RecordPointer prev = null;
 
             int onPageIndex = 0;
 
             // before the first element in the leaf
-            if (insertIndex == 0){
+            if (insertIndex == 0) {
                 prev = tree.rps.get(insertIndex);
                 // first element and first index on page check
-                if(prev.index()-1 >= 0) {
+                if (prev.index() - 1 >= 0) {
                     onPageIndex = prev.index() - 1;
                 }
-            }else{
-                prev = tree.rps.get(insertIndex-1);
+            } else {
+                prev = tree.rps.get(insertIndex - 1);
                 onPageIndex = prev.index() + 1;
 
             }
 
 
-            where = new RecordPointer(prev.page(),onPageIndex);
+            where = new RecordPointer(prev.page(), onPageIndex);
 
-            System.out.println("\n\nwould want to insert at "+where+" ("+pkValue+")");
             return where;
 
 
@@ -1010,13 +1004,55 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
     }
 
 
-    public ArrayList<RecordPointer> getRecordsForPage(int pageName){
+    public void updatePageNameAfterPageSplit(T startRecKey, T endRecKey, int newPageName, int numberRecsChanged) {
+        var startingNode = getFirstNodeContaining(this.treeRoot, startRecKey);
 
-        if(PageIDToRps.containsKey(pageName)){
-            return PageIDToRps.get(pageName);
+        //  find idx of first occurrence in startRecSplit
+
+        int idxInNode = startingNode.keys.subList(0,startingNode.numKeys).indexOf(startRecKey);
+
+        if(idxInNode == -1){
+
+            startingNode = startingNode.next;
+            idxInNode = startingNode.keys.subList(0,startingNode.numKeys).indexOf(startRecKey);
+
         }
-        return null;
-    }
 
+
+
+
+
+
+        // the index in the new page
+        int idxInSplitPage = 0;
+
+        //current node we are updaing values for
+        var curr = startingNode;
+        while (idxInSplitPage < numberRecsChanged) {
+
+            // maybe  idxInNode is not incrimenting on the first round
+//            System.out.println("idxInNode:"+idxInNode + "  nodesize:"+curr.numKeys+" | idxpage:" + idxInSplitPage + "  page name:" + newPageName + " being changed " + curr.rps.get(idxInNode));
+            curr.rps.set(idxInNode, new RecordPointer(newPageName, idxInSplitPage));
+
+            if (idxInNode >= curr.numKeys-1) {
+                idxInNode = 0;
+
+
+                // go to next node weve looked though all the values for this node
+                curr = curr.next;
+
+                if (curr == null) {
+                    return;
+                }
+
+            } else {
+                idxInNode++;
+            }
+
+            idxInSplitPage++;
+        }
+
+
+    }
 
 }

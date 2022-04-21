@@ -205,18 +205,17 @@ public class StorageManager extends AStorageManager {
 
             ////////////////////// inserting phase //////////////////////
 
+            //TODO deny dups
+
             BPlusTree tree = ((Table) table).getPkTree();
 
             // searching where in the tree this would go ????
-
-
             var pkValue = record.get(((Table) table).pkIdx());
 
             RecordPointer rp = switch (tree.Type) {
                 case "integer" -> tree.findInserPostion((Integer) pkValue);
                 case "double" ->  tree.findInserPostion((Double) pkValue);
                 case "boolean" ->  tree.findInserPostion((Boolean) pkValue);
-                // String
                 default ->        tree.findInserPostion((String) pkValue);
             };
 
@@ -231,21 +230,10 @@ public class StorageManager extends AStorageManager {
                 rp = new RecordPointer(pageName,idxInPage);
             }
 
-            // get the page to insert to
-            Page page = pb.getPageFromBuffer(String.valueOf(rp.page()), table);
-
-            // inserting to actual page
-            // error comming from not updating records in tree after a page split
-            page.insert(rp.index(),record);
-            tree.print();
-
-            // TODO what about updating the tree with updating shifted indexs for the other rp fir that page
-            // also, page splitting updating ?
-            // also could be faster if the leaf node was returned and we affed right to that inseted of having to
-            // re-search the tree for it again
+            // insert rp & update indexes for tht page
 
             System.out.println("inserting "+pkValue+" on page "+ rp.page()+" at idx "+rp.index());
-            return switch (tree.Type) {
+             switch (tree.Type) {
                 case "integer" -> tree.insertRecordPointer(rp,(Integer)pkValue);
                 case "double" ->  tree.insertRecordPointer(rp,(Double)pkValue);
                 case "boolean" -> tree.insertRecordPointer(rp,(Boolean)pkValue);
@@ -253,11 +241,15 @@ public class StorageManager extends AStorageManager {
             };
 
 
-            // update btree for spits and indexes being moved after inserst
+            // get the page to insert to
+            Page page = pb.getPageFromBuffer(String.valueOf(rp.page()), table);
+
+            // inserting to actual page
+            // error comming from not updating records in tree after a page split
+            page.insert(rp.index(),record);
 
 
-
-
+            return true;
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import filesystem.FileSystem;
+import indexing.BPlusTree;
 import pagebuffer.PageBuffer;
 import storagemanager.AStorageManager;
 import storagemanager.StorageManager;
@@ -524,6 +525,47 @@ public class Page {
         this.writeToDisk(ACatalog.getCatalog().getDbLocation(), this.IBelongTo);
 
 
+        //Udating bptree
+        var indexedAtts = ((Table)this.IBelongTo).IndexedAttributes;
+
+
+        // TODO for each tree in the table this wont work for other trees
+        for (String name:indexedAtts.keySet()) {
+            BPlusTree tree = indexedAtts.get(name);
+
+            // get the records effected by the split
+            var records = splitPage.getPageRecords();
+
+            // what index in the schema this attribute is
+            int idxOfAtrributeIndexed = ((Table) this.IBelongTo).AttribIdxs.get(name);
+
+            // get the first record effected by the split
+            var startRecSplit = records.get(0).get(idxOfAtrributeIndexed);
+
+            // get the secod record effected by the split
+
+            var endRecSplit =   records.get(records.size()-1).get(idxOfAtrributeIndexed);
+
+
+
+            // upding rp to have this page name now
+            int newPageName = splitPage.pageName;
+            int numberOfRecordsChanged = splitPage.getPageRecords().size();
+
+            // update from ther start to the end;
+
+            //todo do are we double incrimenting the idx with inseet and split?
+            switch (tree.Type) {
+                case "integer" -> tree.updatePageNameAfterPageSplit((Integer)startRecSplit,(Integer)endRecSplit,newPageName,numberOfRecordsChanged);
+                case "double" ->  tree.updatePageNameAfterPageSplit((Double)startRecSplit,(Double)endRecSplit,newPageName,numberOfRecordsChanged);
+                case "boolean" -> tree.updatePageNameAfterPageSplit((Boolean)startRecSplit,(Boolean)endRecSplit,newPageName,numberOfRecordsChanged);
+                default ->        tree.updatePageNameAfterPageSplit((String)startRecSplit,(String)endRecSplit,newPageName,numberOfRecordsChanged);
+            }
+
+
+        }
+
+
         return splitPage;
 
     }
@@ -534,27 +576,13 @@ public class Page {
         this.currentSize += recordSize(record);
 
         if (currentSize >= Catalog.getCatalog().getPageSize()) {
-            System.err.println("SPLIT");
+
 
             this.split();
 
             // TODO update trees
 
-            var indexedAttributes = ((Table) this.IBelongTo).IndexedAttributes;
 
-            for (String attributeName : indexedAttributes.keySet()) {
-                var tree = indexedAttributes.get(attributeName);
-
-                ArrayList<RecordPointer> rps = tree.getRecordsForPage(pageName);
-                if (rps != null) {
-                    for (RecordPointer rp : rps) {
-
-                        rp = new RecordPointer(-1,-1);
-                    }
-                }
-
-
-            }
         }
         return true;
     }
@@ -570,27 +598,6 @@ public class Page {
             this.split();
 
             // TODO update trees
-
-            var indexedAttributes = ((Table) this.IBelongTo).IndexedAttributes;
-
-            for (String attributeName : indexedAttributes.keySet()) {
-                var tree = indexedAttributes.get(attributeName);
-
-                ArrayList<RecordPointer> rps = tree.getRecordsForPage(pageName);
-                if (rps != null) {
-                    int idxRp = 0;
-                    for (RecordPointer rp : rps) {
-                        System.out.println("SPLIT");
-                        tree.getRecordsForPage(pageName).set(idxRp,new RecordPointer(-1,-1));
-                        idxRp++;
-                    }
-                }
-
-
-            }
-            System.out.println("---");
-            System.out.println(((Table) this.IBelongTo).getPkTree().getRecordsForPage(pageName));
-            ((Table) this.IBelongTo).getPkTree().print();
 
         }
         return true;
