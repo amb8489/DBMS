@@ -8,6 +8,7 @@ import storagemanager.StorageManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 //------------- TODO's ------------------
 
@@ -40,7 +41,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
 
     // maps the start end end of pages that nodes
-    public HashMap<Integer, ArrayList<BTreeNode>> PageStartEndNodes = new HashMap<>();
+    public HashMap<Integer, HashSet<BTreeNode>> PageStartEndNodes = new HashMap<>();
 
 
     public BPlusTree(int MaxPageSize, int MaxAttributeSize) {
@@ -324,6 +325,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
     public boolean insertRepair(BTreeNode<T> tree) {
         // all is okay no fix needed
         if (tree.numKeys <= this.max_keys) {
+
             return true;
 
             //root
@@ -1012,11 +1014,10 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
         int idxInNode = startingNode.keys.subList(0,startingNode.numKeys).indexOf(startRecKey);
 
         if(idxInNode == -1){
-
             startingNode = startingNode.next;
             idxInNode = startingNode.keys.subList(0,startingNode.numKeys).indexOf(startRecKey);
-
         }
+
 
 
 
@@ -1028,22 +1029,53 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
         //current node we are updaing values for
         var curr = startingNode;
+        // change the next n records to the new page
+
+
+        /////----
+        //TODO -----
+
+        if(PageStartEndNodes.containsKey(newPageName)){
+            PageStartEndNodes.get(newPageName).add(curr);
+
+        }else{
+
+            PageStartEndNodes.put(newPageName,new HashSet<>());
+            PageStartEndNodes.get(newPageName).add(curr);
+        }
+
+        /////----
+
+
         while (idxInSplitPage < numberRecsChanged) {
 
             // maybe  idxInNode is not incrimenting on the first round
 //            System.out.println("idxInNode:"+idxInNode + "  nodesize:"+curr.numKeys+" | idxpage:" + idxInSplitPage + "  page name:" + newPageName + " being changed " + curr.rps.get(idxInNode));
             curr.rps.set(idxInNode, new RecordPointer(newPageName, idxInSplitPage));
 
+
             if (idxInNode >= curr.numKeys-1) {
                 idxInNode = 0;
 
 
                 // go to next node weve looked though all the values for this node
+
+                if (curr.next == null){
+
+                    //TODO -----
+                    if(PageStartEndNodes.containsKey(newPageName)){
+                        PageStartEndNodes.get(newPageName).add(curr);
+
+                    }else{
+
+                        PageStartEndNodes.put(newPageName,new HashSet<>());
+                        PageStartEndNodes.get(newPageName).add(curr);
+                    }
+                    return;
+
+                }
                 curr = curr.next;
 
-                if (curr == null) {
-                    return;
-                }
 
             } else {
                 idxInNode++;
@@ -1053,6 +1085,42 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
         }
 
 
+
+    }
+
+    public void printRPS() {
+
+        printRPS_h(this.treeRoot, " ");
+
+    }
+
+    public void printRPS_h(BTreeNode<T> ROOT, String tab) {
+
+        if (ROOT != null) {
+
+            if (ROOT.isLeaf) {
+                if (ROOT.parent == null) {
+                    System.out.println("ROOT" + ROOT.rps.subList(0, ROOT.numKeys));
+
+                } else {
+                    System.out.println(tab + "|--" + ROOT.rps.subList(0, ROOT.numKeys));
+                }
+            } else {
+                if (ROOT.parent != null) {
+
+                    System.out.println(tab + "|-" + ROOT.rps.subList(0, ROOT.numKeys));
+
+                } else {
+                    System.out.println("ROOT" + ROOT.rps.subList(0, ROOT.numKeys));
+
+                }
+                for (BTreeNode<T> child : ROOT.children.subList(0, ROOT.numKeys + 1)) {
+
+                    this.printRPS_h(child, tab + "|  ");
+
+                }
+            }
+        }
     }
 
 }

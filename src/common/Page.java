@@ -554,7 +554,6 @@ public class Page {
 
             // update from ther start to the end;
 
-            //todo do are we double incrimenting the idx with inseet and split?
             switch (tree.Type) {
                 case "integer" -> tree.updatePageNameAfterPageSplit((Integer)startRecSplit,(Integer)endRecSplit,newPageName,numberOfRecordsChanged);
                 case "double" ->  tree.updatePageNameAfterPageSplit((Double)startRecSplit,(Double)endRecSplit,newPageName,numberOfRecordsChanged);
@@ -589,16 +588,32 @@ public class Page {
 
 
     public boolean insert(int idx, ArrayList<Object> record) {
-        this.getPageRecords().add(idx, record);
-        this.wasChanged = true;
-        this.currentSize += recordSize(record);
+        try {
 
 
-        if (currentSize >= Catalog.getCatalog().getPageSize()) {
-            this.split();
+            this.getPageRecords().add(idx, record);
+            this.wasChanged = true;
+            this.currentSize += recordSize(record);
 
-            // TODO update trees
 
+            if (currentSize >= Catalog.getCatalog().getPageSize()) {
+                System.out.println("\n\n----------------------SPLITTING----------------------");
+                ((Table)this.IBelongTo).getPkTree().printRPS();
+                ((Table)this.IBelongTo).getPkTree().print();
+                this.split();
+                System.out.println();
+                ((Table)this.IBelongTo).getPkTree().printRPS();
+                ((Table)this.IBelongTo).getPkTree().print();
+                System.out.println("----------------------------------------------------\n\n");
+
+
+                // TODO update trees
+            }
+            return true;
+        }catch (Exception e){
+            e.printStackTrace();
+            ((Table)this.IBelongTo).getPkTree().print();
+            System.exit(1);
         }
         return true;
     }

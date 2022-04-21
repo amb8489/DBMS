@@ -8,6 +8,8 @@ import phase2tests.Phase2Testers;
 import storagemanager.StorageManager;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Random;
 
 import catalog.Catalog;
@@ -18,7 +20,7 @@ public class tableTobpTreeTest {
     public static void main(String[] args) {
 
 
-        Catalog.createCatalog("DB", 100000, 100);
+        Catalog.createCatalog("DB", 120, 100);
         StorageManager.createStorageManager();
 
         //////////////////////////////--TABS--/////////////////////////////////////////
@@ -36,14 +38,9 @@ public class tableTobpTreeTest {
         // testing table inseting
         Random rand = new Random();
 
-        //TEST
-        //  - key is null error
-        //   [933, XCAXY] [374, UWMH7]  [10, OAP] [733, A013] [139, MPFKL] [622, WKI4] [489 aaaaa]
-        // also - idx out of bounds eorr
-        // [481, 1][114, P][133, QW1P][826, G5][390, MX3][67, 7][577, B5K][580, OUW][332, A8W][649, A]
-        for (int i = 0; i < 100000; i++) {
+        for (int i = 0; i < 10; i++) {
             ArrayList<Object> row = Phase2Testers.mkRandomRec(attrs);
-//            row.set(0, rand.nextInt(1000));
+//            row.set(0, rand.nextInt(1));
             row.set(0, i);
 
             boolean b = StorageManager.getStorageManager().insertRecord(Catalog.getCatalog().getTable("t1"), row);
@@ -53,6 +50,9 @@ public class tableTobpTreeTest {
         System.out.println(StorageManager.getStorageManager().getRecords(Catalog.getCatalog().getTable("t1")));
         System.out.println("DONE INSERTING ");
         table.getPkTree().print();
+        System.out.println(((LinkedHashSet<BTreeNode>) table.getPkTree().PageStartEndNodes.get(2)).get(1).keys.set(0,100));
+        table.getPkTree().print();
+
         System.exit(1);
 
 
