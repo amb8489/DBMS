@@ -76,7 +76,11 @@ public class Database {
                 break;
             } else if (statement.strip().toLowerCase().startsWith("select")) {
                 //TODO kyle is this right to put this here like this??
-                Utilities.prettyPrintResultSet(executeQuery(statement), false, 16);
+                ResultSet tempset = executeQuery(statement);
+                if(tempset != null)
+                    Utilities.prettyPrintResultSet(tempset, false, 16);
+                else
+                    System.err.println("ERROR");
             } else if (executeStatement(statement)) {
                 System.out.println("SUCCESS");
             } else {

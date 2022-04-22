@@ -69,7 +69,8 @@ public class Table implements ITable {
 
         Page firstPageForTable = new Page(this);
         firstPageForTable.writeToDisk(ACatalog.getCatalog().getDbLocation(), this);
-
+        IndexedAttributes.put(this.PrimaryKey.getAttributeName(),
+                BPlusTree.TreeFromTableAttribute(this, this.Attributes.indexOf(this.PrimaryKey)));
     }
 
     // clone table does not add to table count though
@@ -85,7 +86,7 @@ public class Table implements ITable {
         this.pkeyIdx = ((Table) table).pkeyIdx;
         this.ForeignKeys = new ArrayList<>(((Table) table).ForeignKeys);
         this.PagesThatBelongToMe = new ArrayList<>(((Table) table).getPagesThatBelongToMe());
-
+        this.IndexedAttributes = ((Table) table).IndexedAttributes;
 
     }
 

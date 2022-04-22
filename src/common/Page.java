@@ -449,7 +449,7 @@ public class Page {
             schema.add(att.getAttributeType());
 
             // found a char(#) paring for the number
-            if (att.getAttributeType().startsWith("Char(")) {
+            if (att.getAttributeType().toLowerCase().startsWith("char(")) {  // Kyle added to lower
                 charlen = Integer.parseInt(att.getAttributeType().substring(5, att.getAttributeType().length() - 1));
             }
         }
@@ -458,20 +458,20 @@ public class Page {
         for (int idx = 0; idx < rec.size(); idx++) {
 
             if (rec.get(idx) != null) {
-                switch (schema.get(idx)) {
-                    case "Integer":
+                switch (schema.get(idx).toLowerCase()) { //Kyle changed to lower
+                    case "integer":
                         size += 4;
                         break;
-                    case "Double":
+                    case "double":
                         size += 8;
                         break;
-                    case "Boolean":
+                    case "boolean":
                         size += 1;
                         break;
                     default:
 
                         // char(#)
-                        if (schema.get(idx).startsWith("Char(")) {
+                        if (schema.get(idx).startsWith("char(")) {
                             size += charlen;
                         } else {
                             // add the len of var char before we write var char
