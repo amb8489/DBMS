@@ -32,6 +32,7 @@ public class StorageManager extends AStorageManager {
         return pb;
     }
 
+    //Todo REMVE anyu index pages we that how we end up doing it
     @Override
     public boolean clearTableData(ITable table) {
         if (table instanceof Table workingTable) {  //cool piece of code IntelliJ made for me.
@@ -50,7 +51,6 @@ public class StorageManager extends AStorageManager {
     }
 
     // DONE
-
     @Override
     public ArrayList<Object> getRecord(ITable table, Object pkValue) {
 
@@ -75,7 +75,7 @@ public class StorageManager extends AStorageManager {
 
     }
 
-
+    // TODO WITH Tree
     public boolean TableContainsFkVal(ForeignKey fk, Object wanted) {
         try {
             Table FkTable = (Table) Catalog.getCatalog().getTable(fk.getRefTableName());
@@ -142,7 +142,7 @@ public class StorageManager extends AStorageManager {
         return RECORDS;
     }
 
-
+    // done
     @Override
     public boolean insertRecord(ITable table, ArrayList<Object> record) {
         try {
@@ -150,12 +150,7 @@ public class StorageManager extends AStorageManager {
 
             ////////////////////// pre preprocessing before inset //////////////////////
 
-            // page name for head is always at idx zero
-            int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
 
-
-            // where in a row the pk is
-            int pkidx = ((Table) table).pkIdx();
 
             // all string will not have " " at front and end
             int idxx = 0;
@@ -204,7 +199,6 @@ public class StorageManager extends AStorageManager {
 
             ////////////////////// inserting phase //////////////////////
 
-            //TODO deny dups
 
             BPlusTree tree = ((Table) table).getPkTree();
 
@@ -223,7 +217,7 @@ public class StorageManager extends AStorageManager {
                 return false;
             }
 
-
+            // finding where we would insert the new rec
             RecordPointer rp = switch (tree.Type) {
                 case "integer" -> tree.findInserPostion((Integer) pkValue);
                 case "double" -> tree.findInserPostion((Double) pkValue);
@@ -272,6 +266,8 @@ public class StorageManager extends AStorageManager {
         }
     }
 
+    //TODO WITH TREE
+
     public boolean deleteRecordWhere(ITable table, String where, Boolean removeAllRecords) {
         try {
 
@@ -304,6 +300,8 @@ public class StorageManager extends AStorageManager {
             return false;
         }
     }
+
+    //TODO WITH TREE
 
     public boolean keepWhere(ITable table, String where, Boolean removeAllRecords) {
         try {
@@ -356,7 +354,7 @@ public class StorageManager extends AStorageManager {
 
             // value did not exist in table
             if (rp.size() == 0) {
-                System.out.println("couldnt find:" + primaryKey);
+                System.out.println("couldnt find: " + primaryKey + " in table");
                 return false;
             }
 
@@ -364,7 +362,7 @@ public class StorageManager extends AStorageManager {
             RecordPointer deleteLocation = rp.get(0);
 
 
-            // delete rp & TODO update indexes for thatt page in tree -1 from each idx
+            // delete rp & update indexes for thatt page in tree -1 from each idx
 
             switch (tree.Type) {
                 case "integer" -> tree.removeRecordPointer(deleteLocation, (Integer) primaryKey);
@@ -402,45 +400,47 @@ public class StorageManager extends AStorageManager {
      * @return
      */
 
-
+    //TODO with tree
     @Override
     public boolean updateRecord(ITable table, ArrayList<Object> oldRecord, ArrayList<Object> newRecord) {
 
-        // page name for head is always at idx zero
-        int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
+        // search for oldRecord to make sure its in the tree , if not then return false
+        // we cant update somthing that doesnt exist
 
-        // where in a row the pk is
-        int pkidx = ((Table) table).pkIdx();
+        BPlusTree tree = ((Table) table).getPkTree();
 
-        // loop though all the tables pages in order
+        var pkValue = oldRecord.get(((Table) table).pkIdx());
 
-        while (headPtr != -1) {
-
-            Page headPage = pb.getPageFromBuffer(String.valueOf(headPtr), table);
-            // look through all record for that page
-            int IDX = 0;
-            for (ArrayList<Object> currRec : headPage.getPageRecords()) {
-                if (oldRecord.get(pkidx).toString().equals(currRec.get(pkidx).toString())) {
-
-                    ArrayList<Object> deletedRec = headPage.getPageRecords().get(IDX);
-                    headPage.delete(IDX);
-
-                    boolean successfulInsert = insertRecord(table, newRecord);
-
-                    // restore
-                    if (!successfulInsert) {
-                        insertRecord(table, deletedRec);
-                    }
-
-                    return successfulInsert;
-                }
-                IDX++;
-            }
-            // next page
-            headPtr = headPage.getPtrToNextPage();
+        // finding how many of these exist in the table
+        ArrayList<RecordPointer>rps = switch (tree.Type) {
+            case "integer" -> tree.search((Integer) pkValue);
+            case "double" -> tree.search((Double) pkValue);
+            case "boolean" -> tree.search((Boolean) pkValue);
+            default -> tree.search((String) pkValue);
+        };
+        // if non exist then error
+        if (rps.size() == 0) {
+            System.err.println("record +"+oldRecord+" does not exist yet");
+            return false;
         }
 
-        return false;
+
+        // delete delete old rec
+
+        deleteRecord(table, oldRecord.get(((Table)table).pkIdx()));
+
+        // if we can insert it meaning no dup pk then inserrt new rec
+
+        boolean successfulInsert = insertRecord(table, newRecord);
+
+        // if new rec has dup pk then re-add the old rec
+        // restoring after bad insert
+        if (!successfulInsert) {
+            insertRecord(table, oldRecord);
+        }
+
+        return successfulInsert;
+
     }
 
     @Override
@@ -448,6 +448,8 @@ public class StorageManager extends AStorageManager {
         pb.PurgeBuffer();
     }
 
+
+    //TODO WITH TREE
     @Override
     public boolean addAttributeValue(ITable table, Object defaultValue) {
 
