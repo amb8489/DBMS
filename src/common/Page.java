@@ -610,9 +610,9 @@ public class Page {
 
 
     public boolean delete(int idx) {
-        VerbosePrint.print("REMOVING Record");
         this.currentSize -= recordSize(this.getPageRecords().remove(idx));
         this.wasChanged = true;
+
         return true;
     }
 

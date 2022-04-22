@@ -79,7 +79,8 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
     @Override
     public ArrayList<RecordPointer> search(T searchKey) {
 
-        return findElemen(searchKey);
+        return this.findInTree(this.treeRoot, searchKey);
+
     }
 
     // gets the left most leaf
@@ -268,12 +269,9 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
             // insert value
             tree.keys.set(insertIndex, insertValue);
-
-
             tree.rps.set(insertIndex, rp);
 
             // update the other record pointers that are > this record and on the same page
-
             int currRpIdx = insertIndex + 1;
             var currNode = tree;
             int updatePageName = rp.page();
@@ -493,38 +491,61 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
     public boolean deleteElement(RecordPointer rp, T deletedValue) {
 
 
-        this.doDelete(this.treeRoot, deletedValue);
+        var success = this.doDelete(this.treeRoot, deletedValue, rp);
         if (this.treeRoot.numKeys == 0) {
 
             this.treeRoot = this.treeRoot.children.get(0);
-            this.treeRoot.parent = null;
+            if (this.treeRoot != null) {
+                this.treeRoot.parent = null;
+            }
         }
-        return true;
+        return success;
     }
 
 
-    public boolean doDelete(BTreeNode<T> tree, T val) {
+    public boolean doDelete(BTreeNode<T> tree, T val, RecordPointer rp) {
         if (tree != null) {
 
             var i = 0;
             for (i = 0; i < tree.numKeys && IsALTB(tree.keys.get(i), val, false); i++) ;
 
+
+            if (i == tree.numKeys) {
+                if (tree.isLeaf) {
+
+
+                    boolean ValIsInLeaf = false;
+                    for (int b = 0; b < tree.numKeys; b++) {
+                        if (isEql(tree.keys.get(b), val)) {
+                            ValIsInLeaf = true;
+                            break;
+                        }
+                    }
+                    if (!ValIsInLeaf) {
+                        tree = tree.next;
+                        i = tree.keys.indexOf(val);
+                    }
+                }
+            }
+
             if (i == tree.numKeys) {
                 if (!tree.isLeaf) {
-                    this.doDelete(tree.children.get(tree.numKeys), val);
+
+                    this.doDelete(tree.children.get(tree.numKeys), val, rp);
                 }
+
             } else if (!tree.isLeaf && tree.keys.get(i) == val) {
-                this.doDelete(tree.children.get(i + 1), val);
+                this.doDelete(tree.children.get(i + 1), val, rp);
 
             } else if (!tree.isLeaf) {
-
-                this.doDelete(tree.children.get(i), val);
-            } else if (tree.isLeaf && tree.keys.get(i) == val) {
+                this.doDelete(tree.children.get(i), val, rp);
+            } else if (tree.isLeaf && isEql(tree.keys.get(i), val)) {
+/////
+                ///////
 
                 for (var j = i; j < tree.numKeys - 1; j++) {
                     tree.keys.set(j, tree.keys.get(j + 1));
                     tree.rps.set(j, tree.rps.get(j + 1));
-
                 }
                 tree.numKeys--;
 
@@ -533,33 +554,41 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
                 //  (somewhat tricky if the leaf is now empty!), go up our parent stack, and fix index keys
                 if (i == 0 && tree.parent != null) {
 
-                    //????
-                    T nextSmallest = null;
-                    RecordPointer nsRp = null;
+                    T nextSmallest;
+                    RecordPointer nsRp;
                     var parentNode = tree.parent;
                     var parentIndex = 0;
                     for (parentIndex = 0; parentNode.children.get(parentIndex) != tree; parentIndex++) ;
 
-                    //???? next smallest
+                    // next smallest
                     if (tree.numKeys == 0) {
-                        if (parentIndex == parentNode.numKeys) {
 
+                        if (parentIndex == parentNode.numKeys) {
                             nextSmallest = null;
                             nsRp = null;
 
                         } else {
+
                             nextSmallest = parentNode.children.get(parentIndex + 1).keys.get(0);
                             nsRp = parentNode.children.get(parentIndex + 1).rps.get(0);
                         }
+
+
                     } else {
+
                         nextSmallest = tree.keys.get(0);
                         nsRp = tree.rps.get(0);
 
                     }
 
                     while (parentNode != null) {
+
                         if (parentIndex > 0 && parentNode.keys.get(parentIndex - 1) == val) {
+
+
                             parentNode.keys.set(parentIndex - 1, nextSmallest);
+
+//
                             parentNode.rps.set(parentIndex - 1, nsRp);
 
                         }
@@ -571,13 +600,58 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
                     }
 
                 }
+
+                var repair = tree;
+
+
+                // ---- TODO somthing here is making the repair upset
+//                //////-------updating the record pointers after a removal
+//
+//
+                // update the other record pointers that are > this record and on the same page
+
+                int deleteIdx = i;
+                int currRpIdx = deleteIdx;
+                var currNode = tree;
+
+                int updatedPageName = rp.page();
+
+
+                if (currRpIdx > currNode.numKeys - 1) {
+                    currRpIdx = 0;
+                    currNode = currNode.next;
+
+                }
+                if (currNode != null) {
+
+                    while (currNode.rps.get(currRpIdx).page() == updatedPageName) {
+
+                        currNode.rps.set(currRpIdx, new RecordPointer(updatedPageName, currNode.rps.get(currRpIdx).index() - 1));
+                        currRpIdx++;
+
+                        if (currRpIdx > currNode.numKeys - 1) {
+                            currRpIdx = 0;
+
+
+                            currNode = currNode.next;
+                            if (currNode == null) {
+                                break;
+                            }
+                        }
+
+                    }
+                }
+
+
+                // ERROR COMING FROM HERE POSSIBLE TOO caused by shifting records above ??
                 this.repairAfterDelete(tree);
+
 
             }
 
 
         }
-        return true;
+        return false;
     }
 
 
@@ -784,13 +858,6 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
     }
 
 
-    public ArrayList<RecordPointer> findElemen(T findValue) {
-
-        return this.findInTree(this.treeRoot, findValue);
-
-    }
-
-
     public ArrayList<RecordPointer> findInTree(BTreeNode<T> tree, T searchVal) {
 
 
@@ -798,18 +865,26 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
         // search for leaf node where insert belongs
         // insert
         // repair
-        if (tree.isLeaf) {
+        if (tree != null) {
+
+            if (tree.isLeaf) {
+                ArrayList<RecordPointer> found = new ArrayList<>();
 
 
-            ArrayList<RecordPointer> found = new ArrayList<>();
+                //12
 
-            //12
+                var curr = tree;
 
-            var curr = tree;
 
-            if (curr != null) {
+                int start = curr.keys.subList(0, curr.numKeys).indexOf(searchVal);
 
-                int start = curr.keys.subList(0, curr.numKeys + 1).indexOf(searchVal);
+                if (start == -1) {
+                    curr = curr.next;
+                    if (curr == null) {
+                        return found;
+                    }
+                    start = curr.keys.subList(0, curr.numKeys).indexOf(searchVal);
+                }
 
                 while (start != -1) {
                     int rpIdx = 0;
@@ -826,18 +901,22 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
                     }
                     start = curr.keys.subList(0, curr.numKeys + 1).indexOf(searchVal);
                 }
+
+                return found;
+
+            } else {
+                var findIndex = 0;
+
+                while (findIndex < tree.numKeys && IsALTB(tree.keys.get(findIndex), searchVal, true)) {
+                    findIndex++;
+
+                }
+
+                return this.findInTree(tree.children.get(findIndex), searchVal);
             }
-
-            return found;
-
-        } else {
-            var findIndex = 0;
-            while (findIndex < tree.numKeys && IsALTB(tree.keys.get(findIndex), searchVal, false)) {
-                findIndex++;
-            }
-
-            return this.findInTree(tree.children.get(findIndex), searchVal);
         }
+
+        return new ArrayList<>();
 
 
     }
@@ -1022,7 +1101,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
             idxInNode = startingNode.keys.subList(0, startingNode.numKeys).indexOf(startRecKey);
         }
 
-    //. dups clause
+        //. dups clause
         while (startingNode.rps.get(idxInNode).page() != leftPageName) {
 
             if (idxInNode >= startingNode.numKeys - 1) {

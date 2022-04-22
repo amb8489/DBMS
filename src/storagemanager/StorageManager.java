@@ -148,7 +148,6 @@ public class StorageManager extends AStorageManager {
         try {
 
 
-
             ////////////////////// pre preprocessing before inset //////////////////////
 
             // page name for head is always at idx zero
@@ -214,9 +213,9 @@ public class StorageManager extends AStorageManager {
 
             RecordPointer rp = switch (tree.Type) {
                 case "integer" -> tree.findInserPostion((Integer) pkValue);
-                case "double" ->  tree.findInserPostion((Double) pkValue);
-                case "boolean" ->  tree.findInserPostion((Boolean) pkValue);
-                default ->        tree.findInserPostion((String) pkValue);
+                case "double" -> tree.findInserPostion((Double) pkValue);
+                case "boolean" -> tree.findInserPostion((Boolean) pkValue);
+                default -> tree.findInserPostion((String) pkValue);
             };
 
 
@@ -225,19 +224,20 @@ public class StorageManager extends AStorageManager {
             int idxInPage = rp.index();
 
             // -1 means inset into that tables first page at index 0
-            if (pageName < 0){
+            if (pageName < 0) {
                 pageName = ((Table) table).getPagesThatBelongToMe().get(0);
-                rp = new RecordPointer(pageName,idxInPage);
+                rp = new RecordPointer(pageName, idxInPage);
             }
 
             // insert rp & update indexes for tht page
 
-             switch (tree.Type) {
-                case "integer" -> tree.insertRecordPointer(rp,(Integer)pkValue);
-                case "double" ->  tree.insertRecordPointer(rp,(Double)pkValue);
-                case "boolean" -> tree.insertRecordPointer(rp,(Boolean)pkValue);
-                default ->        tree.insertRecordPointer(rp,(String)pkValue);
-            };
+            switch (tree.Type) {
+                case "integer" -> tree.insertRecordPointer(rp, (Integer) pkValue);
+                case "double" -> tree.insertRecordPointer(rp, (Double) pkValue);
+                case "boolean" -> tree.insertRecordPointer(rp, (Boolean) pkValue);
+                default -> tree.insertRecordPointer(rp, (String) pkValue);
+            }
+            ;
 
 
             // get the page to insert to
@@ -245,7 +245,7 @@ public class StorageManager extends AStorageManager {
 
             // inserting to actual page
             // error comming from not updating records in tree after a page split
-            page.insert(rp.index(),record);
+            page.insert(rp.index(), record);
 
 
             return true;
@@ -325,29 +325,56 @@ public class StorageManager extends AStorageManager {
 
     @Override
     public boolean deleteRecord(ITable table, Object primaryKey) {
+        ////////////////////// deleteRecord phase //////////////////////
 
-        // page name for head is always at idx zero
-        int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
+        try {
 
-        // where in a row the pk is
-        int pkidx = ((Table) table).pkIdx();
+            BPlusTree tree = ((Table) table).getPkTree();
 
-        // loop though all the tables pages in order
-        while (headPtr != -1) {
-            Page headPage = pb.getPageFromBuffer(String.valueOf(headPtr), table);
-            // look though all record for that page
-            int idx = 0;
-            for (ArrayList<Object> row : headPage.getPageRecords()) {
-                if (row.get(pkidx).equals(primaryKey)) {
-                    headPage.delete(idx);
-                    return true;
-                }
-                idx++;
+            // searching where in the tree where value is
+            ArrayList<RecordPointer> rp = switch (tree.Type) {
+                case "integer" -> tree.search((Integer) primaryKey);
+                case "double" -> tree.search((Double) primaryKey);
+                case "boolean" -> tree.search((Boolean) primaryKey);
+                default -> tree.search((String) primaryKey);
+            };
+
+
+            // value did not exist in table
+            if (rp.size() == 0) {
+                System.out.println("couldnt find:"+primaryKey);
+                return false;
             }
-            // next page
-            headPtr = headPage.getPtrToNextPage();
+
+
+
+            RecordPointer deleteLocation = rp.get(0);
+
+
+            // delete rp & TODO update indexes for thatt page in tree -1 from each idx
+
+            switch (tree.Type) {
+                case "integer" -> tree.removeRecordPointer(deleteLocation, (Integer) primaryKey);
+                case "double" ->  tree.removeRecordPointer(deleteLocation, (Double)  primaryKey);
+                case "boolean" -> tree.removeRecordPointer(deleteLocation, (Boolean) primaryKey);
+                default ->        tree.removeRecordPointer(deleteLocation, (String)  primaryKey);
+            }
+
+
+
+            // get the page to delete from
+            Page page = pb.getPageFromBuffer(String.valueOf(deleteLocation.page()), table);
+
+            return   page.delete(deleteLocation.index());
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(0);
+            System.err.println("Storage manager(insertRecord): error in deleing");
+            return false;
         }
-        return false;
+
     }
 
     /**

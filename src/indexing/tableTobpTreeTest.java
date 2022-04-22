@@ -20,7 +20,7 @@ public class tableTobpTreeTest {
     public static void main(String[] args) {
 
 
-        Catalog.createCatalog("DB", 4080, 10);
+        Catalog.createCatalog("DB", 120, 1);
         StorageManager.createStorageManager();
 
         //////////////////////////////--TABS--/////////////////////////////////////////
@@ -37,24 +37,48 @@ public class tableTobpTreeTest {
 
         // testing table inseting
         Random rand = new Random();
-
+        int bound = 10;
 
         for (int i = 0; i < 100; i++) {
             ArrayList<Object> row = Phase2Testers.mkRandomRec(attrs);
-            row.set(0, rand.nextInt(1));
+//            row.set(0, rand.nextInt(bound));
+            row.set(0, i);
+            System.out.print("INSERTING (#" + i + ") " + " " + row + " :");
 
             boolean b = StorageManager.getStorageManager().insertRecord(Catalog.getCatalog().getTable("t1"), row);
-            System.out.println("INSERT (#"+i+") "+  b + " " + row);
+            System.out.println(b);
 
         }
         System.out.println(StorageManager.getStorageManager().getRecords(Catalog.getCatalog().getTable("t1")));
         System.out.println("DONE INSERTING ");
         // start node and end leaf node in hashmap from int to start,end nodes
         table.getPkTree().print();
+        table.getPkTree().printRPS();
+
+        System.out.println("-----removing----- ");
+
+
+//        for (int i = 50; i > -1; i--) {
+        for (int i = 100; i > 51; i--) {
+
+            ArrayList<Object> row = Phase2Testers.mkRandomRec(attrs);
+//            row.set(0, rand.nextInt(bound));
+            row.set(0, i);
+            System.out.print("(#" + i + ") Deleting: " + row + " :");
+
+            boolean succ = StorageManager.getStorageManager().deleteRecord(Catalog.getCatalog().getTable("t1"), row.get(table.pkIdx()));
+            System.out.println(succ);
+            System.out.println("----TREE AFTER-----");
+            table.getPkTree().print();
+            System.out.println("-------------------");
+
+            System.out.println(((StorageManager)StorageManager.getStorageManager()).getRecords(table));
+
+
+        }
+
 
         System.exit(1);
-
-
 
 
         StorageManager.pb.PurgeBuffer();
