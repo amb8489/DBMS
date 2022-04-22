@@ -148,6 +148,7 @@ public class StorageManager extends AStorageManager {
         try {
 
 
+
             ////////////////////// pre preprocessing before inset //////////////////////
 
             // page name for head is always at idx zero
@@ -210,6 +211,19 @@ public class StorageManager extends AStorageManager {
 
             // searching where in the tree this would go ????
             var pkValue = record.get(((Table) table).pkIdx());
+            //To finish b plus tree, we need to make sure the record doesnt already exist in a tree.
+            //Search for the record in the tree, if it does exist, error with primary key should be unique
+            int listSize = switch (tree.Type) {
+                case "integer" -> tree.search((Integer) pkValue).size();
+                case "double" -> tree.search((Double) pkValue).size();
+                case "boolean" -> tree.search((Boolean) pkValue).size();
+                default -> tree.search((String) pkValue).size();
+            };
+            if (listSize>0){
+                System.err.println("ERROR Primary Key already exists in tree");
+                return false;
+            }
+
 
             RecordPointer rp = switch (tree.Type) {
                 case "integer" -> tree.findInserPostion((Integer) pkValue);
@@ -249,6 +263,7 @@ public class StorageManager extends AStorageManager {
 
 
             return true;
+
 
         } catch (Exception e) {
             e.printStackTrace();
