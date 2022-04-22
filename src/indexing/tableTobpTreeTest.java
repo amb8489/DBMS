@@ -20,7 +20,7 @@ public class tableTobpTreeTest {
     public static void main(String[] args) {
 
 
-        Catalog.createCatalog("DB", 120, 100);
+        Catalog.createCatalog("DB", 4080, 10);
         StorageManager.createStorageManager();
 
         //////////////////////////////--TABS--/////////////////////////////////////////
@@ -38,10 +38,9 @@ public class tableTobpTreeTest {
         // testing table inseting
         Random rand = new Random();
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 100; i++) {
             ArrayList<Object> row = Phase2Testers.mkRandomRec(attrs);
-//            row.set(0, rand.nextInt(1));
-            row.set(0, i);
+            row.set(0, rand.nextInt(1));
 
             boolean b = StorageManager.getStorageManager().insertRecord(Catalog.getCatalog().getTable("t1"), row);
             System.out.println("INSERT (#"+i+") "+  b + " " + row);
@@ -49,8 +48,7 @@ public class tableTobpTreeTest {
         }
         System.out.println(StorageManager.getStorageManager().getRecords(Catalog.getCatalog().getTable("t1")));
         System.out.println("DONE INSERTING ");
-        table.getPkTree().print();
-        System.out.println(((LinkedHashSet<BTreeNode>) table.getPkTree().PageStartEndNodes.get(2)).get(1).keys.set(0,100));
+        // start node and end leaf node in hashmap from int to start,end nodes
         table.getPkTree().print();
 
         System.exit(1);

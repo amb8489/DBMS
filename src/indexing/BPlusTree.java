@@ -41,7 +41,6 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
 
     // maps the start end end of pages that nodes
-    public HashMap<Integer, HashSet<BTreeNode>> PageStartEndNodes = new HashMap<>();
 
 
     public BPlusTree(int MaxPageSize, int MaxAttributeSize) {
@@ -297,7 +296,6 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
                 if (currRpIdx > currNode.numKeys - 1) {
                     currRpIdx = 0;
-
 
 
                     currNode = currNode.next;
@@ -1006,22 +1004,61 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
     }
 
 
-    public void updatePageNameAfterPageSplit(T startRecKey, T endRecKey, int newPageName, int numberRecsChanged) {
+    public void updatePageNameAfterPageSplit(T startRecKey, int leftPageName, int newPageName, int numberRecsChanged, int numberRecsNotChanged) {
+
+
+//
+
+//        / find the first node contaings a record with page # old page
+
         var startingNode = getFirstNodeContaining(this.treeRoot, startRecKey);
 
         //  find idx of first occurrence in startRecSplit
 
-        int idxInNode = startingNode.keys.subList(0,startingNode.numKeys).indexOf(startRecKey);
+        int idxInNode = startingNode.keys.subList(0, startingNode.numKeys).indexOf(startRecKey);
 
-        if(idxInNode == -1){
+        if (idxInNode == -1) {
             startingNode = startingNode.next;
-            idxInNode = startingNode.keys.subList(0,startingNode.numKeys).indexOf(startRecKey);
+            idxInNode = startingNode.keys.subList(0, startingNode.numKeys).indexOf(startRecKey);
         }
 
+    //. dups clause
+        while (startingNode.rps.get(idxInNode).page() != leftPageName) {
+
+            if (idxInNode >= startingNode.numKeys - 1) {
+                idxInNode = 0;
 
 
+                // go to next node weve looked though all the values for this node
+
+                if (startingNode.next == null) {
+                    return;
+                }
+                startingNode = startingNode.next;
+            } else {
+                idxInNode++;
+            }
+        }
+        // startingNode.rps.get(idxInNode).index() should be  >= page.size - numberRecsChanged not 0 . dups clause
+        //TODO < or <=
+        // should start past the number of recs not being updated.. dups clause
+
+        while (startingNode.rps.subList(0, startingNode.numKeys).get(idxInNode).index() < numberRecsNotChanged) {
+            if (idxInNode >= startingNode.numKeys - 1) {
+                idxInNode = 0;
 
 
+                // go to next node weve looked though all the values for this node
+
+                if (startingNode.next == null) {
+                    return;
+                }
+                startingNode = startingNode.next;
+            } else {
+                idxInNode++;
+            }
+
+        }
 
 
         // the index in the new page
@@ -1031,22 +1068,6 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
         var curr = startingNode;
         // change the next n records to the new page
 
-
-        /////----
-        //TODO -----
-
-        if(PageStartEndNodes.containsKey(newPageName)){
-            PageStartEndNodes.get(newPageName).add(curr);
-
-        }else{
-
-            PageStartEndNodes.put(newPageName,new HashSet<>());
-            PageStartEndNodes.get(newPageName).add(curr);
-        }
-
-        /////----
-
-
         while (idxInSplitPage < numberRecsChanged) {
 
             // maybe  idxInNode is not incrimenting on the first round
@@ -1054,23 +1075,14 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
             curr.rps.set(idxInNode, new RecordPointer(newPageName, idxInSplitPage));
 
 
-            if (idxInNode >= curr.numKeys-1) {
+            if (idxInNode >= curr.numKeys - 1) {
                 idxInNode = 0;
 
 
                 // go to next node weve looked though all the values for this node
 
-                if (curr.next == null){
+                if (curr.next == null) {
 
-                    //TODO -----
-                    if(PageStartEndNodes.containsKey(newPageName)){
-                        PageStartEndNodes.get(newPageName).add(curr);
-
-                    }else{
-
-                        PageStartEndNodes.put(newPageName,new HashSet<>());
-                        PageStartEndNodes.get(newPageName).add(curr);
-                    }
                     return;
 
                 }
@@ -1083,7 +1095,6 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
             idxInSplitPage++;
         }
-
 
 
     }

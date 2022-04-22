@@ -544,21 +544,19 @@ public class Page {
 
             // get the secod record effected by the split
 
-            var endRecSplit =   records.get(records.size()-1).get(idxOfAtrributeIndexed);
-
 
 
             // upding rp to have this page name now
             int newPageName = splitPage.pageName;
             int numberOfRecordsChanged = splitPage.getPageRecords().size();
-
+            int numberRecsNotChanged = this.pageRecords.size();
             // update from ther start to the end;
 
             switch (tree.Type) {
-                case "integer" -> tree.updatePageNameAfterPageSplit((Integer)startRecSplit,(Integer)endRecSplit,newPageName,numberOfRecordsChanged);
-                case "double" ->  tree.updatePageNameAfterPageSplit((Double)startRecSplit,(Double)endRecSplit,newPageName,numberOfRecordsChanged);
-                case "boolean" -> tree.updatePageNameAfterPageSplit((Boolean)startRecSplit,(Boolean)endRecSplit,newPageName,numberOfRecordsChanged);
-                default ->        tree.updatePageNameAfterPageSplit((String)startRecSplit,(String)endRecSplit,newPageName,numberOfRecordsChanged);
+                case "integer" -> tree.updatePageNameAfterPageSplit((Integer)startRecSplit,this.pageName,newPageName,numberOfRecordsChanged,numberRecsNotChanged);
+                case "double" ->  tree.updatePageNameAfterPageSplit((Double)startRecSplit,this.pageName,newPageName,numberOfRecordsChanged,numberRecsNotChanged);
+                case "boolean" -> tree.updatePageNameAfterPageSplit((Boolean)startRecSplit,this.pageName,newPageName,numberOfRecordsChanged,numberRecsNotChanged);
+                default ->        tree.updatePageNameAfterPageSplit((String)startRecSplit,this.pageName,newPageName,numberOfRecordsChanged,numberRecsNotChanged);
             }
 
 
@@ -597,17 +595,9 @@ public class Page {
 
 
             if (currentSize >= Catalog.getCatalog().getPageSize()) {
-                System.out.println("\n\n----------------------SPLITTING----------------------");
-                ((Table)this.IBelongTo).getPkTree().printRPS();
-                ((Table)this.IBelongTo).getPkTree().print();
+
                 this.split();
-                System.out.println();
-                ((Table)this.IBelongTo).getPkTree().printRPS();
-                ((Table)this.IBelongTo).getPkTree().print();
-                System.out.println("----------------------------------------------------\n\n");
 
-
-                // TODO update trees
             }
             return true;
         }catch (Exception e){

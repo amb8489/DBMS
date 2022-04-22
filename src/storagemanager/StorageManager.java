@@ -232,7 +232,6 @@ public class StorageManager extends AStorageManager {
 
             // insert rp & update indexes for tht page
 
-            System.out.println("inserting "+pkValue+" on page "+ rp.page()+" at idx "+rp.index());
              switch (tree.Type) {
                 case "integer" -> tree.insertRecordPointer(rp,(Integer)pkValue);
                 case "double" ->  tree.insertRecordPointer(rp,(Double)pkValue);
