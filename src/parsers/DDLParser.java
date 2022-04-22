@@ -2,6 +2,7 @@ package parsers;
 
 import catalog.Catalog;
 import common.*;
+import indexing.BPlusTree;
 import storagemanager.StorageManager;
 
 import java.util.*;
@@ -39,7 +40,54 @@ public class DDLParser {
             return dropTable(stmt);
         } else if (stmt.toLowerCase().startsWith("alter table")) {
             return alterTable(stmt);
+        } else if (stmt.toLowerCase().startsWith("create index")) {
+            return createIndex(stmt);
         } else {
+            return false;
+        }
+    }
+
+    private static boolean createIndex(String stmt) {
+        try {
+
+            stmt = stmt.replace("(", " ");
+            stmt = stmt.replace(")", " ");
+            stmt = stmt.replace(";", "");
+
+            List<String> tokens = Utilities.mkTokensFromStr(stmt);
+
+            String tableName = tokens.get(4);
+
+            // check if table exists; get table
+            if (!Catalog.getCatalog().containsTable(tableName)) {
+                System.err.println("The catalog does not contain the table: " + tableName);
+                return false;
+            }
+
+            Table table = (Table) Catalog.getCatalog().getTable(tableName);
+
+            int attrIdx = -1;
+            ArrayList<Attribute> attributes = table.getAttributes();
+            for (int i = 0; i < attributes.size(); i++) {
+                if (attributes.get(i).getAttributeName().equals(tokens.get(5))) {
+                    attrIdx = i;
+                    break;
+                }
+            }
+            if (attrIdx == -1) {
+                System.err.println("The table " + tableName + " does not contain the attribute: " + tokens.get(5));
+                return false;
+            }
+
+            BPlusTree bTree = BPlusTree.TreeFromTableAttribute(table, attrIdx);
+
+            // TODO: change this to a set call
+            table.IndexedAttributes.put(tokens.get(5), bTree);
+
+            return true;
+
+        } catch (Exception e) {
+            System.err.println("DDlParser: Error in creating a index");
             return false;
         }
     }
