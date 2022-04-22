@@ -38,6 +38,7 @@ public class tableTobpTreeTest {
         // testing table inseting
         Random rand = new Random();
 
+
         for (int i = 0; i < 100; i++) {
             ArrayList<Object> row = Phase2Testers.mkRandomRec(attrs);
             row.set(0, rand.nextInt(1));
