@@ -20,7 +20,7 @@ public class tableTobpTreeTest {
     public static void main(String[] args) {
 
 
-        Catalog.createCatalog("DB", 120, 1);
+        Catalog.createCatalog("DB", 500, 1);
         StorageManager.createStorageManager();
 
         //////////////////////////////--TABS--/////////////////////////////////////////
@@ -37,12 +37,12 @@ public class tableTobpTreeTest {
 
         // testing table inseting
         Random rand = new Random();
-        int bound = 10;
+        int bound = 1;
 
         for (int i = 0; i < 100; i++) {
             ArrayList<Object> row = Phase2Testers.mkRandomRec(attrs);
-//            row.set(0, rand.nextInt(bound));
-            row.set(0, i);
+            row.set(0, rand.nextInt(bound));
+//            row.set(0, i);
             System.out.print("INSERTING (#" + i + ") " + " " + row + " :");
 
             boolean b = StorageManager.getStorageManager().insertRecord(Catalog.getCatalog().getTable("t1"), row);
@@ -62,8 +62,8 @@ public class tableTobpTreeTest {
         for (int i = 100; i > 51; i--) {
 
             ArrayList<Object> row = Phase2Testers.mkRandomRec(attrs);
-//            row.set(0, rand.nextInt(bound));
-            row.set(0, i);
+            row.set(0, rand.nextInt(bound));
+//            row.set(0, i);
             System.out.print("(#" + i + ") Deleting: " + row + " :");
 
             boolean succ = StorageManager.getStorageManager().deleteRecord(Catalog.getCatalog().getTable("t1"), row.get(table.pkIdx()));

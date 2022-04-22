@@ -492,11 +492,13 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
 
         var success = this.doDelete(this.treeRoot, deletedValue, rp);
-        if (this.treeRoot.numKeys == 0) {
+        if(this.treeRoot !=null) {
+            if (this.treeRoot.numKeys == 0) {
 
-            this.treeRoot = this.treeRoot.children.get(0);
-            if (this.treeRoot != null) {
-                this.treeRoot.parent = null;
+                this.treeRoot = this.treeRoot.children.get(0);
+                if (this.treeRoot != null) {
+                    this.treeRoot.parent = null;
+                }
             }
         }
         return success;

@@ -148,7 +148,6 @@ public class StorageManager extends AStorageManager {
         try {
 
 
-
             ////////////////////// pre preprocessing before inset //////////////////////
 
             // page name for head is always at idx zero
@@ -219,7 +218,7 @@ public class StorageManager extends AStorageManager {
                 case "boolean" -> tree.search((Boolean) pkValue).size();
                 default -> tree.search((String) pkValue).size();
             };
-            if (listSize>0){
+            if (listSize > 0) {
                 System.err.println("ERROR Primary Key already exists in tree");
                 return false;
             }
@@ -357,10 +356,9 @@ public class StorageManager extends AStorageManager {
 
             // value did not exist in table
             if (rp.size() == 0) {
-                System.out.println("couldnt find:"+primaryKey);
+                System.out.println("couldnt find:" + primaryKey);
                 return false;
             }
-
 
 
             RecordPointer deleteLocation = rp.get(0);
@@ -370,17 +368,16 @@ public class StorageManager extends AStorageManager {
 
             switch (tree.Type) {
                 case "integer" -> tree.removeRecordPointer(deleteLocation, (Integer) primaryKey);
-                case "double" ->  tree.removeRecordPointer(deleteLocation, (Double)  primaryKey);
+                case "double" -> tree.removeRecordPointer(deleteLocation, (Double) primaryKey);
                 case "boolean" -> tree.removeRecordPointer(deleteLocation, (Boolean) primaryKey);
-                default ->        tree.removeRecordPointer(deleteLocation, (String)  primaryKey);
+                default -> tree.removeRecordPointer(deleteLocation, (String) primaryKey);
             }
-
 
 
             // get the page to delete from
             Page page = pb.getPageFromBuffer(String.valueOf(deleteLocation.page()), table);
 
-            return   page.delete(deleteLocation.index());
+            return page.delete(deleteLocation.index());
 
 
         } catch (Exception e) {
