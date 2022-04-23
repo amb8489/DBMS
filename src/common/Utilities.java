@@ -530,7 +530,7 @@ public class Utilities {
         // check for primary key removal here
         for (String name: toBeDropped){
             System.out.println("Dropping " + name);
-            StorageManager.getStorageManager().dropAttributeValue(table, table.AttribIdxs.get(name));
+            table.dropAttribute(name);
         }
         return true;
     }
