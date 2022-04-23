@@ -1,15 +1,12 @@
-package phase2tests;
+package phase3tests;
 
 import catalog.Catalog;
 import common.Attribute;
-import common.Table;
 
-import parsers.ResultSet;
 import phase2tests.Phase2Testers;
 import storagemanager.StorageManager;
 
 import java.util.ArrayList;
-import java.util.Scanner;
 
 public class Phase3TestSelect {
 

@@ -81,8 +81,6 @@ public class testAddAttribute {
 
         BPlusTree tree = BPlusTree.TreeFromTableAttribute(table, table.pkIdx());
 
-        tree.print();
-
         PageBuffer pb = ((StorageManager) StorageManager.getStorageManager()).getPb();
 
         for ( var row2 : StorageManager.getStorageManager().getRecords(table)) {

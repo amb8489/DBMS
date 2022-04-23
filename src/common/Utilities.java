@@ -19,7 +19,8 @@ public class Utilities {
     private static Set<String> KEYWORDS = Stream.of(
             "create", "table", "drop", "insert", "into", "delete", "from", "where", "update",
             "notnull", "primarykey", "foreignkey", "references", "add", "default", "set",
-            "values", "null", "Integer", "Double", "Boolean", "Varchar", "Char").collect(Collectors.toCollection(HashSet::new));
+            "values", "null", "Integer", "Double", "Boolean", "Varchar", "Char","integer","False",
+            "double", "boolean", "varchar", "char","char(","varchar(","Varchar(","true","false","True").collect(Collectors.toCollection(HashSet::new));
 
 
     // check that a type for an atrribute is legal
@@ -153,7 +154,7 @@ public class Utilities {
         }
 
         return switch (type.toLowerCase()) {
-            case "double", "integer" -> "Numeric";
+            case "double", "integer" -> "numeric";
             default -> type;
         };
 
@@ -163,19 +164,19 @@ public class Utilities {
     public static String whatType(String s) {
 
         if (s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false")) {
-            return "Boolean";
+            return "boolean";
         }
 
         // is it a string?
         if (s.contains("\"")) {
-            return "String";
+            return "string";
         }
 
 
         // looking for any char, no base 10 number has a char in it
         for (int i = 0; i < s.length(); i++) {
             if (Character.isLetter(s.charAt(i))) {
-                return "String";
+                return "string";
             }
         }
 
@@ -197,11 +198,11 @@ public class Utilities {
 
 
         if (periodSeen) {
-            return "Double";
+            return "double";
         }
 
         // if just numbers with no . then int
-        return "Integer";
+        return "integer";
 
 
     }

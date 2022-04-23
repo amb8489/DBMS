@@ -13,6 +13,7 @@ import java.util.Set;
 
 import filesystem.FileSystem;
 import indexing.BPlusTree;
+import storagemanager.StorageManager;
 
 /*
   Implementation of the ITable interface.  The interface
@@ -68,6 +69,8 @@ public class Table implements ITable {
 
         Page firstPageForTable = new Page(this);
         firstPageForTable.writeToDisk(ACatalog.getCatalog().getDbLocation(), this);
+
+        // make pk tree
         IndexedAttributes.put(this.PrimaryKey.getAttributeName(),
                 BPlusTree.TreeFromTableAttribute(this, this.Attributes.indexOf(this.PrimaryKey)));
     }
@@ -92,6 +95,8 @@ public class Table implements ITable {
 
     // gets the index of the pk attribute in Table attributes
     public int pkIdx() {
+
+        // first time finding the index of the primany key
         if (pkeyIdx < 0) {
             int idx = 0;
             for (Attribute Attrib : Attributes) {
@@ -102,6 +107,7 @@ public class Table implements ITable {
                 idx++;
             }
         }
+        // already been saved
         return this.pkeyIdx;
     }
 
@@ -215,20 +221,32 @@ public class Table implements ITable {
         PrimaryKey = primaryKey;
     }
 
+
+
     @Override
     public boolean dropAttribute(String name) {
 
         int idx = 0;
-
+        // look though each attribute
         for (Attribute attribute : Attributes) {
+
+            // we that attribute is in the table
             if (attribute.attributeName().equals(name)) {
+
+                // re move it
                 this.Attributes.remove(idx);
 
+                // drop the index if it has one on this attribute
+                IndexedAttributes.remove(attribute.attributeName());
+
+                // rebuild and set the hash table of name to index
                 HashMap<String, Integer> attributeNameToIdx = new HashMap<>();
                 for (int i = 0; i < Attributes.size(); i++) {
                     attributeNameToIdx.put(Attributes.get(i).getAttributeName(), i);
                 }
                 this.AttribIdxs = attributeNameToIdx;
+
+
 
                 return true;
             }
@@ -261,10 +279,15 @@ public class Table implements ITable {
 
 
         // check attribute exits in table
+        if(AttribIdxs.containsKey(attributeName)){
 
-        // make new b+ tree with that attrib
+            // make new b+ tree with that attrib
+            var newTree = BPlusTree.TreeFromTableAttribute(this, AttribIdxs.get(attributeName));
+            IndexedAttributes.put(attributeName, ((StorageManager)StorageManager.getStorageManager()).newIndex(this,newTree,AttribIdxs.get(attributeName)));
 
-
+            return true;
+        }
+        System.err.println("cant make index on attribute because "+attributeName+" does not exist");
         return false;
     }
 

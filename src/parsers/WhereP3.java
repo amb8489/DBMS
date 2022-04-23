@@ -180,7 +180,7 @@ public class WhereP3 {
 
 
         // if both vals are strings
-        if (typeL.equals("String") || typeL.equals("Boolean")) {
+        if (typeL.equals("string") || typeL.equals("boolean")) {
 
             return switch (op) {
                 case "=" -> left.compareTo(right) == 0;
@@ -246,7 +246,6 @@ public class WhereP3 {
 //        System.exit(1);
 
 
-
         // finding the the WHERE token, we only care what comes after the "where"
         // we start at 1 because we dont want to include the where token just what comes after
         // removing all prefix to where and the where
@@ -281,7 +280,6 @@ public class WhereP3 {
                 if (splitToken.length > 1) {
                     String tableName = splitToken[0];
                     String attributeName = splitToken[1];
-
 
 
                     // check that attribute exists in table
@@ -328,6 +326,9 @@ public class WhereP3 {
 
     }
 
+
+
+
     /*--------------    HOW TO USE  -------------------
 
 
@@ -335,7 +336,7 @@ public class WhereP3 {
             */
     public boolean whereIsTrue(String whereStmt, Table table, ArrayList<Object> row) {
 
-        List<String> tokens = tokenizer(whereStmt, table,row);
+        List<String> tokens = tokenizer(whereStmt, table, row);
 
         if (tokens == null) {
             return false;
@@ -353,7 +354,6 @@ public class WhereP3 {
         AStorageManager sm = StorageManager.getStorageManager();
         Catalog cat = (Catalog) Catalog.getCatalog();
         WhereP3 parser = new WhereP3();
-
 
 
         // TALES
@@ -379,8 +379,6 @@ public class WhereP3 {
         cat.addTable("t3", attrs3, attrs3.get(0));
 
 
-
-
         // cartesian product table
 
         // 1) adding the attributes from all the tables together
@@ -398,33 +396,31 @@ public class WhereP3 {
         row.add(3);
         row.add(4);
         row.add(5);
-//        row.add(6);
+        row.add(6);
         row.add(7);
 
 
-
         // add new table
-        Catalog.getCatalog().addTable("catTab",catAt,null);
+        Catalog.getCatalog().addTable("catTab", catAt, catAt.get(0));
 
 
+        // add records to table
 
-        // row from cartesian product table
 
-//        System.out.println(row);
-//        System.out.println(((Table) Catalog.getCatalog().getTable("catTab")).AttribIdxs);
+        // get table
+       Table catTab = (Table) Catalog.getCatalog().getTable("catTab");
+
+        // add an index on attribute
+        catTab.getPkTree().print();
+
+
         long startTime = System.currentTimeMillis();
 
 
-
-
-        boolean res = parser.whereIsTrue(
-                "where t1.a = t3.a", (Table) Catalog.getCatalog().getTable("catTab"), row);
-
-        // needs to be table names mapped to its row we are looking at  );
+        boolean res = parser.whereIsTrue("where t3.a = t3.a",catTab, row);
 
 
         long endTime = System.currentTimeMillis();
-
 
         System.out.println("STMT: " + res);
         System.out.println(endTime - startTime);

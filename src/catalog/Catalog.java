@@ -139,18 +139,7 @@ public class Catalog extends ACatalog {
         return newTable;
     }
 
-    public Table addExistingTable(Table table) {
-        // table already exist or not
-        if (containsTable(table.getTableName())) {
-            System.err.println(String.format("table with name %s is already taken", table.getTableName()));
-            return null;
-        }
 
-        // mk table
-        // add to CurrentTablesInBD  name --> table
-        this.CurrentTablesInBD.put(table.getTableName(), table);
-        return table;
-    }
 
     @Override
     public ITable getTable(String tableName) {

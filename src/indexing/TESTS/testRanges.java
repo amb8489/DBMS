@@ -31,17 +31,6 @@ public class testRanges {
         btree.print_h(btree.treeRoot, "");
 
 
-//        System.out.println("-------- deleting ----------");
-//
-//        for (int i = 1; i <= N; i++) {
-//            int int_random = rand.nextInt(20);
-//            System.out.println(int_random);
-//
-//            btree.removeRecordPointer(new RecordPointer(int_random,int_random),int_random);
-//        }
-//
-//        btree.print(btree.treeRoot, "");
-
 
         System.out.println("\n\n-------- searching in----------\n\n");
 

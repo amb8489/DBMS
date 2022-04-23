@@ -16,6 +16,18 @@ import filesystem.FileSystem;
 import parsers.WhereP3;
 import parsers.WhereParser;
 
+
+/*
+//////////////////// TODO ////////////////////
+
+  - restore tree when restoring DB
+  - use the tree in where testing
+  - errors on old phases
+  - look for case sensitive types
+
+
+/////////////////////////////////////////////
+*/
 public class StorageManager extends AStorageManager {
 
 
@@ -32,7 +44,7 @@ public class StorageManager extends AStorageManager {
         return pb;
     }
 
-    //Todo REMVE anyu index pages we that how we end up doing it
+
     @Override
     public boolean clearTableData(ITable table) {
         if (table instanceof Table workingTable) {  //cool piece of code IntelliJ made for me.
@@ -360,7 +372,7 @@ public class StorageManager extends AStorageManager {
         }
     }
 
-
+    // done
     @Override
     public boolean deleteRecord(ITable table, Object primaryKey) {
         ////////////////////// deleteRecord phase //////////////////////
@@ -475,7 +487,7 @@ public class StorageManager extends AStorageManager {
     }
 
 
-    //TODO WITH TREE
+    // done
     @Override
     public boolean addAttributeValue(ITable table, Object defaultValue) {
 
@@ -566,7 +578,7 @@ public class StorageManager extends AStorageManager {
     }
 
 
-    //TODO UPDATE PAGE SIZE based on record
+    //done
     @Override
     public boolean dropAttributeValue(ITable table, int attrIndex) {
 
