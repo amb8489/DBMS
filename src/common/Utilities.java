@@ -316,7 +316,16 @@ public class Utilities {
         for (ArrayList<Object> r : table1.results()) {
             for (int i = 0; i < r.size(); i++) {
                 Object o = r.get(i);
-                max[i] = Math.max(Math.max(max[i], o.toString().length()), table1.attrs().get(i).getAttributeName().length());
+
+                int nameLen;
+
+                if(table.IndexedAttributes.containsKey(table1.attrs().get(i).getAttributeName())){
+                    nameLen = table1.attrs().get(i).getAttributeName().length() +3 ;
+
+                }else {
+                    nameLen = table1.attrs().get(i).getAttributeName().length() ;
+                }
+                max[i] = Math.max(Math.max(max[i], o.toString().length()), nameLen);
                 if (o.toString().length() > maxStrSize) {
                     r.set(i, o.toString().substring(0, maxStrSize - 4) + "...");
                 }
@@ -334,7 +343,14 @@ public class Utilities {
 
         for (int i = 0; i < table1.attrs().size(); i++) {
             Attribute a = table1.attrs().get(i);
-            atters[i] = a.getAttributeName();
+
+            if(table.IndexedAttributes.containsKey(a.getAttributeName())){
+
+                atters[i] = a.getAttributeName()+"(I)";
+
+            }else {
+                atters[i] = a.getAttributeName();
+            }
         }
 
 

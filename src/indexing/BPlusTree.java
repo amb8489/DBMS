@@ -957,6 +957,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
         // finding out what type of tree to make
         BPlusTree bpTree;
 
+
         String type = table.getAttributes().get(AttributeIdx).getAttributeType().toLowerCase();
 
         // gettting the init params for tree
@@ -964,22 +965,15 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
         int maxPageSize = Catalog.getCatalog().getPageSize();
         int maxAttributeSize = table.getMaxAttributeSize();
 
-        switch (type) {
-            case "integer":
-                bpTree = new BPlusTree<Integer>(maxPageSize, maxAttributeSize);
-                break;
-            case "double":
-                bpTree = new BPlusTree<Double>(maxPageSize, maxAttributeSize);
-                break;
-            case "boolean":
-                bpTree = new BPlusTree<Boolean>(maxPageSize, maxAttributeSize);
-                break;
-            default:
-                bpTree = new BPlusTree<String>(maxPageSize, maxAttributeSize);
-                break;
-        }
+        bpTree = switch (type.toLowerCase()) {
+            case "integer" -> new BPlusTree<Integer>(maxPageSize, maxAttributeSize);
+            case "double" -> new BPlusTree<Double>(maxPageSize, maxAttributeSize);
+            case "boolean" -> new BPlusTree<Boolean>(maxPageSize, maxAttributeSize);
+            default -> new BPlusTree<String>(maxPageSize, maxAttributeSize);
+        };
         // set the type
         bpTree.Type = type;
+
 
         // making the tree
 

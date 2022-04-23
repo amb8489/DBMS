@@ -530,6 +530,9 @@ public class Page {
 
 
         // TODO for each tree in the table this wont work for other trees
+
+
+
         for (String name:indexedAtts.keySet()) {
             BPlusTree tree = indexedAtts.get(name);
 
@@ -542,7 +545,7 @@ public class Page {
             // get the first record effected by the split
             var startRecSplit = records.get(0).get(idxOfAtrributeIndexed);
 
-            // get the secod record effected by the split
+            // get the second record effected by the split
 
 
 

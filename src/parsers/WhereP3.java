@@ -326,8 +326,6 @@ public class WhereP3 {
     }
 
 
-
-
     /*--------------    HOW TO USE  -------------------
 
 
@@ -360,7 +358,7 @@ public class WhereP3 {
         ArrayList<Attribute> attrs = new ArrayList<>();
         attrs.add(new Attribute("t1.a", "Integer"));
         attrs.add(new Attribute("t1.uidt1", "Integer"));
-        cat.addTable("t1", attrs, attrs.get(0));
+        var t1 = cat.addTable("t1", attrs, attrs.get(0));
 
 
         //t2
@@ -368,25 +366,38 @@ public class WhereP3 {
         attrs2.add(new Attribute("t2.b", "Char(5)"));
         attrs2.add(new Attribute("t2.c", "Char(5)"));
         attrs2.add(new Attribute("t2.uidt2", "Char(5)"));
-        cat.addTable("t2", attrs2, attrs2.get(0));
+        var t2 = cat.addTable("t2", attrs2, attrs2.get(0));
 
         //t3
         ArrayList<Attribute> attrs3 = new ArrayList<>();
         attrs3.add(new Attribute("t3.a", "Char(5)"));
         attrs3.add(new Attribute("t3.uidt3", "Char(5)"));
-        cat.addTable("t3", attrs3, attrs3.get(0));
+        var t3 = cat.addTable("t3", attrs3, attrs3.get(0));
 
 
         // cartesian product table
 
         // 1) adding the attributes from all the tables together
         ArrayList<Attribute> catAt = new ArrayList<>();
-        catAt.addAll(attrs);catAt.addAll(attrs2);catAt.addAll(attrs3);
-
+        catAt.addAll(attrs);
+        catAt.addAll(attrs2);
+        catAt.addAll(attrs3);
 
 
         // add cartesian table
         Table catTab = (Table) Catalog.getCatalog().addTable("catTab", catAt, catAt.get(0));
+
+//        System.out.println(catAt.get(0));
+
+        //TODO FOR CAT TABLE IS ADD ALL TABLES INDEX ATTRIBUTES TOGETHER
+
+        // add an index on attribute
+
+        System.out.println(catTab.IndexedAttributes.get("t1.a"));
+
+        catTab.addIndex("t1.uidt1");
+
+        System.out.println(catTab.IndexedAttributes.get("t1.a"));
 
 
         // add some records to cartesian table
@@ -401,14 +412,16 @@ public class WhereP3 {
             System.out.print("INSERTING (#" + i + ") " + " " + row + " :");
             boolean b = StorageManager.getStorageManager().insertRecord(catTab, row);
             System.out.println(b);
+
         }
+
         catTab.getPkTree().print();
         prettyPrintTable(catTab);
         System.out.println();
         System.out.println("DONE INSERTING CURRENT TREES");
 
-        // add an index on attribute
-        catTab.addIndex("t1.uidt1");
+
+        System.out.println("indexs on :" + catTab.IndexedAttributes.keySet());
 
 
         System.exit(1);

@@ -242,6 +242,7 @@ public class StorageManager extends AStorageManager {
 
             // searching where in the tree this would go ????
             var pkValue = record.get(((Table) table).pkIdx());
+
             //To finish b plus tree, we need to make sure the record doesnt already exist in a tree.
             //Search for the record in the tree, if it does exist, error with primary key should be unique
             int listSize = switch (tree.Type) {
@@ -274,15 +275,19 @@ public class StorageManager extends AStorageManager {
                 rp = new RecordPointer(pageName, idxInPage);
             }
 
-            // insert rp & update indexes for tht page
+            // insert rp & update indexes for each index on page
+            for (String name: ((Table)table).IndexedAttributes.keySet()) {
 
-            switch (tree.Type) {
-                case "integer" -> tree.insertRecordPointer(rp, (Integer) pkValue);
-                case "double" -> tree.insertRecordPointer(rp, (Double) pkValue);
-                case "boolean" -> tree.insertRecordPointer(rp, (Boolean) pkValue);
-                default -> tree.insertRecordPointer(rp, (String) pkValue);
-            }
-            ;
+                tree =    ((Table) table).IndexedAttributes.get(name);
+
+                var inValue = record.get(((Table) table).AttribIdxs.get(name));
+                switch (tree.Type) {
+                    case "integer" -> tree.insertRecordPointer(rp, (Integer) inValue);
+                    case "double" -> tree.insertRecordPointer(rp, (Double) inValue);
+                    case "boolean" -> tree.insertRecordPointer(rp, (Boolean) inValue);
+                    default -> tree.insertRecordPointer(rp, (String) inValue);
+                }
+            };
 
 
             // get the page to insert to
@@ -555,7 +560,7 @@ public class StorageManager extends AStorageManager {
                 // mem optimization remove the old page from disk
                 // and not wait till end to remove all the page that way we would only ever have one
                 // page duplicate vs an entire table duped in memory at the end
-                DeletePageFromTable(table,headPtr);
+                DeletePageFromTable(table, headPtr);
                 headPtr = headPage.getPtrToNextPage();
 
             }
@@ -655,7 +660,7 @@ public class StorageManager extends AStorageManager {
                 // mem optimization remove the old page from disk
                 // and not wait till end to remove all the page that way we would only ever have one
                 // page duplicate vs an entire table duped in memory at the end
-                DeletePageFromTable(table,headPtr);
+                DeletePageFromTable(table, headPtr);
 
                 headPtr = headPage.getPtrToNextPage();
 
@@ -682,14 +687,11 @@ public class StorageManager extends AStorageManager {
     public BPlusTree newIndex(Table table, BPlusTree bpTree, int attributeIdx) {
 
         // page name for head is always at idx zero
-        int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
-
-        // where in a row the pk is
-        int pkidx = ((Table) table).pkIdx();
+        int headPtr = table.getPagesThatBelongToMe().get(0);
 
 
         // loop though all the tables pages in order
-        int idx = 0;
+        int idx;
 
 
         while (headPtr != -1) {
@@ -703,18 +705,10 @@ public class StorageManager extends AStorageManager {
 
 
                 switch (bpTree.Type) {
-                    case "integer":
-                        bpTree.insertRecordPointer(rp, (Integer) row.get(attributeIdx));
-                        break;
-                    case "double":
-                        bpTree.insertRecordPointer(rp, (Double) row.get(attributeIdx));
-                        break;
-                    case "boolean":
-                        bpTree.insertRecordPointer(rp, (Boolean) row.get(attributeIdx));
-                        break;
-                    default:
-                        bpTree.insertRecordPointer(rp, (String) row.get(attributeIdx));
-                        break;
+                    case "integer" -> bpTree.insertRecordPointer(rp, (Integer) row.get(attributeIdx));
+                    case "double" -> bpTree.insertRecordPointer(rp, (Double) row.get(attributeIdx));
+                    case "boolean" -> bpTree.insertRecordPointer(rp, (Boolean) row.get(attributeIdx));
+                    default -> bpTree.insertRecordPointer(rp, (String) row.get(attributeIdx));
                 }
 
                 idx++;

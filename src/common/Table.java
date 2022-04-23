@@ -277,13 +277,22 @@ public class Table implements ITable {
     @Override
     public boolean addIndex(String attributeName) {
 
+        if(IndexedAttributes.containsKey(attributeName)){
+            System.err.println(attributeName+" is already indexed");
+            return false;
+        }
 
         // check attribute exits in table
         if(AttribIdxs.containsKey(attributeName)){
 
             // make new b+ tree with that attrib
+
+
+
             var newTree = BPlusTree.TreeFromTableAttribute(this, AttribIdxs.get(attributeName));
-            IndexedAttributes.put(attributeName, ((StorageManager)StorageManager.getStorageManager()).newIndex(this,newTree,AttribIdxs.get(attributeName)));
+
+            IndexedAttributes.put(attributeName, newTree);
+
 
             return true;
         }
@@ -551,7 +560,7 @@ public class Table implements ITable {
     }
 
     public BPlusTree getPkTree() {
-        return IndexedAttributes.get(Attributes.get(pkeyIdx).getAttributeName());
+        return IndexedAttributes.get(Attributes.get(pkIdx()).getAttributeName());
     }
 
     public void SetPagesThatBelongToMe(ArrayList<Integer> pagesThatBelongToMe) {
