@@ -64,6 +64,19 @@ public class StorageManager extends AStorageManager {
         return false;
     }
 
+    public boolean DeletePageFromTable(ITable table, int pageName) {
+        if (table instanceof Table workingTable) {  //cool piece of code IntelliJ made for me.
+            // workingTable is a "patter var" https://openjdk.java.net/jeps/394
+            ArrayList<Integer> tablePages = workingTable.getPagesThatBelongToMe();
+            if (tablePages.contains(pageName)) {
+                FileSystem.deletePageFile(pageName);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     // DONE
     @Override
     public ArrayList<Object> getRecord(ITable table, Object pkValue) {
@@ -527,17 +540,14 @@ public class StorageManager extends AStorageManager {
 
                 // getting next page from old table
 
-                //TODO could as a mem optimization remove the old page from disk
+                // mem optimization remove the old page from disk
                 // and not wait till end to remove all the page that way we would only ever have one
                 // page duplicate vs an entire table duped in memory at the end
-
+                DeletePageFromTable(table,headPtr);
                 headPtr = headPage.getPtrToNextPage();
 
             }
 
-
-
-            //TODO might want to just remove the tables pGages and not the table
             clearTablesPages(table);
             // set new table name to old table
 
@@ -572,75 +582,86 @@ public class StorageManager extends AStorageManager {
                 return false;
             }
 
-            // page name for head is always at idx zero
+
+            // get the pages that belong to this table
             ArrayList<Integer> pages = ((Table) table).getPagesThatBelongToMe();
+
+            // get the first table in the table
             int headPtr = pages.get(0);
 
+            // clone the old table
+
             Table Clone = new Table(table);
-            Clone.dropAttribute(Clone.getAttributes().get(attrIndex).getAttributeName());
+
+            // remove the atrribute attribute because we need the old schema to read in the old table pages
+            Clone.dropAttribute(table.getAttributes().get(attrIndex).getAttributeName());
+
+
+            // clear the clone table pages (we will make new ones)
             Clone.getPagesThatBelongToMe().clear();
 
+            // make a new first page for the clone table and add it to clone table
             Page firstPageForTable = new Page(Clone);
-            Clone.getPagesThatBelongToMe().add(Integer.valueOf(firstPageForTable.getPageName()));
+
+
             firstPageForTable.writeToDisk(ACatalog.getCatalog().getDbLocation(), Clone);
 
+            //tree for tHIS TABLE  new empty table
+            var newTree = BPlusTree.TreeFromTableAttribute(Clone, Clone.pkIdx());
 
+            Clone.IndexedAttributes.put(table.getAttributes().get(Clone.pkIdx()).getAttributeName(), newTree);
+
+
+            // looping though all the pages of the old table
             while (headPtr != -1) {
 
 
-                // if page is not loaded in yet it needs to be before we add the new attrb
-                // asssumes its already been added by the time this function funtion runs
-
+                // load the page from memory
                 Page headPage = pb.getPageFromBuffer(String.valueOf(headPtr), table);
-
-                // next page before we split
-
-//                List<ArrayList<Object>> newRecs = new ArrayList<>(headPage.getPageRecords());
-
-//                headPage.getPageRecords().clear();
-
-                // whast happening is that when we insert into new tabele clone
-                // old pages from old table are being pushed out of page buffer  and trying to be written with nnew rows
 
 
                 // cloning old table page records
                 ArrayList<ArrayList<Object>> newRecs = new ArrayList<>();
-
                 for (ArrayList<Object> row : headPage.getPageRecords()) {
                     newRecs.add(new ArrayList<>(row));
                 }
 
-                // adding new value
-
+                // adding new attribute/value to each row
+                // these will be the clone table new records
 
                 newRecs.forEach(row -> row.remove(attrIndex));
 
-                // reinsert into new table
 
+                // reinsert new recs into new table with the updated schema
                 for (ArrayList<Object> tempRec : newRecs) {
                     StorageManager.getStorageManager().insertRecord(Clone, tempRec);
                 }
 
 
                 // getting next page from old table
+
+                // mem optimization remove the old page from disk
+                // and not wait till end to remove all the page that way we would only ever have one
+                // page duplicate vs an entire table duped in memory at the end
+                DeletePageFromTable(table,headPtr);
+
                 headPtr = headPage.getPtrToNextPage();
 
             }
 
-            String ClonesNewName = table.getTableName();
-            // DROP old TABLE MAKE SURE ALL OLD PAGES IN HARDWEAR ARE REMOVED
-            StorageManager.getStorageManager().clearTableData(table);
+            clearTablesPages(table);
             // set new table name to old table
-            Clone.setTableName(ClonesNewName);
 
-            // ADD CLONE TABLE TO CATALOG
-            ((Catalog) Catalog.getCatalog()).addExistingTable(Clone);
-
+            ((Table) table).SetAttributes(Clone.getAttributes());
+            ((Table) table).SetIndicesOfNotNullAttributes(Clone.indicesOfNotNullAttributes);
+            ((Table) table).SetPagesThatBelongToMe(Clone.getPagesThatBelongToMe());
+            ((Table) table).SetAttribIdxs(Clone.AttribIdxs);
+            ((Table) table).IndexedAttributes = Clone.IndexedAttributes;
 
             return true;
         } catch (Exception e) {
             e.printStackTrace();
-            System.err.println("failure removing attribute from table " + table.getTableName());
+            System.err.println("failure adding attribute from table " + table.getTableName());
             return false;
         }
     }
@@ -657,7 +678,7 @@ public class StorageManager extends AStorageManager {
 
         // loop though all the tables pages in order
         int idx = 0;
-        System.err.println("-------------00--->"+headPtr);
+
 
         while (headPtr != -1) {
 
