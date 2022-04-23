@@ -1,10 +1,11 @@
-package indexing;
+package indexing.TESTS;
 
 import common.RecordPointer;
+import indexing.BPlusTree;
 
 import java.util.Random;
 
-public class btreeTest {
+public class testRanges {
 
 
     public static void main(String[] args) {

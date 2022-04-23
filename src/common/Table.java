@@ -44,7 +44,6 @@ public class Table implements ITable {
     public HashMap<String, BPlusTree> IndexedAttributes = new HashMap<>();
 
 
-
     public Table(String tableName, ArrayList<Attribute> Attributes, Attribute PrimaryKey) {
         ID = numTables;
         numTables++;
@@ -79,14 +78,14 @@ public class Table implements ITable {
 
         ID = table.getTableId();
         this.Attributes = new ArrayList<>(table.getAttributes());
-        this.TableName = table.getTableName()+"__CLONE__";
+        this.TableName = table.getTableName() + "__CLONE__";
         this.PrimaryKey = table.getPrimaryKey();
         this.AttribIdxs = ((Table) table).AttribIdxs;
         this.indicesOfNotNullAttributes = new HashSet<>(((Table) table).indicesOfNotNullAttributes);
         this.pkeyIdx = ((Table) table).pkeyIdx;
         this.ForeignKeys = new ArrayList<>(((Table) table).ForeignKeys);
         this.PagesThatBelongToMe = new ArrayList<>(((Table) table).getPagesThatBelongToMe());
-        this.IndexedAttributes = ((Table) table).IndexedAttributes;
+//        this.IndexedAttributes = ((Table) table).IndexedAttributes;
 
     }
 
@@ -264,9 +263,6 @@ public class Table implements ITable {
         // check attribute exits in table
 
         // make new b+ tree with that attrib
-
-
-
 
 
         return false;
@@ -506,7 +502,6 @@ public class Table implements ITable {
             String attributeType = attribute.getAttributeType().toLowerCase();
 
 
-
             int attributeSize = 0;
 
             switch (attributeType) {
@@ -521,12 +516,11 @@ public class Table implements ITable {
                     break;
                 default:
 
-                    attributeSize = Integer.parseInt(attributeType.substring(attributeType.indexOf("(")+1, attributeType.length() - 1));
-
+                    attributeSize = Integer.parseInt(attributeType.substring(attributeType.indexOf("(") + 1, attributeType.length() - 1));
 
 
             }
-            Max = Math.max(Max,attributeSize);
+            Max = Math.max(Max, attributeSize);
 
 
         }
@@ -535,5 +529,22 @@ public class Table implements ITable {
 
     public BPlusTree getPkTree() {
         return IndexedAttributes.get(Attributes.get(pkeyIdx).getAttributeName());
+    }
+
+    public void SetPagesThatBelongToMe(ArrayList<Integer> pagesThatBelongToMe) {
+        this.PagesThatBelongToMe = pagesThatBelongToMe;
+    }
+
+    public void SetAttribIdxs(HashMap<String, Integer> attribIdxs) {
+
+        this.AttribIdxs = attribIdxs;
+    }
+
+    public void SetIndicesOfNotNullAttributes(HashSet<Integer> indicesOfNotNullAttributes) {
+        this.indicesOfNotNullAttributes = indicesOfNotNullAttributes;
+    }
+
+    public void SetAttributes(ArrayList<Attribute> attributes) {
+        this.Attributes = attributes;
     }
 }

@@ -1,8 +1,9 @@
-package indexing;
+package indexing.TESTS;
 
 import catalog.ACatalog;
 import catalog.Catalog;
 import common.*;
+import indexing.BPlusTree;
 import pagebuffer.PageBuffer;
 import phase2tests.Phase2Testers;
 import storagemanager.StorageManager;
@@ -46,14 +47,24 @@ public class tableTobpTreeTest {
         boolean b = StorageManager.getStorageManager().insertRecord(Catalog.getCatalog().getTable("t1"), row);
         System.out.println(b);
 
+
+        // dup pk test
+        System.out.print("INSERTING " + row);
+         b = StorageManager.getStorageManager().insertRecord(Catalog.getCatalog().getTable("t1"), row);
+        System.out.println(b);
+
+
+
+
         ArrayList<Object> newRow = Phase2Testers.mkRandomRec(attrs);
         row.set(0, 5);
-
+        newRow.set(0, 5);
 
         System.out.print("updating " + row + " --> "+ newRow);
 
         System.out.print("DID UPDATE: ");
         b = StorageManager.getStorageManager().updateRecord(Catalog.getCatalog().getTable("t1"), row,newRow);
+
         System.out.println(b);
 
 

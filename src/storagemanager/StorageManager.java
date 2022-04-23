@@ -50,6 +50,20 @@ public class StorageManager extends AStorageManager {
         return false;
     }
 
+    public boolean clearTablesPages(ITable table) {
+        if (table instanceof Table workingTable) {  //cool piece of code IntelliJ made for me.
+            // workingTable is a "patter var" https://openjdk.java.net/jeps/394
+            ArrayList<Integer> tablePages = workingTable.getPagesThatBelongToMe();
+            for (int page : tablePages) {
+                FileSystem.deletePageFile(page);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     // DONE
     @Override
     public ArrayList<Object> getRecord(ITable table, Object pkValue) {
@@ -149,7 +163,6 @@ public class StorageManager extends AStorageManager {
 
 
             ////////////////////// pre preprocessing before inset //////////////////////
-
 
 
             // all string will not have " " at front and end
@@ -400,7 +413,7 @@ public class StorageManager extends AStorageManager {
      * @return
      */
 
-    //TODO with tree
+    //DONE
     @Override
     public boolean updateRecord(ITable table, ArrayList<Object> oldRecord, ArrayList<Object> newRecord) {
 
@@ -412,7 +425,7 @@ public class StorageManager extends AStorageManager {
         var pkValue = oldRecord.get(((Table) table).pkIdx());
 
         // finding how many of these exist in the table
-        ArrayList<RecordPointer>rps = switch (tree.Type) {
+        ArrayList<RecordPointer> rps = switch (tree.Type) {
             case "integer" -> tree.search((Integer) pkValue);
             case "double" -> tree.search((Double) pkValue);
             case "boolean" -> tree.search((Boolean) pkValue);
@@ -420,14 +433,14 @@ public class StorageManager extends AStorageManager {
         };
         // if non exist then error
         if (rps.size() == 0) {
-            System.err.println("record +"+oldRecord+" does not exist yet");
+            System.err.println("record to update " + oldRecord + " does not exist in the table");
             return false;
         }
 
 
         // delete delete old rec
 
-        deleteRecord(table, oldRecord.get(((Table)table).pkIdx()));
+        deleteRecord(table, oldRecord.get(((Table) table).pkIdx()));
 
         // if we can insert it meaning no dup pk then inserrt new rec
 
@@ -457,73 +470,82 @@ public class StorageManager extends AStorageManager {
         try {
 
 
-            // page name for head is always at idx zero
+            // get the pages that belong to this table
             ArrayList<Integer> pages = ((Table) table).getPagesThatBelongToMe();
+
+            // get the first table in the table
             int headPtr = pages.get(0);
 
+            // clone the old table
+
             Table Clone = new Table(table);
+
+
+            // clear the clone table pages (we will make new ones)
             Clone.getPagesThatBelongToMe().clear();
 
+            // make a new first page for the clone table and add it to clone table
             Page firstPageForTable = new Page(Clone);
-            Clone.getPagesThatBelongToMe().add(Integer.valueOf(firstPageForTable.getPageName()));
+
+
             firstPageForTable.writeToDisk(ACatalog.getCatalog().getDbLocation(), Clone);
 
+            //tree for tHIS TABLE  new empty table
+            var newTree = BPlusTree.TreeFromTableAttribute(Clone, Clone.pkIdx());
 
+            Clone.IndexedAttributes.put(table.getAttributes().get(Clone.pkIdx()).getAttributeName(), newTree);
+
+
+            // remove the new attribute because we need the old schema to read in the old table pages
             table.getAttributes().remove(table.getAttributes().size() - 1);
 
-
+            // looping though all the pages of the old table
             while (headPtr != -1) {
 
 
-                // if page is not loaded in yet it needs to be before we add the new attrb
-                // asssumes its already been added by the time this function funtion runs
-
+                // load the page from memory
                 Page headPage = pb.getPageFromBuffer(String.valueOf(headPtr), table);
-
-                // next page before we split
-
-//                List<ArrayList<Object>> newRecs = new ArrayList<>(headPage.getPageRecords());
-
-//                headPage.getPageRecords().clear();
-
-                // whast happening is that when we insert into new tabele clone
-                // old pages from old table are being pushed out of page buffer  and trying to be written with nnew rows
 
 
                 // cloning old table page records
                 ArrayList<ArrayList<Object>> newRecs = new ArrayList<>();
-
                 for (ArrayList<Object> row : headPage.getPageRecords()) {
                     newRecs.add(new ArrayList<>(row));
                 }
 
-                // adding new value
-
+                // adding new attribute/value to each row
+                // these will be the clone table new records
 
                 newRecs.forEach(row -> row.add(defaultValue));
 
 
-                // reinsert into new table
-
+                // reinsert new recs into new table with the updated schema
                 for (ArrayList<Object> tempRec : newRecs) {
                     StorageManager.getStorageManager().insertRecord(Clone, tempRec);
                 }
 
 
                 // getting next page from old table
+
+                //TODO could as a mem optimization remove the old page from disk
+                // and not wait till end to remove all the page that way we would only ever have one
+                // page duplicate vs an entire table duped in memory at the end
+
                 headPtr = headPage.getPtrToNextPage();
 
             }
 
-            String ClonesNewName = table.getTableName();
-            // DROP old TABLE MAKE SURE ALL OLD PAGES IN HARDWEAR ARE REMOVED
-            StorageManager.getStorageManager().clearTableData(table);
+
+
+            //TODO might want to just remove the tables pGages and not the table
+            clearTablesPages(table);
             // set new table name to old table
-            Clone.setTableName(ClonesNewName);
 
-            // ADD CLONE TABLE TO CATALOG
-            ((Catalog) Catalog.getCatalog()).addExistingTable(Clone);
-
+            ((Table) table).SetAttributes(Clone.getAttributes());
+            ((Table) table).SetIndicesOfNotNullAttributes(Clone.indicesOfNotNullAttributes);
+            ((Table) table).SetPagesThatBelongToMe(Clone.getPagesThatBelongToMe());
+            ((Table) table).SetAttribIdxs(Clone.AttribIdxs);
+            ((Table) table).IndexedAttributes = Clone.IndexedAttributes;
 
             return true;
         } catch (Exception e) {
@@ -635,10 +657,11 @@ public class StorageManager extends AStorageManager {
 
         // loop though all the tables pages in order
         int idx = 0;
+        System.err.println("-------------00--->"+headPtr);
 
         while (headPtr != -1) {
 
-            Page headPage = pb.getPageFromBuffer("" + headPtr, table);
+            Page headPage = pb.getPageFromBuffer(String.valueOf(headPtr), table);
             // look though all record for that page
 
             idx = 0;
@@ -667,6 +690,7 @@ public class StorageManager extends AStorageManager {
             // next page
             headPtr = headPage.getPtrToNextPage();
         }
+
         return bpTree;
     }
 

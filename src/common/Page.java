@@ -146,7 +146,7 @@ public class Page {
                 schema.add(att.getAttributeType());
 
                 // found a char(#) paring for the number
-                if (att.getAttributeType().startsWith("Char(")) {
+                if (att.getAttributeType().toLowerCase().startsWith("char(")) {
                     charlen = Integer.parseInt(att.getAttributeType().substring(5, att.getAttributeType().length() - 1));
                 }
             }
@@ -203,26 +203,26 @@ public class Page {
                     if (!bitMask.get(idx)) {
 
                         // 6) read in what the schema says is next
-                        switch (schema.get(idx)) {
+                        switch (schema.get(idx).toLowerCase()) {
 
-                            case "Integer":
+                            case "integer":
 
 
                                 rec.add(dataInputStr.readInt());
                                 currentSize += 4;
                                 break;
-                            case "Double":
+                            case "double":
                                 rec.add(dataInputStr.readDouble());
                                 currentSize += 8;
                                 break;
-                            case "Boolean":
+                            case "boolean":
                                 rec.add(dataInputStr.readBoolean());
                                 currentSize += 1;
                                 break;
                             default:
 
                                 // we get a char(#)
-                                if (schema.get(idx).startsWith("Char(")) {
+                                if (schema.get(idx).startsWith("char(")) {
                                     rec.add(new String(dataInputStr.readNBytes(charlen), StandardCharsets.UTF_8));
                                     currentSize += (charlen);
 
@@ -323,24 +323,24 @@ public class Page {
                     for (int idx = 0; idx < record.size(); idx++) {
                         if (record.get(idx) != null) {
 
-                            switch (schema.get(idx)) {
-                                case "Integer":
+                            switch (schema.get(idx).toLowerCase()) {
+                                case "integer":
                                     //add it to outputStream btye array
                                     outputStream.write(ByteBuffer.allocate(4).putInt((Integer) record.get(idx)).array());
                                     break;
-                                case "Double":
+                                case "double":
                                     //add it to outputStream btye array
 
                                     outputStream.write(ByteBuffer.allocate(8).putDouble((Double) record.get(idx)).array());
                                     break;
-                                case "Boolean":
+                                case "boolean":
                                     //add it to outputStream btye array
                                     outputStream.write(ByteBuffer.allocate(1).put(new byte[]{(byte) ((Boolean) record.get(idx) ? 1 : 0)}).array());
                                     break;
                                 default:
                                     //add it to outputStream btye array
                                     // char(#)
-                                    if (schema.get(idx).startsWith("Char(")) {
+                                    if (schema.get(idx).startsWith("char(")) {
                                         outputStream.write(((String) record.get(idx)).getBytes());
                                     } else {
                                         // add the len of var char before we write var char
@@ -389,7 +389,7 @@ public class Page {
         for (Attribute att : table.getAttributes()) {
             schema.add(att.getAttributeType());
             // found a char(#) paring for the number
-            if (att.getAttributeType().startsWith("Char(")) {
+            if (att.getAttributeType().toLowerCase().startsWith("char(")) {
                 charlen = Integer.parseInt(att.getAttributeType().substring(5, att.getAttributeType().length() - 1));
             }
         }
@@ -409,20 +409,20 @@ public class Page {
             for (int idx = 0; idx < r.size(); idx++) {
 
                 if (r.get(idx) != null) {
-                    switch (schema.get(idx)) {
-                        case "Integer":
+                    switch (schema.get(idx).toLowerCase()) {
+                        case "integer":
                             size += 4;
                             break;
-                        case "Double":
+                        case "double":
                             size += 8;
                             break;
-                        case "Boolean":
+                        case "boolean":
                             size += 1;
                             break;
                         default:
 
                             // char(#)
-                            if (schema.get(idx).startsWith("Char(")) {
+                            if (schema.get(idx).startsWith("char(")) {
                                 size += charlen;
                             } else {
                                 // add the len of var char before we write var char

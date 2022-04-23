@@ -955,7 +955,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
 
         // finding out what type of tree to make
-        BPlusTree bpTree = null;
+        BPlusTree bpTree;
 
         String type = table.getAttributes().get(AttributeIdx).getAttributeType().toLowerCase();
 
