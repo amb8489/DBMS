@@ -501,9 +501,7 @@ public class Utilities {
 
         }
 
-
-
-            for (Attribute attr :table.getAttributes()) {
+        for (Attribute attr :table.getAttributes()) {
             String colname = attr.getAttributeName();
             if (colname.contains(".")){
 
@@ -517,11 +515,22 @@ public class Utilities {
             }
         }
 
-
+        // this is essentially a loop to get the string names from the attributes; attributes are inconvenient
+        var toBeDropped = new ArrayList<String>();  // temp list of attributes to be dropped.  temp so we can check
+        // what's being dropped later
         for (Attribute name : atters) {
             if(!KeepNames.contains(name.getAttributeName())){
-                StorageManager.getStorageManager().dropAttributeValue(table, table.AttribIdxs.get(name.getAttributeName()));
+                toBeDropped.add(name.getAttributeName());  // construct a list of attribtues to be dropped
             }
+        }
+        if (toBeDropped.size() == atters.size()){ // if we planned on dropping all attributes, there's a problem
+            System.err.println("No valid column selected.");
+            return false;
+        }
+        // check for primary key removal here
+        for (String name: toBeDropped){
+            System.out.println("Dropping " + name);
+            StorageManager.getStorageManager().dropAttributeValue(table, table.AttribIdxs.get(name));
         }
         return true;
     }

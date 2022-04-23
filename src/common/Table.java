@@ -36,13 +36,14 @@ public class Table implements ITable {
     private ArrayList<ForeignKey> ForeignKeys = new ArrayList<>();
     private ArrayList<Integer> PagesThatBelongToMe = new ArrayList<>();
 
-    public HashMap<String, Integer> AttribIdxs = new HashMap<>();
+    public HashMap<String, Integer> AttribIdxs = new HashMap<>();  // maps attr name to attr index
 
     //DONT forget to add and delere as we add and delete attriues
 
 
     // Attribute name , tree
     public HashMap<String, BPlusTree> IndexedAttributes = new HashMap<>();
+
 
 
     public Table(String tableName, ArrayList<Attribute> Attributes, Attribute PrimaryKey) {
@@ -81,14 +82,14 @@ public class Table implements ITable {
 
         ID = table.getTableId();
         this.Attributes = new ArrayList<>(table.getAttributes());
-        this.TableName = table.getTableName() + "__CLONE__";
+        this.TableName = table.getTableName();//+"__CLONE__";
         this.PrimaryKey = table.getPrimaryKey();
         this.AttribIdxs = ((Table) table).AttribIdxs;
         this.indicesOfNotNullAttributes = new HashSet<>(((Table) table).indicesOfNotNullAttributes);
         this.pkeyIdx = ((Table) table).pkeyIdx;
         this.ForeignKeys = new ArrayList<>(((Table) table).ForeignKeys);
         this.PagesThatBelongToMe = new ArrayList<>(((Table) table).getPagesThatBelongToMe());
-//        this.IndexedAttributes = ((Table) table).IndexedAttributes;
+        this.IndexedAttributes = ((Table) table).IndexedAttributes;
 
     }
 
@@ -221,13 +222,11 @@ public class Table implements ITable {
         PrimaryKey = primaryKey;
     }
 
-
-
     @Override
     public boolean dropAttribute(String name) {
 
         int idx = 0;
-        // look though each attribute
+
         for (Attribute attribute : Attributes) {
 
             // we that attribute is in the table

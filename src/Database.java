@@ -64,6 +64,7 @@ public class Database {
             System.out.println("Enter Statement:");
             String input;
 //create table foo( baz double primarykey );insert into foo values (21.2), (1000000.2), (0.0000001);
+            // create table test( attr1 double primarykey, attr2 varchar(5) );
             do {
                 input = scn.next();
                 statement += input + " ";
@@ -127,7 +128,6 @@ public class Database {
             System.err.println("query: " + queryStmt + " failed");
             return null;
         }
-        Utilities.prettyPrintResultSet(QueryResultTable, false, 15);
         return QueryResultTable;
     }
 

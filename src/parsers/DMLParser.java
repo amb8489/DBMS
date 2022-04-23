@@ -420,7 +420,7 @@ public class DMLParser {
                 System.err.println("Invalid select statement: table " + tables.get(0) + " in 'from' does not exist");
                 return null;
             }
-            return Catalog.getCatalog().getTable(tables.get(0));
+            return new Table(Catalog.getCatalog().getTable(tables.get(0)));  // new Table makes a copy of that table
         } else {
             if (!Catalog.getCatalog().containsTable(tables.get(0))) {
                 System.err.println("Invalid select statement: table " + tables.get(0) + " in 'from' does not exist");
@@ -507,12 +507,12 @@ public class DMLParser {
         // ----------------- ----------------- FROM | make cartesian prod table -----------------
 
         int fromStart = StmtTokens.indexOf("from")+1;
-        List<String> tables = new ArrayList<>();
+        List<String> tables;
         if (fromStart == 0) {
             System.err.println("Invalid select statement: missing 'from'");
             return null;
         } else {
-            int fromEnd = StmtTokens.indexOf("where");
+            int fromEnd = StmtTokens.indexOf("where");  // jank way to detect end of statement
             if (fromEnd == -1){
                 fromEnd = StmtTokens.indexOf("orderby");
             }
