@@ -578,4 +578,112 @@ public class Table implements ITable {
     public void SetAttributes(ArrayList<Attribute> attributes) {
         this.Attributes = attributes;
     }
+
+    public boolean dropAttributeCartTable(Table table, String name,int attrIndex) {
+
+
+
+        try {
+            if (attrIndex >= table.getAttributes().size()) {
+                System.err.println("Table cant remove attribute at index " + attrIndex + " because" +
+                        " table doesn't have that many attributes");
+                return false;
+            }
+            if (attrIndex == ((Table) table).pkIdx()) {
+                System.err.println("ERROR: tryig to drop the primary key");
+                return false;
+            }
+
+
+            // get the pages that belong to this table
+            ArrayList<Integer> pages = ((Table) table).getPagesThatBelongToMe();
+
+            // get the first table in the table
+            int headPtr = pages.get(0);
+
+            // clone the old table
+
+            Table Clone = new Table(table);
+
+            // remove the atrribute attribute because we need the old schema to read in the old table pages
+            Clone.dropAttribute(table.getAttributes().get(attrIndex).getAttributeName());
+
+
+            // clear the clone table pages (we will make new ones)
+            Clone.getPagesThatBelongToMe().clear();
+
+            // make a new first page for the clone table and add it to clone table
+            Page firstPageForTable = new Page(Clone);
+
+
+            firstPageForTable.writeToDisk(ACatalog.getCatalog().getDbLocation(), Clone);
+
+            //tree for tHIS TABLE  new empty table
+            var newTree = BPlusTree.TreeFromTableAttribute(Clone, Clone.pkIdx());
+
+            Clone.IndexedAttributes.put(table.getAttributes().get(Clone.pkIdx()).getAttributeName(), newTree);
+
+
+            // looping though all the pages of the old table
+            while (headPtr != -1) {
+
+
+                // load the page from memory
+                Page headPage = ((StorageManager)StorageManager
+                        .getStorageManager())
+                        .getPagebuffer()
+                        .getPageFromBuffer(String.valueOf(headPtr), table);
+
+
+                // cloning old table page records
+                ArrayList<ArrayList<Object>> newRecs = new ArrayList<>();
+                for (ArrayList<Object> row : headPage.getPageRecords()) {
+                    newRecs.add(new ArrayList<>(row));
+                }
+
+                // adding new attribute/value to each row
+                // these will be the clone table new records
+
+                newRecs.forEach(row -> row.remove(attrIndex));
+
+
+                // reinsert new recs into new table with the updated schema
+                for (ArrayList<Object> tempRec : newRecs) {
+                    StorageManager.getStorageManager().insertRecord(Clone, tempRec);
+                }
+
+
+                // getting next page from old table
+
+                // mem optimization remove the old page from disk
+                // and not wait till end to remove all the page that way we would only ever have one
+                // page duplicate vs an entire table duped in memory at the end
+
+//                DeletePageFromTable(table, headPtr);
+
+                headPtr = headPage.getPtrToNextPage();
+
+            }
+
+//            clearTablesPages(table);
+            // set new table name to old table
+
+            ((Table) table).SetAttributes(Clone.getAttributes());
+            ((Table) table).SetIndicesOfNotNullAttributes(Clone.indicesOfNotNullAttributes);
+            ((Table) table).SetPagesThatBelongToMe(Clone.getPagesThatBelongToMe());
+            ((Table) table).SetAttribIdxs(Clone.AttribIdxs);
+            ((Table) table).IndexedAttributes = Clone.IndexedAttributes;
+
+            return true;
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("failure adding attribute from table " + table.getTableName());
+            return false;
+        }
+
+
+
+    }
 }

@@ -493,7 +493,10 @@ public class DDLParser {
 
             for (Attribute attribute : table.getAttributes()) {
                 if (attribute.getAttributeName().equals(attributeName)) {
+
                     return StorageManager.getStorageManager().dropAttributeValue(table, attribIdx);
+
+
                 }
                 attribIdx++;
             }

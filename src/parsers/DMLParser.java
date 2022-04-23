@@ -436,6 +436,7 @@ public class DMLParser {
                 newAttributes0.add(new Attribute(tables.get(0) + "." + attr.getAttributeName(),
                         attr.attributeType()));
             }
+
             ITable cartProd = new Table("cartesianProduct", newAttributes0, pk0);
             int serial = 1;
             for (ArrayList<Object> row : StorageManager.getStorageManager().getRecords(table0)) {

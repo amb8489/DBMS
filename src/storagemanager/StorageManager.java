@@ -685,6 +685,7 @@ public class StorageManager extends AStorageManager {
                 // mem optimization remove the old page from disk
                 // and not wait till end to remove all the page that way we would only ever have one
                 // page duplicate vs an entire table duped in memory at the end
+
                 DeletePageFromTable(table, headPtr);
 
                 headPtr = headPage.getPtrToNextPage();

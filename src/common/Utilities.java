@@ -17,7 +17,7 @@ public class Utilities {
 // list of key words not allowed for use for table/ column names
 
     private static Set<String> KEYWORDS = Stream.of(
-            "create", "table", "drop", "insert", "into", "delete", "from", "where", "update",
+            "create", "table", "drop","cartesianProduct", "insert", "into", "delete", "from", "where", "update",
             "notnull", "primarykey", "foreignkey", "references", "add", "default", "set",
             "values", "null", "Integer", "Double", "Boolean", "Varchar", "Char","integer","False",
             "double", "boolean", "varchar", "char","char(","varchar(","Varchar(","true","false","True").collect(Collectors.toCollection(HashSet::new));
@@ -527,10 +527,10 @@ public class Utilities {
             System.err.println("No valid column selected.");
             return false;
         }
-        // check for primary key removal here
+        // sike, dont check for primary key removal here
         for (String name: toBeDropped){
             System.out.println("Dropping " + name);
-            table.dropAttribute(name);
+            table.dropAttributeCartTable(table,name,table.AttribIdxs.get(name));
         }
         return true;
     }
@@ -552,8 +552,10 @@ public class Utilities {
             int[] max = new int[table1.attrs().size()];
 
 
+
             for (ArrayList<Object> r : table1.results()) {
-                for (int i = 0; i < r.size(); i++) {
+                System.err.println(r);
+                for (int i = 0; i < r.size() &&  i < table1.attrs().size(); i++) {
                     Object o = r.get(i);
                     max[i] = Math.max(Math.max(max[i], o.toString().length()), table1.attrs().get(i).getAttributeName().length());
                     if (o.toString().length() > maxStrSize) {
