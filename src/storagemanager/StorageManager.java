@@ -276,9 +276,9 @@ public class StorageManager extends AStorageManager {
             }
 
             // insert rp & update indexes for each index on page
-            for (String name: ((Table)table).IndexedAttributes.keySet()) {
+            for (String name : ((Table) table).IndexedAttributes.keySet()) {
 
-                tree =    ((Table) table).IndexedAttributes.get(name);
+                tree = ((Table) table).IndexedAttributes.get(name);
 
                 var inValue = record.get(((Table) table).AttribIdxs.get(name));
                 switch (tree.Type) {
@@ -287,7 +287,8 @@ public class StorageManager extends AStorageManager {
                     case "boolean" -> tree.insertRecordPointer(rp, (Boolean) inValue);
                     default -> tree.insertRecordPointer(rp, (String) inValue);
                 }
-            };
+            }
+            ;
 
 
             // get the page to insert to
@@ -407,6 +408,7 @@ public class StorageManager extends AStorageManager {
 
             // delete rp & update indexes for thatt page in tree -1 from each idx
 
+
             switch (tree.Type) {
                 case "integer" -> tree.removeRecordPointer(deleteLocation, (Integer) primaryKey);
                 case "double" -> tree.removeRecordPointer(deleteLocation, (Double) primaryKey);
@@ -417,6 +419,29 @@ public class StorageManager extends AStorageManager {
 
             // get the page to delete from
             Page page = pb.getPageFromBuffer(String.valueOf(deleteLocation.page()), table);
+
+            var DeleteRecord = page.getPageRecords().get(deleteLocation.index());
+
+            // get the row tht was deleted and update the other indexed tables
+
+            String pkAtrributeNAme = table.getAttributes().get(((Table) table).pkIdx()).getAttributeName();
+            for (String name : ((Table) table).IndexedAttributes.keySet()) {
+
+                if (!name.equals(pkAtrributeNAme)) {
+
+                    tree = ((Table) table).IndexedAttributes.get(name);
+
+                    // grapping the value in the row that belongs to that attribute
+                    var inValue = DeleteRecord.get(((Table) table).AttribIdxs.get(name));
+                    switch (tree.Type) {
+                        case "integer" -> tree.removeRecordPointer(deleteLocation, (Integer) inValue);
+                        case "double" -> tree.removeRecordPointer(deleteLocation, (Double) inValue);
+                        case "boolean" -> tree.removeRecordPointer(deleteLocation, (Boolean) inValue);
+                        default -> tree.removeRecordPointer(deleteLocation, (String) inValue);
+                    }
+                }
+            }
+
 
             return page.delete(deleteLocation.index());
 

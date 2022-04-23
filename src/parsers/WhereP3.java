@@ -408,7 +408,7 @@ public class WhereP3 {
         for (int i = 0; i < size; i++) {
             var row = Phase2Testers.mkRandomRec(catAt);
 //          row.set(0, rand.nextInt(bound));
-            row.set(1, size - i);
+            row.set(1, size - ( i));
             System.out.print("INSERTING (#" + i + ") " + " " + row + " :");
             boolean b = StorageManager.getStorageManager().insertRecord(catTab, row);
             System.out.println(b);
@@ -416,9 +416,23 @@ public class WhereP3 {
         }
 
         catTab.getPkTree().print();
+        catTab.IndexedAttributes.get("t1.uidt1").print();
+
         prettyPrintTable(catTab);
         System.out.println();
         System.out.println("DONE INSERTING CURRENT TREES");
+
+
+        var row = Phase2Testers.mkRandomRec(catAt);
+        row.set(0, 5);
+        System.out.print("DELETING (#" + 1 + ") " + " " + row + " :");
+        boolean b = StorageManager.getStorageManager().deleteRecord(catTab, row.get(catTab.pkIdx()));
+        System.out.println(b);
+
+        catTab.getPkTree().print();
+        catTab.IndexedAttributes.get("t1.uidt1").print();
+
+        prettyPrintTable(catTab);
 
 
         System.out.println("indexs on :" + catTab.IndexedAttributes.keySet());
