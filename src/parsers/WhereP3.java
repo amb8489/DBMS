@@ -3,15 +3,14 @@ package parsers;
 
 import catalog.ACatalog;
 import catalog.Catalog;
-import common.Attribute;
-import common.Table;
-import common.Utilities;
-import common.VerbosePrint;
+import common.*;
+import phase2tests.Phase2Testers;
 import storagemanager.AStorageManager;
 import storagemanager.StorageManager;
 
 import java.util.*;
 
+import static common.Utilities.prettyPrintTable;
 import static java.util.Map.entry;
 
 public class WhereP3 {
@@ -349,15 +348,14 @@ public class WhereP3 {
     public static void main(String[] args) {
 
 
-        Catalog.createCatalog("DB", 4048, 3);
+        Catalog.createCatalog("DB", 120, 3);
         StorageManager.createStorageManager();
         AStorageManager sm = StorageManager.getStorageManager();
         Catalog cat = (Catalog) Catalog.getCatalog();
         WhereP3 parser = new WhereP3();
 
 
-        // TALES
-
+        // TABLES
         //t1
         ArrayList<Attribute> attrs = new ArrayList<>();
         attrs.add(new Attribute("t1.a", "Integer"));
@@ -367,15 +365,15 @@ public class WhereP3 {
 
         //t2
         ArrayList<Attribute> attrs2 = new ArrayList<>();
-        attrs2.add(new Attribute("t2.b", "Integer"));
-        attrs2.add(new Attribute("t2.c", "Integer"));
-        attrs2.add(new Attribute("t2.uidt2", "Integer"));
+        attrs2.add(new Attribute("t2.b", "Char(5)"));
+        attrs2.add(new Attribute("t2.c", "Char(5)"));
+        attrs2.add(new Attribute("t2.uidt2", "Char(5)"));
         cat.addTable("t2", attrs2, attrs2.get(0));
 
         //t3
         ArrayList<Attribute> attrs3 = new ArrayList<>();
-        attrs3.add(new Attribute("t3.a", "Integer"));
-        attrs3.add(new Attribute("t3.uidt3", "Integer"));
+        attrs3.add(new Attribute("t3.a", "Char(5)"));
+        attrs3.add(new Attribute("t3.uidt3", "Char(5)"));
         cat.addTable("t3", attrs3, attrs3.get(0));
 
 
@@ -383,47 +381,49 @@ public class WhereP3 {
 
         // 1) adding the attributes from all the tables together
         ArrayList<Attribute> catAt = new ArrayList<>();
-        catAt.addAll(attrs);
-        catAt.addAll(attrs2);
-        catAt.addAll(attrs3);
+        catAt.addAll(attrs);catAt.addAll(attrs2);catAt.addAll(attrs3);
 
 
-        // 2 sample row from new table
 
-        ArrayList<Object> row = new ArrayList<>();
-        row.add(1);
-        row.add(2);
-        row.add(3);
-        row.add(4);
-        row.add(5);
-        row.add(6);
-        row.add(7);
+        // add cartesian table
+        Table catTab = (Table) Catalog.getCatalog().addTable("catTab", catAt, catAt.get(0));
 
 
-        // add new table
-        Catalog.getCatalog().addTable("catTab", catAt, catAt.get(0));
+        // add some records to cartesian table
+        Random rand = new Random();
+        int bound = 100000;
+        int size = 10;
 
-
-        // add records to table
-
-
-        // get table
-       Table catTab = (Table) Catalog.getCatalog().getTable("catTab");
+        for (int i = 0; i < size; i++) {
+            var row = Phase2Testers.mkRandomRec(catAt);
+//          row.set(0, rand.nextInt(bound));
+            row.set(1, size - i);
+            System.out.print("INSERTING (#" + i + ") " + " " + row + " :");
+            boolean b = StorageManager.getStorageManager().insertRecord(catTab, row);
+            System.out.println(b);
+        }
+        catTab.getPkTree().print();
+        prettyPrintTable(catTab);
+        System.out.println();
+        System.out.println("DONE INSERTING CURRENT TREES");
 
         // add an index on attribute
-        catTab.getPkTree().print();
+        catTab.addIndex("t1.uidt1");
 
 
-        long startTime = System.currentTimeMillis();
+        System.exit(1);
 
-
-        boolean res = parser.whereIsTrue("where t3.a = t3.a",catTab, row);
-
-
-        long endTime = System.currentTimeMillis();
-
-        System.out.println("STMT: " + res);
-        System.out.println(endTime - startTime);
+//
+//        long startTime = System.currentTimeMillis();
+//
+//
+//        boolean res = parser.whereIsTrue("where t3.a = t3.a",catTab, row);
+//
+//
+//        long endTime = System.currentTimeMillis();
+//
+//        System.out.println("STMT: " + res);
+//        System.out.println(endTime - startTime);
 
     }
 

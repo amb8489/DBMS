@@ -296,49 +296,53 @@ public class Utilities {
         return rows;
     }
 
-    public static void prettyPrintResultSet(ResultSet table, Boolean truncate, int maxSizeTruncate) {
+    public static void prettyPrintTable(Table table) {
+
+        var table1 = ResultSetFromTable(table);
 
 
         int spacingSeparation = 0;                   // number of spaces between columns
         int maxStrSize = 200;
+        boolean truncate = false;
+        int maxSizeTruncate = 13;
 
         if (truncate) {
             maxStrSize = maxSizeTruncate;
         }
 
-        int[] max = new int[table.attrs().size()];
+        int[] max = new int[table1.attrs().size()];
 
 
-        for (ArrayList<Object> r : table.results()) {
+        for (ArrayList<Object> r : table1.results()) {
             for (int i = 0; i < r.size(); i++) {
                 Object o = r.get(i);
-                max[i] = Math.max(Math.max(max[i], o.toString().length()), table.attrs().get(i).getAttributeName().length());
+                max[i] = Math.max(Math.max(max[i], o.toString().length()), table1.attrs().get(i).getAttributeName().length());
                 if (o.toString().length() > maxStrSize) {
                     r.set(i, o.toString().substring(0, maxStrSize - 4) + "...");
                 }
             }
         }
 
-        int[] spacing = new int[table.attrs().size()];
-        for (int i = 0; i < table.attrs().size(); i++) {
+        int[] spacing = new int[table1.attrs().size()];
+        for (int i = 0; i < table1.attrs().size(); i++) {
             spacing[i] = Math.min(max[i], maxStrSize) + spacingSeparation;   // total spac
             spacing[i] += 1;
         }
 
 
-        String[] atters = new String[table.attrs().size()];
+        String[] atters = new String[table1.attrs().size()];
 
-        for (int i = 0; i < table.attrs().size(); i++) {
-            Attribute a = table.attrs().get(i);
+        for (int i = 0; i < table1.attrs().size(); i++) {
+            Attribute a = table1.attrs().get(i);
             atters[i] = a.getAttributeName();
         }
 
 
         StringBuilder formatStr = new StringBuilder();
         formatStr.append("║ %-").append(spacing[0]);
-        for (int i = 1; i < table.attrs().size(); i++) {
+        for (int i = 1; i < table1.attrs().size(); i++) {
 
-            int idx = i % table.attrs().size();
+            int idx = i % table1.attrs().size();
             formatStr.append("s ║%-").append(spacing[idx]);
 
         }
@@ -350,8 +354,8 @@ public class Utilities {
         System.out.println("═".repeat(ColNames.length() - 1));
 
 
-        for (int i = 0; i < table.results().size(); i++) {
-            String rowstr = table.results().get(i).toString().substring(1, table.results().get(i).toString().length() - 1);
+        for (int i = 0; i < table1.results().size(); i++) {
+            String rowstr = table1.results().get(i).toString().substring(1, table1.results().get(i).toString().length() - 1);
             String[] rowStrarr = rowstr.split(",");
             System.out.printf(formatStr.toString(), rowStrarr);
 //            System.out.println("".repeat(ColNames.length() - 1));
@@ -364,7 +368,11 @@ public class Utilities {
     }
 
 
-    public static ResultSet ResultSetFromTable(ArrayList<Attribute> attributes, ArrayList<ArrayList<Object>> rows) {
+    public static ResultSet ResultSetFromTable(Table table) {
+
+
+        ArrayList<Attribute> attributes = table.getAttributes();
+                ArrayList<ArrayList<Object>> rows = StorageManager.getStorageManager().getRecords(table);
         return new ResultSet(attributes, rows);
     }
 
@@ -460,7 +468,7 @@ public class Utilities {
 
         ResultSet table = new ResultSet(t.getAttributes(), rows);
 
-        prettyPrintResultSet(table, false, 10);
+//        prettyPrintResultSet(table, false, 10);
     }
 
     public static boolean Select(Table table, HashSet<String> KeepNames){
@@ -500,5 +508,79 @@ public class Utilities {
             }
         }
         return true;
+    }
+
+    public static void prettyPrintResultSet(ResultSet tempset, boolean bool, int maxx) {
+
+            var table1 = tempset;
+
+
+            int spacingSeparation = 0;                   // number of spaces between columns
+            int maxStrSize = 200;
+            boolean truncate = bool;
+            int maxSizeTruncate = maxx;
+
+            if (truncate) {
+                maxStrSize = maxSizeTruncate;
+            }
+
+            int[] max = new int[table1.attrs().size()];
+
+
+            for (ArrayList<Object> r : table1.results()) {
+                for (int i = 0; i < r.size(); i++) {
+                    Object o = r.get(i);
+                    max[i] = Math.max(Math.max(max[i], o.toString().length()), table1.attrs().get(i).getAttributeName().length());
+                    if (o.toString().length() > maxStrSize) {
+                        r.set(i, o.toString().substring(0, maxStrSize - 4) + "...");
+                    }
+                }
+            }
+
+            int[] spacing = new int[table1.attrs().size()];
+            for (int i = 0; i < table1.attrs().size(); i++) {
+                spacing[i] = Math.min(max[i], maxStrSize) + spacingSeparation;   // total spac
+                spacing[i] += 1;
+            }
+
+
+            String[] atters = new String[table1.attrs().size()];
+
+            for (int i = 0; i < table1.attrs().size(); i++) {
+                Attribute a = table1.attrs().get(i);
+                atters[i] = a.getAttributeName();
+            }
+
+
+            StringBuilder formatStr = new StringBuilder();
+            formatStr.append("║ %-").append(spacing[0]);
+            for (int i = 1; i < table1.attrs().size(); i++) {
+
+                int idx = i % table1.attrs().size();
+                formatStr.append("s ║%-").append(spacing[idx]);
+
+            }
+            formatStr.append("s║\n");
+            String ColNames = String.format(formatStr.toString(), atters);
+            System.out.println("═".repeat(ColNames.length() - 1));
+
+            System.out.print(ColNames);
+            System.out.println("═".repeat(ColNames.length() - 1));
+
+
+            for (int i = 0; i < table1.results().size(); i++) {
+                String rowstr = table1.results().get(i).toString().substring(1, table1.results().get(i).toString().length() - 1);
+                String[] rowStrarr = rowstr.split(",");
+                System.out.printf(formatStr.toString(), rowStrarr);
+//            System.out.println("".repeat(ColNames.length() - 1));
+
+            }
+
+            System.out.println("═".repeat(ColNames.length() - 1));
+
+
+
+
+
     }
 }
