@@ -589,11 +589,6 @@ public class Table implements ITable {
                         " table doesn't have that many attributes");
                 return false;
             }
-            if (attrIndex == ((Table) table).pkIdx()) {
-                System.err.println("ERROR: tryig to drop the primary key");
-                return false;
-            }
-
 
             // get the pages that belong to this table
             ArrayList<Integer> pages = ((Table) table).getPagesThatBelongToMe();
