@@ -288,7 +288,6 @@ public class StorageManager extends AStorageManager {
                     default -> tree.insertRecordPointer(rp, (String) inValue);
                 }
             }
-            ;
 
 
             // get the page to insert to

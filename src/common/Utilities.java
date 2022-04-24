@@ -610,4 +610,46 @@ public class Utilities {
 
 
     }
+
+    /**
+     * Modifies the given ResultSet in place to keep only the given attrs
+     * //TODO look for places errors can happen
+     * @param setToChange the ResultSet to apply the select to
+     * @param attrsToKeep the attributes to keep in the result set
+     * @return
+     */
+    public static boolean selectResultSet(ResultSet setToChange, HashSet<String> attrsToKeep){
+
+        // get the indexes of the attributes we DON'T want to keep
+
+        var dropIdxs = new ArrayList<Integer>();
+        int idx = 0;
+        for (Attribute attr: setToChange.attrs()){
+            if(!attrsToKeep.contains(attr.getAttributeName())){ // if this attr isn't in our keep list, screw it
+                dropIdxs.add(idx);
+
+            }
+            idx++;
+        }
+
+        if (setToChange.attrs().size() == dropIdxs.size()){
+            System.err.println("No valid column selected.");
+            return false;
+        }
+
+        Collections.reverse(dropIdxs); // reverse this list to avoid the left-shift of arraylist.remove() causing issues
+
+        // modify attrs to remove unwanted ones
+        for (Integer drop: dropIdxs){
+            setToChange.attrs().remove(drop.intValue());
+        }
+
+        // modify each row of the results to remove unwanted attr values
+        for (ArrayList<Object> row: setToChange.results()){
+            for (Integer drop: dropIdxs) {
+                row.remove(drop.intValue());
+            }
+        }
+        return true;
+    }
 }

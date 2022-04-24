@@ -583,27 +583,6 @@ public class DMLParser {
 
         }
 
-
-        //  ----------------- ----------------- SELECT | get only columns we asked for -----------------
-
-        // get the string containing only the attributes we want (doesn't include the word "select")
-        String wantedAttrString = query.substring(LowerQueryStmt.indexOf("select") + "select".length() + 1, fromIdx);
-        String[] wantedAttrs = wantedAttrString.split(" |, ");  //lazy regex move, will split on space or ,space
-        System.out.println("Debug: " + Arrays.deepToString(wantedAttrs));  //TODO remove debug
-
-        // check for star
-
-        if (wantedAttrs.length > 1 && wantedAttrString.contains("*")) { // there's a star, but it's not the only attribute
-            System.err.println("Improper use of \"*\".  Cannot combine \"*\" with other attributes.");
-        }
-        if (!(wantedAttrs.length == 1 && wantedAttrs[0].equals("*"))) { //if there's a star, leave the table in tact
-            //make a list out of our array, then a hashset out of that list to send to Select function
-            if (!Utilities.Select(table, new HashSet<>(Arrays.asList(wantedAttrs)))) {
-                System.out.println("Error with selected attributes");
-                return null;
-            }
-        }
-
         //
         //  ----------------- ----------------- ORDER-BY | SORT rows ----------------- -----------------
 
@@ -621,22 +600,37 @@ public class DMLParser {
             if (records == null){
                 return null;
             }
-
-
-
         }
 
         HashSet<ArrayList<Object>>seen = new HashSet<>();
         ArrayList<ArrayList<Object>> finRecs = new ArrayList<>();
         for(ArrayList<Object> r:records){
             if(!seen.contains(r)){
-                finRecs.add(r);
+                finRecs.add((ArrayList<Object>)r.clone());
             }
             seen.add(r);
 
         }
         ResultSet rs = new ResultSet(table.getAttributes(), finRecs);
 
+        //  ----------------- ----------------- SELECT | get only columns we asked for -----------------
+
+        // get the string containing only the attributes we want (doesn't include the word "select")
+        String wantedAttrString = query.substring(LowerQueryStmt.indexOf("select") + "select".length() + 1, fromIdx);
+        String[] wantedAttrs = wantedAttrString.split(" |, ");  //lazy regex move, will split on space or ,space
+
+        // check for star
+
+        if (wantedAttrs.length > 1 && wantedAttrString.contains("*")) { // there's a star, but it's not the only attribute
+            System.err.println("Improper use of \"*\".  Cannot combine \"*\" with other attributes.");
+        }
+        if (!(wantedAttrs.length == 1 && wantedAttrs[0].equals("*"))) { //if there's a star, leave the table in tact
+            //make a list out of our array, then a hashset out of that list to send to Select function
+            if (!Utilities.selectResultSet(rs, new HashSet<>(Arrays.asList(wantedAttrs)))) {
+                System.out.println("Error with selected attributes");
+                return null;
+            }
+        }
         // RETURN RESULT-SET
         return rs;
     }
