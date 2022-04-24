@@ -47,6 +47,7 @@ public class Database {
      * After each non-quit statement it will report ERROR or SUCCESS based on the results of the statement.
      * Queries will display the results of the query in an easily readable/understandable form.
      * (Later phase)
+     *
      * @param args DB location, Page Size, Buffer Size
      */
     public static void main(String[] args) {
@@ -107,6 +108,8 @@ public class Database {
                     System.err.println("ERROR");
                 }
             }
+
+
             statement = "";  // reset the statement to be blank
         }
 
@@ -116,11 +119,11 @@ public class Database {
     /**
      * This function will be used when executing database statements that do not return anything.
      * For instance:
-     *  -schema creation/modification
-     *  -insert
-     *  -delete
-     *  -update
-     *
+     * -schema creation/modification
+     * -insert
+     * -delete
+     * -update
+     * <p>
      * Determines the different types and sends them to the proper parser; DDL or DML.
      * @param stmt the statement to be executed
      * @return True if successful, False otherwise
@@ -151,6 +154,7 @@ public class Database {
     /**
      * This function will be used to safely shutdown the database.
      * Stores any needed data needed to restart the database to physical hardware.
+     *
      * @return True if successful, False otherwise
      */
     public static boolean terminateDatabase() {

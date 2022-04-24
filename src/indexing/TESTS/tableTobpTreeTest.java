@@ -37,7 +37,6 @@ public class tableTobpTreeTest {
         table.IndexedAttributes.put(table.getAttributes().get(table.pkIdx()).getAttributeName(), BPlusTree.TreeFromTableAttribute(table, 0));
 
 
-
         System.out.print("testing update rec");
 
 
@@ -50,20 +49,18 @@ public class tableTobpTreeTest {
 
         // dup pk test
         System.out.print("INSERTING " + row);
-         b = StorageManager.getStorageManager().insertRecord(Catalog.getCatalog().getTable("t1"), row);
+        b = StorageManager.getStorageManager().insertRecord(Catalog.getCatalog().getTable("t1"), row);
         System.out.println(b);
-
-
 
 
         ArrayList<Object> newRow = Phase2Testers.mkRandomRec(attrs);
         row.set(0, 5);
         newRow.set(0, 5);
 
-        System.out.print("updating " + row + " --> "+ newRow);
+        System.out.print("updating " + row + " --> " + newRow);
 
         System.out.print("DID UPDATE: ");
-        b = StorageManager.getStorageManager().updateRecord(Catalog.getCatalog().getTable("t1"), row,newRow);
+        b = StorageManager.getStorageManager().updateRecord(Catalog.getCatalog().getTable("t1"), row, newRow);
 
         System.out.println(b);
 
@@ -75,9 +72,7 @@ public class tableTobpTreeTest {
         table.getPkTree().printRPS();
 
 
-
         System.exit(1);
-
 
 
         // testing table inseting
@@ -85,12 +80,12 @@ public class tableTobpTreeTest {
         int bound = 1;
 
         for (int i = 0; i < 100; i++) {
-             row = Phase2Testers.mkRandomRec(attrs);
+            row = Phase2Testers.mkRandomRec(attrs);
             row.set(0, rand.nextInt(bound));
 //            row.set(0, i);
             System.out.print("INSERTING (#" + i + ") " + " " + row + " :");
 
-             b = StorageManager.getStorageManager().insertRecord(Catalog.getCatalog().getTable("t1"), row);
+            b = StorageManager.getStorageManager().insertRecord(Catalog.getCatalog().getTable("t1"), row);
             System.out.println(b);
 
         }
@@ -106,7 +101,7 @@ public class tableTobpTreeTest {
 //        for (int i = 50; i > -1; i--) {
         for (int i = 100; i > 51; i--) {
 
-             row = Phase2Testers.mkRandomRec(attrs);
+            row = Phase2Testers.mkRandomRec(attrs);
             row.set(0, rand.nextInt(bound));
 //            row.set(0, i);
             System.out.print("(#" + i + ") Deleting: " + row + " :");
@@ -117,20 +112,10 @@ public class tableTobpTreeTest {
             table.getPkTree().print();
             System.out.println("-------------------");
 
-            System.out.println(((StorageManager)StorageManager.getStorageManager()).getRecords(table));
+            System.out.println(((StorageManager) StorageManager.getStorageManager()).getRecords(table));
 
 
         }
-
-
-
-
-
-
-
-
-
-
 
 
         StorageManager.pb.PurgeBuffer();

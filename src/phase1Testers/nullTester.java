@@ -17,6 +17,7 @@ public class nullTester {
         return salt.toString();
 
     }
+
     public static ArrayList<Object> mkRandomRec() {
         ArrayList<Object> row = new ArrayList<>();
         row.add(69);
@@ -37,11 +38,13 @@ public class nullTester {
         row.set(2, null);
         //To get List of indexes:
 
-        int[] nullIndexes = IntStream.range(0, row.size()).filter(i -> row.get(i)== null).toArray();
+        int[] nullIndexes = IntStream.range(0, row.size()).filter(i -> row.get(i) == null).toArray();
         BitSet bitSet = new BitSet(row.size());
-        for(int idx:nullIndexes){bitSet.set(idx);}
+        for (int idx : nullIndexes) {
+            bitSet.set(idx);
+        }
 
-        System.out.println("read/write in this many bytes len:"+bitSet.toByteArray().length);
+        System.out.println("read/write in this many bytes len:" + bitSet.toByteArray().length);
 
 
         System.out.println(bitSet.get(0));

@@ -56,30 +56,31 @@ public class BTreeNode<T> {
 
 
         // writing childs
-        out+="{C} ";
+        out += "{C} ";
         for (int i = 0; i < N + 1; i++) {
-            if(children.get(i) != null){
-                out += children.get(i).id+ " ";
+            if (children.get(i) != null) {
+                out += children.get(i).id + " ";
             }
         }
-        out+="{CE} ";
+        out += "{CE} ";
 
         // writing keys
-        out+="{K} ";
+        out += "{K} ";
         for (int i = 0; i < numKeys; i++) {
-            if(keys.get(i) != null){
-                out += keys.get(i)+" ";
+            if (keys.get(i) != null) {
+                out += keys.get(i) + " ";
             }
         }
-        out+="{KE} ";
+        out += "{KE} ";
 
 
         // writing rp if leaf
-        if(isLeaf) {
+        if (isLeaf) {
             out += "{R} ";
             for (int i = 0; i < numKeys; i++) {
                 if (rps.get(i) != null) {
-                    out +=  "("+rps.get(i).page() + " "+rps.get(i).index()+ ") ";;
+                    out += "(" + rps.get(i).page() + " " + rps.get(i).index() + ") ";
+                    ;
                 }
             }
             out += "{RE} ";

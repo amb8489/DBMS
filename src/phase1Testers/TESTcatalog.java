@@ -14,9 +14,6 @@ public class TESTcatalog {
     public static void main(String[] args) throws IOException {
 
 
-
-
-
         // ignore part for testing below all this vv
         DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream("src/DB/tabs/tables.txt")));
         String name4 = "table4";
@@ -29,13 +26,13 @@ public class TESTcatalog {
         attrs4.add(new Attribute("attr5", "Varchar(10)"));
         Attribute pk = attrs4.get(0);
         Table table1 = new Table(name4, attrs4, pk);
-        Table table2 = new Table("name5",attrs4,pk);
+        Table table2 = new Table("name5", attrs4, pk);
         Page p = new Page(table1);
         table1.addPageAffiliations(Integer.parseInt(p.getPageName()));
         table1.addPageAffiliations(2);
         table1.addPageAffiliations(3);
         table1.addPageAffiliations(4);
-        table1.addPageAffiliations(Integer.parseInt(p.getPageName())+4);
+        table1.addPageAffiliations(Integer.parseInt(p.getPageName()) + 4);
         Page p2 = new Page(table1);
         table2.addPageAffiliations(55);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -49,20 +46,18 @@ public class TESTcatalog {
 
         // have to delete  src/DB/catalog/catalog.txt  test restart and all that
 
-        ACatalog c = Catalog.createCatalog("src/DB/catalog/catalog.txt",10,256);
+        ACatalog c = Catalog.createCatalog("src/DB/catalog/catalog.txt", 10, 256);
 
         System.out.println(c.containsTable(table1.getTableName()));
         System.out.println(c.containsTable(table2.getTableName()));
-        
+
 
         System.out.println(c.getPageSize());
         System.out.println(c.getPageBufferSize());
 
 
-
 //        System.out.println(c.getTable(table1.getTableName()).tableToString());
         c.saveToDisk();
-
 
 
     }

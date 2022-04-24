@@ -21,6 +21,7 @@ public class TEST_read_and_write {
         return salt.toString();
 
     }
+
     // makes a random record with the schema  " Integer Double Boolean Char(5) varchar(10)"
     public static ArrayList<Object> mkRandomRec() {
         ArrayList<Object> row = new ArrayList<>();
@@ -36,12 +37,12 @@ public class TEST_read_and_write {
     public static void main(String[] args) throws IOException {
 
         test();
-}
+    }
 
     public static void test() throws IOException {
-        int np= 11;
-        for(int numPages = 1;numPages < np;numPages++) {
-            System.out.println("making new page: "+ "src/DB/pages/" + numPages);
+        int np = 11;
+        for (int numPages = 1; numPages < np; numPages++) {
+            System.out.println("making new page: " + "src/DB/pages/" + numPages);
             String[] schema = "Integer Double Boolean Char(5) varchar(10)".split(" ");
             String fileName = "src/DB/pages/" + numPages;
 
@@ -145,5 +146,5 @@ public class TEST_read_and_write {
 //        }
     }
 
-    }
+}
 

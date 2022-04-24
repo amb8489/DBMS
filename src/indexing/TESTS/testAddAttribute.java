@@ -17,7 +17,6 @@ public class testAddAttribute {
     public static void main(String[] args) {
 
 
-
         Catalog.createCatalog("DB", 500, 1);
         StorageManager.createStorageManager();
 
@@ -32,9 +31,6 @@ public class testAddAttribute {
 
         Table table = (Table) Catalog.getCatalog().getTable("t1");
         table.IndexedAttributes.put(table.getAttributes().get(table.pkIdx()).getAttributeName(), BPlusTree.TreeFromTableAttribute(table, 0));
-
-
-
 
 
         // testing table inseting
@@ -58,13 +54,12 @@ public class testAddAttribute {
         table.getPkTree().printRPS();
 
 
-
         System.out.println("\n\nAdding Double to schema with default value of 6.9");
 
-        table.addAttribute("new","char(6)");
+        table.addAttribute("new", "char(6)");
 
         //TODO CHECK IF STRING IF ITS LENGTH IS ACEPTABLE LIKE IN INSERT REC
-        StorageManager.getStorageManager().addAttributeValue(table,"abcded");
+        StorageManager.getStorageManager().addAttributeValue(table, "abcded");
 
         System.out.println("NEW TABLE");
 
@@ -83,7 +78,7 @@ public class testAddAttribute {
 
         PageBuffer pb = ((StorageManager) StorageManager.getStorageManager()).getPb();
 
-        for ( var row2 : StorageManager.getStorageManager().getRecords(table)) {
+        for (var row2 : StorageManager.getStorageManager().getRecords(table)) {
 
             ArrayList<RecordPointer> rps = tree.search(((Integer) row2.get(table.pkIdx())));
             for (RecordPointer rp : rps) {
@@ -101,9 +96,6 @@ public class testAddAttribute {
 
 
         }
-
-
-
 
 
     }

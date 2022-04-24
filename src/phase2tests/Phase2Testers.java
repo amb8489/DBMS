@@ -103,7 +103,8 @@ public class Phase2Testers {
 
         System.out.println("\n\n----------------------------------------------------");
         System.out.println("----------TESTING CREATING TABLE: class-----------------");
-        System.out.println("--------------------------------------------------------\n\n");        DDLParser.parseDDLStatement("""
+        System.out.println("--------------------------------------------------------\n\n");
+        DDLParser.parseDDLStatement("""
                  create table class(
                          name Varchar(10) notnull,
                          uid Integer primarykey,
@@ -162,7 +163,7 @@ public class Phase2Testers {
 
         //bad null test
         ArrayList<Object> rowNull = mkRandomRec(studentTab.getAttributes());
-        rowNull.set(0,null);
+        rowNull.set(0, null);
         sm.insertRecord(studentTab, rowNull);
 
 
@@ -215,7 +216,6 @@ public class Phase2Testers {
         for (ArrayList<Object> row : StorageManager.getStorageManager().getRecords(studentTab)) {
             System.out.println(row);
         }
-
 
 
 //        sm.purgePageBuffer();

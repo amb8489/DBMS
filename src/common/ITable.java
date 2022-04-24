@@ -19,12 +19,14 @@ public interface ITable {
 
     /**
      * returns the name of this table
+     *
      * @return the name of the table
      */
     public String getTableName();
 
     /**
      * sets the name of the table
+     *
      * @param name the name to give the table
      */
     public void setTableName(String name);
@@ -32,18 +34,21 @@ public interface ITable {
     /**
      * returns the id of the table.
      * This should be assigned by the catalog then creating the table.
+     *
      * @return
      */
     public int getTableId();
 
     /**
      * Gets the list of attribute metadata for this table.
+     *
      * @return An array list of the attributes
      */
     public ArrayList<Attribute> getAttributes();
 
     /**
      * Gets an individual attrbiute with the provided name
+     *
      * @param name the name of the attribute to get
      * @return the attribute instance with the name, or null if not such attribute exists
      */
@@ -51,18 +56,21 @@ public interface ITable {
 
     /**
      * Gets the attribute that is the primary key of the table.
+     *
      * @return
      */
     public Attribute getPrimaryKey();
 
     /**
      * Gets a list of all foreign keys for this table.
+     *
      * @return
      */
     public ArrayList<ForeignKey> getForeignKeys();
+
     /**
      * Adds the attribute with the provided name and type
-     *
+     * <p>
      * This only modifies the table metadata; not the data stored in the table.
      *
      * @param name the name of the attribute to add.
@@ -74,7 +82,7 @@ public interface ITable {
 
     /**
      * Drops the attribute with the provided name
-     *
+     * <p>
      * * This only modifies the table metadata; not the data stored in the table.
      *
      * @param name the name of the attribute to drop
@@ -85,6 +93,7 @@ public interface ITable {
     /**
      * Adds a new foreign key to the table.
      * An attrbiute cannot have more than one foreign key that refers to the same table/attribute combination
+     *
      * @param fk the foreign key to add
      * @return true if successful; false otherwise
      */
@@ -98,24 +107,25 @@ public interface ITable {
      * @return true if successful, false otherwise
      */
     public boolean addIndex(String attributeName);
-    
+
     /**
      * toString to print this table in a common readable format.
+     *
      * @return a string representation of this table.
      */
-    default String tableToString(){
+    default String tableToString() {
         StringBuilder sb = new StringBuilder();
         sb.append(String.format("[%d] %s( ", getTableId(), getTableName()));
         sb.append("\n");
         sb.append("\t").append(getAttributes().get(0));
-        for(int i = 1; i < getAttributes().size(); i++){
+        for (int i = 1; i < getAttributes().size(); i++) {
             sb.append(",\n");
             sb.append(getAttributes().get(i));
         }
 
         sb.append(String.format(",\n\tprimarykey(%s)", getPrimaryKey().attributeName()));
 
-        for(ForeignKey fk: getForeignKeys()){
+        for (ForeignKey fk : getForeignKeys()) {
             sb.append(",\n\t");
             sb.append(fk.toString());
         }

@@ -2,9 +2,8 @@ package common;
 
 /**
  * Represents a record pointer in the database.
- *
+ * <p>
  * PROVIDED - DO NOT CHANGE THIS FILE
- *
  */
 public record RecordPointer(int page, int index) {
 
@@ -26,13 +25,13 @@ public record RecordPointer(int page, int index) {
 
     @Override
     public boolean equals(Object obj) {
-        if(!(obj instanceof RecordPointer rp))
+        if (!(obj instanceof RecordPointer rp))
             return false;
         return rp.page == this.page && rp.index == this.index;
     }
 
     @Override
-    public String toString(){
-        return "<idx "+index+" page "+page+">";
+    public String toString() {
+        return "<idx " + index + " page " + page + ">";
     }
 }

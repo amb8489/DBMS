@@ -67,21 +67,10 @@ public class testDelete {
             table.getPkTree().print();
             System.out.println("-------------------");
 
-            System.out.println(((StorageManager)StorageManager.getStorageManager()).getRecords(table));
+            System.out.println(((StorageManager) StorageManager.getStorageManager()).getRecords(table));
 
 
         }
-
-
-
-
-
-
-
-
-
-
-
 
 
     }

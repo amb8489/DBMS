@@ -16,9 +16,7 @@ import java.util.Random;
 public class testDropAttribute {
 
 
-
     public static void main(String[] args) {
-
 
 
         Catalog.createCatalog("DB", 500, 1);
@@ -35,9 +33,6 @@ public class testDropAttribute {
 
         Table table = (Table) Catalog.getCatalog().getTable("t1");
         table.IndexedAttributes.put(table.getAttributes().get(table.pkIdx()).getAttributeName(), BPlusTree.TreeFromTableAttribute(table, 0));
-
-
-
 
 
         // testing table inseting
@@ -61,11 +56,10 @@ public class testDropAttribute {
         table.getPkTree().printRPS();
 
 
-
         System.out.println("\n\nremoving attr2");
 
 
-        StorageManager.getStorageManager().dropAttributeValue(table,1);
+        StorageManager.getStorageManager().dropAttributeValue(table, 1);
 
         System.out.println("NEW TABLE");
 
@@ -86,7 +80,7 @@ public class testDropAttribute {
 
         PageBuffer pb = ((StorageManager) StorageManager.getStorageManager()).getPb();
 
-        for ( var row2 : StorageManager.getStorageManager().getRecords(table)) {
+        for (var row2 : StorageManager.getStorageManager().getRecords(table)) {
 
             ArrayList<RecordPointer> rps = tree.search(((Integer) row2.get(table.pkIdx())));
             for (RecordPointer rp : rps) {
@@ -106,11 +100,7 @@ public class testDropAttribute {
         }
 
 
-
-
-
     }
-
 
 
 }

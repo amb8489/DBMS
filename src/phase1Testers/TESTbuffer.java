@@ -18,7 +18,6 @@ public class TESTbuffer {
         TEST_read_and_write.test();
 
 
-
         ///////// table attributes
         ArrayList<Attribute> attrs = new ArrayList<>();
         attrs.add(new Attribute("attr1", "Integer"));
@@ -27,44 +26,44 @@ public class TESTbuffer {
         attrs.add(new Attribute("attr4", "Char(5)"));
         attrs.add(new Attribute("attr5", "Varchar(10)"));
 
-        Table t1 = new Table("t1",attrs,attrs.get(0));
+        Table t1 = new Table("t1", attrs, attrs.get(0));
 
         // testing for loading new page
-        Page newpage = pb.getPageFromBuffer("1",t1);
+        Page newpage = pb.getPageFromBuffer("1", t1);
         System.out.println(newpage.getPageName());
 
         System.out.println(pb.getPageBufferSize());
 
         // testing for loading from cache
-        Page samepage = pb.getPageFromBuffer("1",t1);
+        Page samepage = pb.getPageFromBuffer("1", t1);
         System.out.println(pb.getPageBufferSize());
 
         //filling buffer
-        Page page2 = pb.getPageFromBuffer("2",t1);
+        Page page2 = pb.getPageFromBuffer("2", t1);
         System.out.println(pb.getPageBufferSize());
-        Page page2same = pb.getPageFromBuffer("2",t1);
+        Page page2same = pb.getPageFromBuffer("2", t1);
         System.out.println(pb.getPageBufferSize());
 
 
         //testing LRU wrting should be page 1
 
-        Page page3 = pb.getPageFromBuffer("3",t1);
-        System.out.println("page 3 name:"+page3.getPageName());
+        Page page3 = pb.getPageFromBuffer("3", t1);
+        System.out.println("page 3 name:" + page3.getPageName());
         System.out.println(pb.getPageBufferSize());
 
         //testing LRU wrting should be page 2
 
-        Page page4 = pb.getPageFromBuffer("4",t1);
+        Page page4 = pb.getPageFromBuffer("4", t1);
         System.out.println(pb.getPageBufferSize());
-        System.out.println("page 4 name:"+page4.getPageName());
+        System.out.println("page 4 name:" + page4.getPageName());
 
 
         // testing ordering in LRU array
         System.out.println("-----------");
 
-        page3 = pb.getPageFromBuffer("3",t1);
+        page3 = pb.getPageFromBuffer("3", t1);
         System.out.println(pb.getPageBufferSize());
-        System.out.println("page3 name:"+page3.getPageName());
+        System.out.println("page3 name:" + page3.getPageName());
 
 
         // !!!!   EXAMPLE change in page doing an update to page before it gets written out
@@ -80,12 +79,12 @@ public class TESTbuffer {
 
         // !!!! loading pagee 4 in to see if changes got saved to disk
 
-         page4 = pb.getPageFromBuffer("4",t1);
+        page4 = pb.getPageFromBuffer("4", t1);
 
 
-        System.out.println("page4 name:"+page4.getPageName());
+        System.out.println("page4 name:" + page4.getPageName());
 
-        System.out.println(":"+page4.currentSize);
+        System.out.println(":" + page4.currentSize);
 
 //        int next = 0;
 //        PageBuffer pb = new PageBuffer(2);
@@ -98,29 +97,6 @@ public class TESTbuffer {
 //            System.out.println(next);
 //
 //        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     }

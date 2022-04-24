@@ -35,9 +35,6 @@ public class testInsert {
         table.IndexedAttributes.put(table.getAttributes().get(table.pkIdx()).getAttributeName(), BPlusTree.TreeFromTableAttribute(table, 0));
 
 
-
-
-
         // testing table inseting
         Random rand = new Random();
         int bound = 1000;
@@ -68,7 +65,7 @@ public class testInsert {
 
         PageBuffer pb = ((StorageManager) StorageManager.getStorageManager()).getPb();
 
-        for ( var row2 : StorageManager.getStorageManager().getRecords(table)) {
+        for (var row2 : StorageManager.getStorageManager().getRecords(table)) {
 
             ArrayList<RecordPointer> rps = tree.search(((Integer) row2.get(table.pkIdx())));
             for (RecordPointer rp : rps) {

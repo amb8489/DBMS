@@ -326,7 +326,7 @@ public class DDLParser {
             stmt = stmt.substring(11);
             stmt = stmt.replace("\n", "");
 
-            TableName = stmt.replace(";","");
+            TableName = stmt.replace(";", "");
             TableName = TableName.trim();
 
 
@@ -447,16 +447,15 @@ public class DDLParser {
                     if (defaultValueType.equals("String")) {
 
 
-
                         // was the type given a string as well
                         if (type.toLowerCase().startsWith("char(") || type.toLowerCase().startsWith("varchar(")) {
 
 
                             // lets get how big the string can be and if its too big or small
 
-                            if(Utilities.isStringTooLong(type,defaultValue)) {
+                            if (Utilities.isStringTooLong(type, defaultValue)) {
 
-                                System.err.println("string: "+defaultValue +" too long for type: "+defaultValueType);
+                                System.err.println("string: " + defaultValue + " too long for type: " + defaultValueType);
                                 return false;
                             }
 

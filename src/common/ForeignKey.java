@@ -8,6 +8,7 @@ package common;
 public record ForeignKey(String refTableName, String refAttribute, String attrName) {
     /**
      * The name of the table this fk refers to
+     *
      * @return
      */
     public String getRefTableName() {
@@ -16,6 +17,7 @@ public record ForeignKey(String refTableName, String refAttribute, String attrNa
 
     /**
      * The name of the attribute this fk refers to in the referred table
+     *
      * @return
      */
     public String getRefAttribute() {
@@ -24,6 +26,7 @@ public record ForeignKey(String refTableName, String refAttribute, String attrNa
 
     /**
      * The name of the attribute in the refferring table
+     *
      * @return
      */
     public String getAttrName() {
@@ -37,7 +40,7 @@ public record ForeignKey(String refTableName, String refAttribute, String attrNa
 
     @Override
     public boolean equals(Object obj) {
-        if(!(obj instanceof ForeignKey fk)){
+        if (!(obj instanceof ForeignKey fk)) {
             return false;
         }
         return fk.attrName.equals(attrName)

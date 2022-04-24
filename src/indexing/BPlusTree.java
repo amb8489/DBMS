@@ -20,10 +20,8 @@ import java.util.HashSet;
 
 //TODO put throws on all functions
 
-//TODO give a table a b+ tree for its attributes, mk tree for pk always
-
 // TODO optimization could add binary search to find values in nodes and not linear scan
-// QUESTION : how does a page spit effect the tree ?
+
 
 //-------------------------------------
 

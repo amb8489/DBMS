@@ -385,7 +385,6 @@ public class WhereP3 {
     public static boolean isLegalCase2(List<String> tokens, Table table) {
 
 
-
         // for ands we and to get the expression to the left and right
 
 
@@ -431,8 +430,8 @@ public class WhereP3 {
             }
 
             // check that first token is a column name and the third is a value
-             firstIsColumnName = table.AttribIdxs.containsKey(RightExpression[0]);
-             thirdIsColumnName = table.AttribIdxs.containsKey(RightExpression[2]);
+            firstIsColumnName = table.AttribIdxs.containsKey(RightExpression[0]);
+            thirdIsColumnName = table.AttribIdxs.containsKey(RightExpression[2]);
 
 
             // if both true or both false then bad
@@ -440,7 +439,6 @@ public class WhereP3 {
 //                System.err.println(firstIsColumnName);
                 return false;
             }
-
 
 
             // test that at least one is indexed
@@ -458,13 +456,12 @@ public class WhereP3 {
         }
 
 
-
         // we are looking for adjacent ors like   or expr or
 
         ArrayList<Object[]> logicalOpers = new ArrayList<>();
         for (int i = 0; i < tokens.size(); i++) {
             if (tokens.get(i).equalsIgnoreCase("OR") || tokens.get(i).equalsIgnoreCase("AND")) {
-                logicalOpers.add(new Object[]{tokens.get(i),i});
+                logicalOpers.add(new Object[]{tokens.get(i), i});
             }
         }
 
@@ -478,7 +475,7 @@ public class WhereP3 {
             // check to see if the  first operator is an OR
 
             // expr or ...
-            if (((String) logicalOpers.get(0)[0]).equalsIgnoreCase("OR")){
+            if (((String) logicalOpers.get(0)[0]).equalsIgnoreCase("OR")) {
                 var middleLeft = tokens.get(0);
                 var middleOperator = tokens.get(1);
                 var middleRight = tokens.get(2);
@@ -510,7 +507,7 @@ public class WhereP3 {
             }
 
             // ... or expr
-            if (((String) logicalOpers.get(logicalOpers.size()-1)[0]).equalsIgnoreCase("OR")){
+            if (((String) logicalOpers.get(logicalOpers.size() - 1)[0]).equalsIgnoreCase("OR")) {
 
 
                 var middleLeft = tokens.get(tokens.size() - 3);
@@ -545,12 +542,12 @@ public class WhereP3 {
             for (int i = 0; i < logicalOpers.size() - 1; i++) {
 
 
-                var left = ((String)logicalOpers.get(i)[0] );
-                var next = ((String)logicalOpers.get(i+1)[0] );
+                var left = ((String) logicalOpers.get(i)[0]);
+                var next = ((String) logicalOpers.get(i + 1)[0]);
 
-                int leftOrIdx = ((Integer)logicalOpers.get(i)[1] );
+                int leftOrIdx = ((Integer) logicalOpers.get(i)[1]);
 
-                if(left.equalsIgnoreCase("OR") && next.equalsIgnoreCase("OR")){
+                if (left.equalsIgnoreCase("OR") && next.equalsIgnoreCase("OR")) {
 
                     var middleLeft = tokens.get(leftOrIdx + 3);
                     var middleOperator = tokens.get(leftOrIdx + 2);
@@ -585,7 +582,7 @@ public class WhereP3 {
 
         }
 
-            return true;
+        return true;
     }
 
 
@@ -622,11 +619,7 @@ public class WhereP3 {
     public static ArrayList<RecordPointer> GetCase2Recs(List<String> tokens, Table table) {
 
 
-
-
-
         ////////
-
 
 
         HashSet<RecordPointer> seen = new HashSet<>();
@@ -635,7 +628,6 @@ public class WhereP3 {
         // for ands we and to get the expression to the left and right
 
         // we are looking for adjacent ors like   or expr or
-
 
 
         ArrayList<Integer> expressionSepIdx = new ArrayList<>();
@@ -651,13 +643,13 @@ public class WhereP3 {
         int start = 0;
         ArrayList<List<String>> expressions = new ArrayList<>();
 
-        for (int end: expressionSepIdx) {
+        for (int end : expressionSepIdx) {
 
-            var exp = tokens.subList(start,end);
+            var exp = tokens.subList(start, end);
             expressions.add(new ArrayList<>(exp));
             start = end + 1;
         }
-        var exp = tokens.subList(start,tokens.size());
+        var exp = tokens.subList(start, tokens.size());
         expressions.add(new ArrayList<>(exp));
 
 
@@ -668,10 +660,10 @@ public class WhereP3 {
 
         // TODO OPTIMIZATION WOULD BE THAT IF WE HAVE A CHAIN of ands we only need too look for the recs of one index
 
-        for (var expr: expressions) {
+        for (var expr : expressions) {
             // if the expression has an index grab the recs
-            var exprArr = new String[] {expr.get(0),expr.get(1),expr.get(2)};
-            if(isLegalIndexExpr(exprArr,table)){
+            var exprArr = new String[]{expr.get(0), expr.get(1), expr.get(2)};
+            if (isLegalIndexExpr(exprArr, table)) {
 //                System.err.println(expr);
 
                 // get record pointers for the condition on the index
@@ -683,17 +675,17 @@ public class WhereP3 {
                 var value = exprArr[2];
 
                 if (thirdIsColumnName) {
-                     attributeName = exprArr[2];
-                     value = exprArr[0];
+                    attributeName = exprArr[2];
+                    value = exprArr[0];
                 }
 
                 var currTree = (table).IndexedAttributes.get(attributeName);
 
 
-                var recs = StorageManager.GetRecsFromTreeWhere( currTree,  op,  value);
+                var recs = StorageManager.GetRecsFromTreeWhere(currTree, op, value);
 
-                for (var rp:recs) {
-                    if(!seen.contains(rp)){
+                for (var rp : recs) {
+                    if (!seen.contains(rp)) {
                         rps.add(rp);
                         seen.add(rp);
 

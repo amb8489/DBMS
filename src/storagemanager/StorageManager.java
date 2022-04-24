@@ -930,6 +930,7 @@ public class StorageManager extends AStorageManager {
 
 
         }
+        System.out.println("INDEX NOT USEFUL IN THIS WHERE STATEMENT");
         // no useful index operation old style
         ArrayList<ArrayList<Object>> found = new ArrayList<>();
 
@@ -950,7 +951,7 @@ public class StorageManager extends AStorageManager {
 
                 for (int i = recSize - 1; i > -1; i--) {
                     ArrayList<Object> row = headPage.getPageRecords().get(i);
-                    if (wp.whereIsTrue(whereStmt,  table, row)) {
+                    if (wp.whereIsTrue(whereStmt, table, row)) {
                         found.add(row);
                     }
                 }

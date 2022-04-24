@@ -31,14 +31,14 @@ public class testUpdate {
         // adding new empty tree to take
 
         Table table = (Table) Catalog.getCatalog().getTable("t1");
-        table.IndexedAttributes.put(table.getAttributes().get(table.pkIdx()). getAttributeName(), BPlusTree.TreeFromTableAttribute(table, 0));
+        table.IndexedAttributes.put(table.getAttributes().get(table.pkIdx()).getAttributeName(), BPlusTree.TreeFromTableAttribute(table, 0));
 
 
         System.out.println("----testing update rec----");
 
 
         ArrayList<Object> row = Phase2Testers.mkRandomRec(attrs);
-        System.out.print("INSERTING " + row.set(0, 5)+" :");
+        System.out.print("INSERTING " + row.set(0, 5) + " :");
 
 
         boolean b = StorageManager.getStorageManager().insertRecord(Catalog.getCatalog().getTable("t1"), row);
@@ -48,8 +48,6 @@ public class testUpdate {
         System.out.println(StorageManager.getStorageManager().getRecords(Catalog.getCatalog().getTable("t1")));
         table.getPkTree().print();
         table.getPkTree().printRPS();
-
-
 
 
         ArrayList<Object> newRow = Phase2Testers.mkRandomRec(attrs);

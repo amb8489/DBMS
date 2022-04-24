@@ -21,7 +21,6 @@ import java.util.HashMap;
 public class Catalog extends ACatalog {
 
 
-
     // db location
     private String location;
     // max size a page can be in bytes
@@ -31,7 +30,6 @@ public class Catalog extends ACatalog {
 
     // string table_name ---> the tables in the DB
     public HashMap<String, ITable> CurrentTablesInBD = new HashMap<>();
-
 
 
     public Catalog(String location, int pageSize, int pageBufferSize) {
@@ -61,7 +59,7 @@ public class Catalog extends ACatalog {
             // read in tables.txt
             ArrayList<ITable> tabs = Table.ReadAllTablesFromDisk();
 
-            if( tabs!=null && tabs.size() >0) {
+            if (tabs != null && tabs.size() > 0) {
                 // restoring tale data
                 for (ITable table : tabs) {
                     CurrentTablesInBD.put(table.getTableName(), table);
@@ -79,9 +77,10 @@ public class Catalog extends ACatalog {
         }
     }
 
-    public int getNumberOFtables(){
+    public int getNumberOFtables() {
         return this.CurrentTablesInBD.keySet().size();
     }
+
     @Override
     public String getDbLocation() {
         return this.location;
@@ -138,7 +137,6 @@ public class Catalog extends ACatalog {
         this.CurrentTablesInBD.put(tableName, newTable);
         return newTable;
     }
-
 
 
     @Override
@@ -199,7 +197,7 @@ public class Catalog extends ACatalog {
 
 
             /////// write all tables out to "src/DB/catalog/tables.txt"
-            if(CurrentTablesInBD!= null && CurrentTablesInBD.size() >0 ) {
+            if (CurrentTablesInBD != null && CurrentTablesInBD.size() > 0) {
                 out = FileSystem.createCatTabsDataOutStream();
                 outputStream = new ByteArrayOutputStream();
 
@@ -208,13 +206,13 @@ public class Catalog extends ACatalog {
                     outputStream.write(t.toBytes());
                 }
 
-            out.write(outputStream.toByteArray());
-            out.close();
+                out.write(outputStream.toByteArray());
+                out.close();
             }
 
 
             return true;
-        }catch (IOException i){
+        } catch (IOException i) {
             System.err.println("ERROR Saving catalog to disk");
             return false;
         }

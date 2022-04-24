@@ -494,6 +494,7 @@ public class DMLParser {
      * Note: No data and error are two different cases.
      */
     public static ResultSet parseDMLQuery(String query) {
+
         //ensure formated correctly
         query = Utilities.format(query);
         String LowerQueryStmt = query.toLowerCase().replace(",", " ").replace(";", "");
@@ -506,17 +507,17 @@ public class DMLParser {
 
         // ----------------- ----------------- FROM | make cartesian prod table -----------------
 
-        int fromStart = StmtTokens.indexOf("from")+1;
+        int fromStart = StmtTokens.indexOf("from") + 1;
         List<String> tables;
         if (fromStart == 0) {
             System.err.println("Invalid select statement: missing 'from'");
             return null;
         } else {
             int fromEnd = StmtTokens.indexOf("where");  // jank way to detect end of statement
-            if (fromEnd == -1){
+            if (fromEnd == -1) {
                 fromEnd = StmtTokens.indexOf("orderby");
             }
-            if (fromEnd == -1){
+            if (fromEnd == -1) {
                 fromEnd = StmtTokens.size();  // the last token
             }
             if (fromEnd == -1) {
@@ -543,7 +544,6 @@ public class DMLParser {
         }
 
 
-
         Table table = (Table) cartProd;
 
 //        StorageManager.getStorageManager().dropAttributeValue(cartProd,0);
@@ -560,34 +560,45 @@ public class DMLParser {
 
         int whereIdx = LowerQueryStmt.indexOf("where");
         int fromIdx = LowerQueryStmt.indexOf("from");
+        LowerQueryStmt += ";";
         int semiIdx = LowerQueryStmt.indexOf(";");
+
         int orderbyIdx = LowerQueryStmt.indexOf("orderby");
         ArrayList<ArrayList<Object>> records = new ArrayList<>();
+
         if (whereIdx > 0) {
+
+            System.err.println(whereIdx + " ; " + semiIdx + " orderby " + orderbyIdx + "    " + LowerQueryStmt);
             int stopIdx = semiIdx;
             if (semiIdx != -1 || orderbyIdx != -1) {
                 if (semiIdx == -1) {
                     stopIdx = orderbyIdx;
                 } else {
-                    stopIdx = Math.min(orderbyIdx, semiIdx);
+                    if (orderbyIdx != -1) {
+                        stopIdx = Math.min(orderbyIdx, semiIdx);
+                    }
                 }
                 String WhereStmt = query.substring(whereIdx, stopIdx);
 
                 // REMOVE unqualified rows
 
+                System.out.println("here_________1____________");
+
                 records = ((StorageManager) StorageManager.getStorageManager()).getWhere(table, WhereStmt);
+                System.out.println("here__________2__________");
 //                ((StorageManager) StorageManager.getStorageManager()).keepWhere(table, WhereStmt, false);
             } else {
-                System.err.println("error in stmt");
+                System.err.println("error in stmt where");
                 return null;
             }
 
-        }
-        else{  // set records to all of table's records
+        } else {  // set records to all of table's records
             records = StorageManager.getStorageManager().getRecords(table);
         }
         //
         //  ----------------- ----------------- ORDER-BY | SORT rows ----------------- -----------------
+
+
         if (orderbyIdx != -1) {
             String[] sortByAttributeName = query.substring(orderbyIdx).replace(";", "").split(" ");
             if (sortByAttributeName.length < 2) {
@@ -595,15 +606,17 @@ public class DMLParser {
                 return null;
             }
             records = Utilities.SortBy(table, records, sortByAttributeName[1], false);
-            if (records == null){
+            if (records == null) {
                 return null;
             }
         }
-        HashSet<ArrayList<Object>>seen = new HashSet<>();
+
+
+        HashSet<ArrayList<Object>> seen = new HashSet<>();
         ArrayList<ArrayList<Object>> finRecs = new ArrayList<>();
-        for(ArrayList<Object> r:records){
-            if(!seen.contains(r)){
-                finRecs.add((ArrayList<Object>)r.clone());
+        for (ArrayList<Object> r : records) {
+            if (!seen.contains(r)) {
+                finRecs.add((ArrayList<Object>) r.clone());
             }
             seen.add(r);
 
@@ -635,7 +648,7 @@ public class DMLParser {
 
 
     public static void main(String[] args) {
-        ACatalog catalog = Catalog.createCatalog("/Users/aryanjha/Documents/CSCI 421/DBMS/DB", 4048, 10);
+        ACatalog catalog = Catalog.createCatalog("DB", 4048, 10);
         AStorageManager sm = AStorageManager.createStorageManager();
 
         ArrayList<Attribute> attributes = new ArrayList<>();

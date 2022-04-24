@@ -31,7 +31,7 @@ public class PageBuffer {
     ////////////////////////constructor///////////////////////////////////////
     public PageBuffer(int pageBufferSize) {
 
-        this.maxBufferSize = Math.max(1,pageBufferSize);
+        this.maxBufferSize = Math.max(1, pageBufferSize);
     }
 
 
@@ -64,7 +64,7 @@ public class PageBuffer {
             // loadNewPageToBuffer will place it in the buffer for us and auto make space and will place new page
             // where it should be in the array to keep LRU in order
             return loadNewPageToBuffer(name, table);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             System.err.println("ERROR IN BUFFER");
             return null;
@@ -120,7 +120,7 @@ public class PageBuffer {
         return newPage;
     }
 
-    public boolean isPageInBuffer(String name){
+    public boolean isPageInBuffer(String name) {
         // loooking to see if page we want is already loaded in the buffer
         for (Page p : pageBuffer) {
             if (name.equals(p.getPageName())) {
@@ -156,12 +156,13 @@ public class PageBuffer {
 
     /**
      * Deletes pages from the page buffer if they belong to the given table
+     *
      * @param table the table whose pages we should forget about
      */
-    public void dropFromBuffer(ITable table){
+    public void dropFromBuffer(ITable table) {
         pageBuffer.removeIf(page -> page.IBelongTo == table);  // more code from the generous IntelliJ.  Does the work
-                                                                // of a for-loop.
-                                                    // https://www.geeksforgeeks.org/arraylist-removeif-method-in-java/
+        // of a for-loop.
+        // https://www.geeksforgeeks.org/arraylist-removeif-method-in-java/
     }
 
     private Page getPageFromDisk(String name, Table table) {
@@ -176,7 +177,7 @@ public class PageBuffer {
             if (pName.equals(p.getPageName())) {
                 System.out.println(p.getPageName());
                 if (p.wasChanged)
-                p.wasChanged = false;
+                    p.wasChanged = false;
             }
         }
     }

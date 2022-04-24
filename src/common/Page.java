@@ -526,14 +526,13 @@ public class Page {
 
 
         //Udating bptree
-        var indexedAtts = ((Table)this.IBelongTo).IndexedAttributes;
+        var indexedAtts = ((Table) this.IBelongTo).IndexedAttributes;
 
 
         // TODO for each tree in the table this wont work for other trees
 
 
-
-        for (String name:indexedAtts.keySet()) {
+        for (String name : indexedAtts.keySet()) {
             BPlusTree tree = indexedAtts.get(name);
 
             // get the records effected by the split
@@ -548,7 +547,6 @@ public class Page {
             // get the second record effected by the split
 
 
-
             // upding rp to have this page name now
             int newPageName = splitPage.pageName;
             int numberOfRecordsChanged = splitPage.getPageRecords().size();
@@ -556,10 +554,10 @@ public class Page {
             // update from ther start to the end;
 
             switch (tree.Type) {
-                case "integer" -> tree.updatePageNameAfterPageSplit((Integer)startRecSplit,this.pageName,newPageName,numberOfRecordsChanged,numberRecsNotChanged);
-                case "double" ->  tree.updatePageNameAfterPageSplit((Double)startRecSplit,this.pageName,newPageName,numberOfRecordsChanged,numberRecsNotChanged);
-                case "boolean" -> tree.updatePageNameAfterPageSplit((Boolean)startRecSplit,this.pageName,newPageName,numberOfRecordsChanged,numberRecsNotChanged);
-                default ->        tree.updatePageNameAfterPageSplit((String)startRecSplit,this.pageName,newPageName,numberOfRecordsChanged,numberRecsNotChanged);
+                case "integer" -> tree.updatePageNameAfterPageSplit((Integer) startRecSplit, this.pageName, newPageName, numberOfRecordsChanged, numberRecsNotChanged);
+                case "double" -> tree.updatePageNameAfterPageSplit((Double) startRecSplit, this.pageName, newPageName, numberOfRecordsChanged, numberRecsNotChanged);
+                case "boolean" -> tree.updatePageNameAfterPageSplit((Boolean) startRecSplit, this.pageName, newPageName, numberOfRecordsChanged, numberRecsNotChanged);
+                default -> tree.updatePageNameAfterPageSplit((String) startRecSplit, this.pageName, newPageName, numberOfRecordsChanged, numberRecsNotChanged);
             }
 
 
@@ -603,9 +601,9 @@ public class Page {
 
             }
             return true;
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-            ((Table)this.IBelongTo).getPkTree().print();
+            ((Table) this.IBelongTo).getPkTree().print();
             System.exit(1);
         }
         return true;

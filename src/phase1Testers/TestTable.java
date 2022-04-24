@@ -14,12 +14,6 @@ import java.util.Random;
 public class TestTable {
 
 
-
-
-
-
-
-
     public static void main(String[] args) {
 
 
@@ -40,17 +34,17 @@ public class TestTable {
             Random rnd = new Random();
 
 
-            ArrayList<Table>all_tables = new ArrayList<>();
+            ArrayList<Table> all_tables = new ArrayList<>();
 
-            for (int i = 0;i < 10 ;i++) {
+            for (int i = 0; i < 10; i++) {
 
                 // make table
-                String name4 = "table "+i;
+                String name4 = "table " + i;
 
                 // mk random table
 
                 ArrayList<Attribute> Tattrs = new ArrayList<>();
-                for (int b = 0;b < rnd.nextInt(1,10) ;b++) {
+                for (int b = 0; b < rnd.nextInt(1, 10); b++) {
                     Tattrs.add(attrs.get(rnd.nextInt(4)));
                 }
                 Attribute pk = Tattrs.get(0);
@@ -64,7 +58,7 @@ public class TestTable {
                 all_tables.add(table1);
 
             }
-            for(Table t:all_tables){
+            for (Table t : all_tables) {
                 outputStream.write(t.toBytes());
             }
 
@@ -75,34 +69,17 @@ public class TestTable {
             ArrayList<ITable> tbs = Table.ReadAllTablesFromDisk();
             System.out.println(tbs.size());
 
-            for(ITable t: tbs){
-                System.out.println(((Table)t).getPagesThatBelongToMe());
+            for (ITable t : tbs) {
+                System.out.println(((Table) t).getPagesThatBelongToMe());
             }
 
 
-
-
-
-
-
             return;
-        }catch (IOException e){
+        } catch (IOException e) {
             System.out.println("ERROR");
             System.exit(1);
 
         }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
         // testing atrributes
@@ -113,13 +90,13 @@ public class TestTable {
         ArrayList<Attribute> attrib = new ArrayList<>(Arrays.asList(attrib0, attrib1));
 
         // test name and id 0
-        Table tab0 = new Table("testTab0", attrib,attrib0);
+        Table tab0 = new Table("testTab0", attrib, attrib0);
         System.out.println(tab0.getTableName());
         System.out.println(tab0.getTableId());
 
         // test name change and id 1
 
-        Table tab1 = new Table("testTab1", attrib,attrib0);
+        Table tab1 = new Table("testTab1", attrib, attrib0);
         tab1.setTableName("testTab2");
         System.out.println(tab1.getTableName());
         System.out.println(tab1.getTableId());
@@ -148,16 +125,13 @@ public class TestTable {
         System.out.println(tab0.dropAttribute("DOB"));
 
         // test add with already there
-        System.out.println(tab0.addAttribute("name","varchar"));
+        System.out.println(tab0.addAttribute("name", "varchar"));
 
         // getting attribute by name
 
         System.out.println(tab0.getAttrByName("name").toString());
         // DNE
         System.out.println(tab0.getAttrByName("yerrr"));
-
-
-
 
 
     }

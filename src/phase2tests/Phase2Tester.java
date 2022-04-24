@@ -17,14 +17,14 @@ public class Phase2Tester {
         System.out.println("Do you want to print the table entries? (y/n)");
         Scanner scanner = new Scanner(System.in);
 
-        if(scanner.nextLine().equals("y")){
+        if (scanner.nextLine().equals("y")) {
             System.out.println("Data should be in order by primary key\n");
-            if(data2.size() == 0){
+            if (data2.size() == 0) {
                 System.out.println("Table is empty");
                 return;
             }
             int rowNum = 1;
-            for(ArrayList<Object> row: data2) {
+            for (ArrayList<Object> row : data2) {
                 System.out.printf("Row %d: %s%n", rowNum++, row);
             }
         }
@@ -32,6 +32,7 @@ public class Phase2Tester {
 
     /**
      * Random string creation
+     *
      * @param length the length of the random string
      */
     private static String getSaltString(int length) {
@@ -49,7 +50,7 @@ public class Phase2Tester {
     //will create a very large table and insert a lot of data into it
     //No constraints other than pk
     //this tests minimal functionality to create, insert, delete, update, alter, drop
-    private static boolean createVeryLargeTable(){
+    private static boolean createVeryLargeTable() {
 
         System.out.println("Testing by creating a very large table...");
         String createTable =
@@ -62,22 +63,22 @@ public class Phase2Tester {
 
         System.out.println("Create table stmt:\n" + createTable);
 
-        if(!DDLParser.parseDDLStatement(createTable)){
+        if (!DDLParser.parseDDLStatement(createTable)) {
             System.err.println("Something went wrong creating the large table");
             return false;
         }
 
         ITable table = Catalog.getCatalog().getTable("large");
-        if(table == null){
+        if (table == null) {
             System.err.println("There was an error getting/creating larger table");
             return false;
         }
 
-        for(int i = 0; i < 100; i++) {
+        for (int i = 0; i < 100; i++) {
             Random r = new Random();
 
             String insertStmt = String.format("insert into %s values (%d, %f, %s, %s, %s);",
-                    "large", i, r.nextDouble()*100, r.nextBoolean(),
+                    "large", i, r.nextDouble() * 100, r.nextBoolean(),
                     getSaltString(5), getSaltString(Math.abs(r.nextInt()) % 10 + 1));
             if (!DMLParser.parseDMLStatement(insertStmt)) {
                 System.err.println("Error inserting data into large table");
@@ -92,7 +93,7 @@ public class Phase2Tester {
         printData(data);
         String deleteStmt = "delete from large where attr1 > 90;";
         System.out.println("Stmt: " + deleteStmt);
-        if(!DMLParser.parseDMLStatement(deleteStmt)){
+        if (!DMLParser.parseDMLStatement(deleteStmt)) {
             System.err.println("Error when deleting from large table");
             return false;
         }
@@ -103,7 +104,7 @@ public class Phase2Tester {
 
         deleteStmt = "delete from large where attr3 = true or attr2 < 50.0;";
         System.out.println("Stmt: " + deleteStmt);
-        if(!DMLParser.parseDMLStatement(deleteStmt)){
+        if (!DMLParser.parseDMLStatement(deleteStmt)) {
             System.err.println("Error when deleting from large table");
             return false;
         }
@@ -113,7 +114,7 @@ public class Phase2Tester {
 
         String updateStmt = "update large set attr4 = \"hello\" where attr1 > 70;";
         System.out.println("Stmt: " + updateStmt);
-        if(!DMLParser.parseDMLStatement(updateStmt)){
+        if (!DMLParser.parseDMLStatement(updateStmt)) {
             System.err.println("Error when updating from large table");
             return false;
         }
@@ -123,7 +124,7 @@ public class Phase2Tester {
 
         updateStmt = "update large set attr2 = attr2 + 2.0 where attr1 > 70;";
         System.out.println("Stmt: " + updateStmt);
-        if(!DMLParser.parseDMLStatement(updateStmt)){
+        if (!DMLParser.parseDMLStatement(updateStmt)) {
             System.err.println("Error when updating from large table");
             return false;
         }
@@ -133,7 +134,7 @@ public class Phase2Tester {
 
         String alterStmt = "alter table large drop attr3;";
         System.out.println("Stmt: " + alterStmt);
-        if(!DDLParser.parseDDLStatement(alterStmt)){
+        if (!DDLParser.parseDDLStatement(alterStmt)) {
             System.err.println("Error when altering large table");
             return false;
         }
@@ -147,7 +148,7 @@ public class Phase2Tester {
 
         alterStmt = "alter table large add attr6 integer default 10;";
         System.out.println("Stmt: " + alterStmt);
-        if(!DDLParser.parseDDLStatement(alterStmt)){
+        if (!DDLParser.parseDDLStatement(alterStmt)) {
             System.err.println("Error when altering large table");
             return false;
         }
@@ -161,7 +162,7 @@ public class Phase2Tester {
 
         alterStmt = "alter table large add attr7 char(5) default \"size5\";";
         System.out.println("Stmt: " + alterStmt);
-        if(!DDLParser.parseDDLStatement(alterStmt)){
+        if (!DDLParser.parseDDLStatement(alterStmt)) {
             System.err.println("Error when altering large table");
             return false;
         }
@@ -175,13 +176,13 @@ public class Phase2Tester {
 
         String dropTable = "drop table large;";
         System.out.println("Stmt: " + dropTable);
-        if(!DDLParser.parseDDLStatement(dropTable)){
+        if (!DDLParser.parseDDLStatement(dropTable)) {
             System.err.println("Error when dropping large table");
             return false;
         }
 
         table = Catalog.getCatalog().getTable("large");
-        if(table != null){
+        if (table != null) {
             System.err.println("Error did not drop the table");
             return false;
         }
@@ -191,10 +192,6 @@ public class Phase2Tester {
     }
 
 
-
-
-
-
     ////////////////////////////////////////////
 
     ////////////////////////////////////////////
@@ -202,17 +199,17 @@ public class Phase2Tester {
     ////////////////////////////////////////////
 
     ////////////////////////////////////////////
-    private static boolean testConstraints(){
+    private static boolean testConstraints() {
         String createTable = "create table table1( attr1 integer, attr2 double notnull, attr3 char(5), primarykey( attr1 ) );";
         System.out.println("Create table stmt:\n" + createTable);
 
-        if(!DDLParser.parseDDLStatement(createTable)){
+        if (!DDLParser.parseDDLStatement(createTable)) {
             System.err.println("Something went wrong creating the table");
             return false;
         }
 
         ITable table = Catalog.getCatalog().getTable("table1");
-        if(table == null){
+        if (table == null) {
             System.err.println("There was an error getting/creating table");
             return false;
         }
@@ -223,7 +220,7 @@ public class Phase2Tester {
 
         System.out.println("Stmt: " + insertStmt);
 
-        if(!DMLParser.parseDMLStatement(insertStmt)){
+        if (!DMLParser.parseDMLStatement(insertStmt)) {
             System.err.println("Something went wrong inserting valid data in the table");
             return false;
         }
@@ -234,7 +231,7 @@ public class Phase2Tester {
 
         System.out.println("Stmt: " + insertStmt);
 
-        if(DMLParser.parseDMLStatement(insertStmt)){
+        if (DMLParser.parseDMLStatement(insertStmt)) {
             System.err.println("Something went wrong inserting null in notnull attr");
             return false;
         }
@@ -245,7 +242,7 @@ public class Phase2Tester {
 
         System.out.println("Stmt: " + insertStmt);
 
-        if(DMLParser.parseDMLStatement(insertStmt)){
+        if (DMLParser.parseDMLStatement(insertStmt)) {
             System.err.println("Something went wrong inserting duplicate pk in the table");
             return false;
         }
@@ -256,7 +253,7 @@ public class Phase2Tester {
 
         System.out.println("Stmt: " + insertStmt);
 
-        if(DMLParser.parseDMLStatement(insertStmt)) {
+        if (DMLParser.parseDMLStatement(insertStmt)) {
             System.err.println("Something went wrong inserting wrong data type in the table");
             return false;
         }
@@ -267,7 +264,7 @@ public class Phase2Tester {
 
         System.out.println("Stmt: " + insertStmt);
 
-        if(DMLParser.parseDMLStatement(insertStmt)) {
+        if (DMLParser.parseDMLStatement(insertStmt)) {
             System.err.println("Something went wrong inserting to large of a string in the table");
             return false;
         }
@@ -278,7 +275,7 @@ public class Phase2Tester {
 
         System.out.println("Stmt: " + updateStmt);
         System.out.println(StorageManager.getStorageManager().getRecords(table));
-        if(DMLParser.parseDMLStatement(updateStmt)) {
+        if (DMLParser.parseDMLStatement(updateStmt)) {
             System.err.println("Something went wrong updating a notnull to null in the table");
             return false;
         }
@@ -289,7 +286,7 @@ public class Phase2Tester {
 
         System.out.println("Stmt: " + updateStmt);
 
-        if(DMLParser.parseDMLStatement(updateStmt)) {
+        if (DMLParser.parseDMLStatement(updateStmt)) {
             System.err.println("Something went wrong updating a non-existing table");
             return false;
         }
@@ -299,7 +296,7 @@ public class Phase2Tester {
 
         System.out.println("Stmt: " + updateStmt);
 
-        if(DMLParser.parseDMLStatement(updateStmt)) {
+        if (DMLParser.parseDMLStatement(updateStmt)) {
             System.err.println("1 Something went wrong updating a non-existing attr");
             return false;
         }
@@ -309,7 +306,7 @@ public class Phase2Tester {
 
         System.out.println("Stmt: " + updateStmt);
 
-        if(DMLParser.parseDMLStatement(updateStmt)) {
+        if (DMLParser.parseDMLStatement(updateStmt)) {
             System.err.println(" 2 Something went wrong updating a non-existing attr in where");
             return false;
         }
@@ -319,7 +316,7 @@ public class Phase2Tester {
 
         System.out.println("Stmt: " + updateStmt);
 
-        if(DMLParser.parseDMLStatement(updateStmt)) {
+        if (DMLParser.parseDMLStatement(updateStmt)) {
             System.err.println("Something went wrong updating a non-existing attr in where");
             return false;
         }
@@ -329,7 +326,7 @@ public class Phase2Tester {
 
         System.out.println("Stmt: " + updateStmt);
 
-        if(!DMLParser.parseDMLStatement(updateStmt)) {
+        if (!DMLParser.parseDMLStatement(updateStmt)) {
             System.err.println("Something went wrong updating a nullable to null in the table");
             return false;
         }
@@ -337,7 +334,7 @@ public class Phase2Tester {
         String fkTable = "create table table2( attr7 integer primarykey, " +
                 "foreignkey( attr7 ) references table1( attr1 ) );";
 
-        if(!DDLParser.parseDDLStatement(fkTable)){
+        if (!DDLParser.parseDDLStatement(fkTable)) {
             System.err.println("Something went wrong creating the fk table");
             return false;
         }
@@ -349,7 +346,7 @@ public class Phase2Tester {
 
         System.out.println("Stmt: " + insertStmt);
 
-        if(!DMLParser.parseDMLStatement(insertStmt)) {
+        if (!DMLParser.parseDMLStatement(insertStmt)) {
             System.err.println("1 Something went wrong inserting a valid fk value in the table");
             return false;
         }
@@ -360,7 +357,7 @@ public class Phase2Tester {
 
         System.out.println("Stmt: " + insertStmt);
 
-        if(DMLParser.parseDMLStatement(insertStmt)) {
+        if (DMLParser.parseDMLStatement(insertStmt)) {
             System.err.println("7 Something went wrong inserting a invalid fk value in the table");
             return false;
         }
@@ -372,7 +369,7 @@ public class Phase2Tester {
         Catalog.createCatalog(args[0], Integer.parseInt(args[1]), Integer.parseInt(args[2]));
         StorageManager.createStorageManager();
 
-        if(!createVeryLargeTable()){
+        if (!createVeryLargeTable()) {
             System.err.println("Large table test failed.");
         } else {
             System.out.println("Large table test passed.");
@@ -382,7 +379,7 @@ public class Phase2Tester {
         System.out.println("------------------------------------------------");
         System.out.println("------------------------------------------------");
 
-        if(!testConstraints()){
+        if (!testConstraints()) {
             System.err.println("Constraints test failed");
         } else {
             System.out.println("Constraints test passed.");

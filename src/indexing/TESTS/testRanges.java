@@ -31,26 +31,25 @@ public class testRanges {
         btree.print_h(btree.treeRoot, "");
 
 
-
         System.out.println("\n\n-------- searching in----------\n\n");
 
         int key = 12;
-        System.out.println("-------- > "+key+" ----------");
+        System.out.println("-------- > " + key + " ----------");
 
         System.out.println(btree.searchRange(key, false, false));
 
-        System.out.println("-------- >= "+key+" ----------");
+        System.out.println("-------- >= " + key + " ----------");
 
         System.out.println(btree.searchRange(key, false, true));
 
-        System.out.println("-------- < "+key+" ----------");
+        System.out.println("-------- < " + key + " ----------");
 
         System.out.println(btree.searchRange(key, true, false));
 
-        System.out.println("-------- <= "+key+" ----------");
+        System.out.println("-------- <= " + key + " ----------");
         System.out.println(btree.searchRange(key, true, true));
 
-        System.out.println("-------- = "+key+" ----------");
+        System.out.println("-------- = " + key + " ----------");
 
         System.out.println(btree.search(key));
 
@@ -58,22 +57,22 @@ public class testRanges {
         System.out.println("\n\n-------- searching NOT in----------\n\n");
 
         key = 15;
-        System.out.println("-------- > "+key+" ----------");
+        System.out.println("-------- > " + key + " ----------");
 
         System.out.println(btree.searchRange(key, false, false));
 
-        System.out.println("-------- >= "+key+" ----------");
+        System.out.println("-------- >= " + key + " ----------");
 
         System.out.println(btree.searchRange(key, false, true));
 
-        System.out.println("-------- < "+key+" ----------");
+        System.out.println("-------- < " + key + " ----------");
 
         System.out.println(btree.searchRange(key, true, false));
 
-        System.out.println("-------- <= "+key+" ----------");
+        System.out.println("-------- <= " + key + " ----------");
         System.out.println(btree.searchRange(key, true, true));
 
-        System.out.println("-------- = "+key+" ----------");
+        System.out.println("-------- = " + key + " ----------");
 
         System.out.println(btree.search(key));
 
@@ -89,27 +88,24 @@ public class testRanges {
         }
 
         key = 10;
-        System.out.println("-------- > "+key+" ----------");
+        System.out.println("-------- > " + key + " ----------");
 
         System.out.println(btree.searchRange(key, false, false));
 
-        System.out.println("-------- >= "+key+" ----------");
+        System.out.println("-------- >= " + key + " ----------");
 
         System.out.println(btree.searchRange(key, false, true));
 
-        System.out.println("-------- < "+key+" ----------");
+        System.out.println("-------- < " + key + " ----------");
 
         System.out.println(btree.searchRange(key, true, false));
 
-        System.out.println("-------- <= "+key+" ----------");
+        System.out.println("-------- <= " + key + " ----------");
         System.out.println(btree.searchRange(key, true, true));
 
-        System.out.println("-------- = "+key+" ----------");
+        System.out.println("-------- = " + key + " ----------");
 
         System.out.println(btree.search(key));
-
-
-
 
 
     }

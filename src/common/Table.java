@@ -45,7 +45,6 @@ public class Table implements ITable {
     public HashMap<String, BPlusTree> IndexedAttributes = new HashMap<>();
 
 
-
     public Table(String tableName, ArrayList<Attribute> Attributes, Attribute PrimaryKey) {
         ID = numTables;
         numTables++;
@@ -246,7 +245,6 @@ public class Table implements ITable {
                 this.AttribIdxs = attributeNameToIdx;
 
 
-
                 return true;
             }
             idx++;
@@ -276,16 +274,15 @@ public class Table implements ITable {
     @Override
     public boolean addIndex(String attributeName) {
 
-        if(IndexedAttributes.containsKey(attributeName)){
-            System.err.println(attributeName+" is already indexed");
+        if (IndexedAttributes.containsKey(attributeName)) {
+            System.err.println(attributeName + " is already indexed");
             return false;
         }
 
         // check attribute exits in table
-        if(AttribIdxs.containsKey(attributeName)){
+        if (AttribIdxs.containsKey(attributeName)) {
 
             // make new b+ tree with that attrib
-
 
 
             var newTree = BPlusTree.TreeFromTableAttribute(this, AttribIdxs.get(attributeName));
@@ -295,7 +292,7 @@ public class Table implements ITable {
 
             return true;
         }
-        System.err.println("cant make index on attribute because "+attributeName+" does not exist");
+        System.err.println("cant make index on attribute because " + attributeName + " does not exist");
         return false;
     }
 
@@ -579,8 +576,7 @@ public class Table implements ITable {
         this.Attributes = attributes;
     }
 
-    public boolean dropAttributeCartTable(Table table, String name,int attrIndex) {
-
+    public boolean dropAttributeCartTable(Table table, String name, int attrIndex) {
 
 
         try {
@@ -624,7 +620,7 @@ public class Table implements ITable {
 
 
                 // load the page from memory
-                Page headPage = ((StorageManager)StorageManager
+                Page headPage = ((StorageManager) StorageManager
                         .getStorageManager())
                         .getPagebuffer()
                         .getPageFromBuffer(String.valueOf(headPtr), table);
@@ -677,7 +673,6 @@ public class Table implements ITable {
             System.err.println("failure adding attribute from table " + table.getTableName());
             return false;
         }
-
 
 
     }

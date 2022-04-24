@@ -26,6 +26,7 @@ public record Attribute(String attributeName, String attributeType) {
 
     /**
      * Used to print this attribute is a readable way
+     *
      * @return
      */
     @Override
@@ -40,7 +41,7 @@ public record Attribute(String attributeName, String attributeType) {
      */
     @Override
     public boolean equals(Object obj) {
-        if(!(obj instanceof Attribute attr)){
+        if (!(obj instanceof Attribute attr)) {
             return false;
         }
         return attr.attributeName.equals(this.attributeName);
