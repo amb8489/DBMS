@@ -634,7 +634,6 @@ public class Utilities {
         }
 
         Collections.reverse(dropIdxs); // reverse this list to avoid the left-shift of arraylist.remove() causing issues
-        System.out.println("swag");
         // modify attrs to remove unwanted ones
         for (Integer drop : dropIdxs) {
             setToChange.attrs().remove(drop.intValue());

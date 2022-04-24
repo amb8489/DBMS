@@ -621,8 +621,7 @@ public class DMLParser {
             seen.add(r);
 
         }
-        System.out.println(finRecs.size() + " " + records.size());
-        ResultSet rs = new ResultSet(table.getAttributes(), records);
+        ResultSet rs = new ResultSet(table.getAttributes(), finRecs);
         //  ----------------- ----------------- SELECT | get only columns we asked for -----------------
 
         // get the string containing only the attributes we want (doesn't include the word "select")
