@@ -906,26 +906,63 @@ public class StorageManager extends AStorageManager {
             // case1 or case1 { or case1... cas1}
             boolean isLegalCase3 = WhereP3.isLegalCase2(tokens, table);
 
-            if(isLegalCase3){
-                System.err.println("isLegalCase3 __>"+isLegalCase3);
+            if (isLegalCase3) {
+//                System.err.println("isLegalCase3 __>" + isLegalCase3);
 
                 ArrayList<RecordPointer> rps = WhereP3.GetCase2Recs(tokens, table);
 
+                ArrayList<ArrayList<Object>> found = new ArrayList<>();
 
+                for (var rp : rps) {
+                    int pageName = rp.page();
+                    int pageidx = rp.index();
+                    Page p = pb.getPageFromBuffer(String.valueOf(pageName), table);
 
+                    var row = p.getPageRecords().get(pageidx);
 
-                return null;
+                    if (wp.whereIsTrue(whereStmt, table, row)) {
+                        found.add(row);
+                    }
+
+                }
+                return found;
             }
 
 
-            // no useful index operation
         }
+        // no useful index operation old style
+        ArrayList<ArrayList<Object>> found = new ArrayList<>();
+
+        try {
 
 
-        // TODO no index style
+            // page name for head is always at idx zero
+            int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
 
+            ArrayList<Attribute> attributes = table.getAttributes();
+            // loop though all the tables pages in order
+            while (headPtr != -1) {
 
-        return null;
+                Page headPage = pb.getPageFromBuffer("" + headPtr, table);
+                // look through all record for that page
+
+                int recSize = headPage.getPageRecords().size();
+
+                for (int i = recSize - 1; i > -1; i--) {
+                    ArrayList<Object> row = headPage.getPageRecords().get(i);
+                    if (wp.whereIsTrue(whereStmt,  table, row)) {
+                        found.add(row);
+                    }
+                }
+
+                // next page
+                headPtr = headPage.getPtrToNextPage();
+            }
+            return found;
+        } catch (Exception e) {
+            System.err.println("error removing in remove where in sm");
+            return new ArrayList<>();
+        }
     }
 
     public static ArrayList<RecordPointer> GetRecsFromTreeWhere(BPlusTree currTree, String operator, String value) {

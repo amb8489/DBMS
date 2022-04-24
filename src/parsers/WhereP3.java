@@ -319,7 +319,7 @@ public class WhereP3 {
         VerbosePrint.print(tokens);
 
         // return the tokens now filled with proer values
-        System.out.println(tokens);
+
 //        System.exit(1);
         return tokens;
 
@@ -352,7 +352,7 @@ public class WhereP3 {
             var operator = operators.contains(tokens.get(i + 1));
 
             if (!operator) {
-                System.err.println(tokens.get(i + 1));
+//                System.err.println(tokens.get(i + 1));
                 return false;
             }
 
@@ -376,7 +376,7 @@ public class WhereP3 {
                 }
             }
         }
-        System.err.println("isAllSimpleCase1: " + atLeastOneIsIndexed);
+//        System.err.println("isAllSimpleCase1: " + atLeastOneIsIndexed);
 
         return atLeastOneIsIndexed;
 
@@ -437,7 +437,7 @@ public class WhereP3 {
 
             // if both true or both false then bad
             if (firstIsColumnName == thirdIsColumnName) {
-                System.err.println(firstIsColumnName);
+//                System.err.println(firstIsColumnName);
                 return false;
             }
 
@@ -624,6 +624,13 @@ public class WhereP3 {
 
 
 
+
+        ////////
+
+
+
+        HashSet<RecordPointer> seen = new HashSet<>();
+
         ArrayList<RecordPointer> rps = new ArrayList<>();
         // for ands we and to get the expression to the left and right
 
@@ -656,13 +663,16 @@ public class WhereP3 {
 
         // get the indexs on the ones that we can
 
-        System.err.println(expressions);
+//        System.err.println(expressions);
+
+
+        // TODO OPTIMIZATION WOULD BE THAT IF WE HAVE A CHAIN of ands we only need too look for the recs of one index
 
         for (var expr: expressions) {
             // if the expression has an index grab the recs
             var exprArr = new String[] {expr.get(0),expr.get(1),expr.get(2)};
             if(isLegalIndexExpr(exprArr,table)){
-                System.err.println(expr);
+//                System.err.println(expr);
 
                 // get record pointers for the condition on the index
 
@@ -673,27 +683,25 @@ public class WhereP3 {
                 var value = exprArr[2];
 
                 if (thirdIsColumnName) {
-                     attributeName = exprArr[0];
-                     value = exprArr[2];
+                     attributeName = exprArr[2];
+                     value = exprArr[0];
                 }
 
+                var currTree = (table).IndexedAttributes.get(attributeName);
 
-                BPlusTree currTree = table.IndexedAttributes.get(attributeName);
+
                 var recs = StorageManager.GetRecsFromTreeWhere( currTree,  op,  value);
 
+                for (var rp:recs) {
+                    if(!seen.contains(rp)){
+                        rps.add(rp);
+                        seen.add(rp);
 
-                // todo add rects to total and return them removing dups
-
-
+                    }
+                }
             }
 
         }
-
-
-
-
-
-
 
         return rps;
     }
@@ -765,11 +773,11 @@ public class WhereP3 {
 
         // add an index on attribute
 
-        System.out.println(catTab.IndexedAttributes.get("t1.a"));
+//        System.out.println(catTab.IndexedAttributes.get("t1.a"));
 
         catTab.addIndex("t1.uidt1");
 
-        System.out.println(catTab.IndexedAttributes.get("t1.a"));
+//        System.out.println(catTab.IndexedAttributes.get("t1.a"));
 
 
         // add some records to cartesian table
@@ -817,7 +825,7 @@ public class WhereP3 {
 //
 //
 //        var res = ((StorageManager) sm).getWhere(catTab, "where t1.a != 2 or t1.a != 2 or t1.uidt1 < 10 and t1.a != 2 or t1.a != 2 AND t3.uidt3 < 20 or t1.uidt1 < 5");
-        var res = ((StorageManager) sm).getWhere(catTab, "where 2 != t1.a AND t2.b != 2 AND t1.a != 2");
+        var res = ((StorageManager) sm).getWhere(catTab, "where 2 != t1.a AND t1.a != 2");
 
         long endTime = System.currentTimeMillis();
 
