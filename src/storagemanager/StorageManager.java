@@ -353,7 +353,12 @@ public class StorageManager extends AStorageManager {
     //TODO WITH TREE
 
     public boolean keepWhere(ITable table, String where, Boolean removeAllRecords) {
+
+
         try {
+
+            // what we want to do is is use the were to find what records we should test
+            // now
             // page name for head is always at idx zero
             int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
 
@@ -377,10 +382,12 @@ public class StorageManager extends AStorageManager {
                 headPtr = headPage.getPtrToNextPage();
             }
             return true;
-        } catch (Exception e) {
+        } catch (
+                Exception e) {
             System.err.println("error removing in remove where in sm");
             return false;
         }
+
     }
 
     // done
@@ -756,4 +763,234 @@ public class StorageManager extends AStorageManager {
         return pb;
     }
 
+    public ArrayList<ArrayList<Object>> getWhere(Table table, String whereStmt) {
+
+
+        // 1) find what attributes in the where statement are indexed
+        var table1 = ((Table) table);
+        System.out.println("indexs on :" + table1.IndexedAttributes.keySet());
+
+        // 1a) parse where statement in to tokens
+
+        whereStmt = whereStmt.replace("(", " ( ");
+        whereStmt = whereStmt.replace(")", " ) ");
+
+        whereStmt = whereStmt.replace("!", " !");
+        whereStmt = whereStmt.replace("<", " < ");
+        whereStmt = whereStmt.replace(">", " > ");
+        whereStmt = whereStmt.replace("=", " = ");
+
+        whereStmt = whereStmt.replace("<  =", " <= ");
+        whereStmt = whereStmt.replace(">  =", " >= ");
+        whereStmt = whereStmt.replace("! =", " != ");
+        whereStmt = whereStmt.replace(" .", ".");
+        whereStmt = whereStmt.replace(". ", ".");
+
+        // tokenize the string by spaces
+        List<String> tokens = Utilities.mkTokensFromStr(whereStmt);
+
+
+        // getting tokens after the where
+        int whereIdx = 1;
+        for (String t : tokens) {
+            if (t.equalsIgnoreCase("where")) {
+                tokens = tokens.subList(whereIdx, tokens.size());
+                break;
+            }
+            whereIdx++;
+        }
+
+
+        //1b) find what columns if any have indexs that can be used to reduce the search space
+
+        ArrayList<String> indexedColsInWhere = new ArrayList<>();
+        for (String token : tokens) {
+            if (((Table) table).IndexedAttributes.containsKey(token)) {
+                indexedColsInWhere.add(token);
+            }
+        }
+
+
+        // we have indexes that we can work with
+        if (!indexedColsInWhere.isEmpty()) {
+
+
+            // 2) get set of possible usable recs or at least the pages wjere those recs live
+            // so that we dont neeed to load up the entire table in mem at once
+
+            // 2a) make set of possible acceptable records
+
+            // loop though indexed attribute names and get the index tree to work with
+
+            // store of possible places to look
+
+            // 3) see if indexs can even be usful in this where statement
+
+
+            HashSet<String> operators = new HashSet<>(List.of(new String[]{"=", ">", ">=", "<", "<=", "!="}));
+
+            //==========================================================================================
+            //===================================== case 1 =============================================
+            //=================================== col op value =========================================
+
+            //  indexed operator value / value operator indexed;
+            // ex: bar = 5 if bar has an index or 5 = bar
+
+
+            if (tokens.size() == 3 && (indexedColsInWhere.size() == 1)) {
+
+                // list of final records
+                ArrayList<RecordPointer> rps = new ArrayList<>();
+
+                for (String attributeName : indexedColsInWhere) {
+                    // get the tree for that attribute
+                    var currTree = ((Table) table).IndexedAttributes.get(attributeName);
+
+                    // find the operator should be in the middle
+                    String operator = null;
+                    int idx = 0;
+                    for (String token : tokens) {
+                        if (operators.contains(token)) {
+                            operator = token;
+                            break;
+                        }
+                        idx++;
+                    }
+
+                    // operator should exist and should bein the middle
+                    if (operator == null || idx != 1) {
+                        System.err.println("error in where statement missing/ badly placed operator");
+                        return null;
+                    }
+
+                    // find the value and index
+                    String attrib = tokens.get(0);
+                    String value = tokens.get(2);
+
+                    if (indexedColsInWhere.contains(tokens.get(2))) {
+                        attrib = tokens.get(2);
+                        value = tokens.get(0);
+                    }
+
+
+                    rps = GetRecsFromTreeWhere(currTree, operator, value);
+
+                }
+                // for case all thats left is just to get rps FROM TABLE
+                // make new table and just add these values to it
+                ArrayList<ArrayList<Object>> found = new ArrayList<>();
+                for (RecordPointer rp : rps) {
+                    Page page = pb.getPageFromBuffer(String.valueOf(rp.page()), table);
+                    var row = page.getPageRecords().get(rp.index());
+                    found.add(row);
+                }
+
+                // because simple case we wont need to check were for correctness its implicit from the tree
+                return found;
+
+            }
+
+
+            //==========================================================================================
+            //===================================== case 2 =============================================
+            //================ multiple case1 chained by AND and ors  ===============
+
+
+            // case three much more complicated
+            // we can have or if they have an index, we we dont have one then
+            // we have no choice but to brute force it
+            // we can have a mix of ands and ors iff the ands have at least one idx and the ors also have and index
+            // CHAIN of OR and AND where ALL needed cases have an index
+            // over hea night not be woth it in larger cases
+            // add recs to hash set to reduce dubs
+            // case1 or case1 { or case1... cas1}
+            boolean isLegalCase3 = WhereP3.isLegalCase2(tokens, table);
+
+            if(isLegalCase3){
+                System.err.println("isLegalCase3 __>"+isLegalCase3);
+
+                ArrayList<RecordPointer> rps = WhereP3.GetCase2Recs(tokens, table);
+
+
+
+
+                return null;
+            }
+
+
+            // no useful index operation
+        }
+
+
+        // TODO no index style
+
+
+        return null;
+    }
+
+    public static ArrayList<RecordPointer> GetRecsFromTreeWhere(BPlusTree currTree, String operator, String value) {
+        // finding records     yes... i know
+
+
+        ArrayList<RecordPointer> rps;
+
+        switch (currTree.Type) {
+            case "integer" -> {
+                int searchKey = Integer.parseInt(value);
+
+                rps = switch (operator) {
+                    case "=" -> currTree.search(searchKey);
+                    case ">" -> currTree.searchRange(searchKey, false, false);
+                    case ">=" -> currTree.searchRange(searchKey, false, true);
+                    case "<" -> currTree.searchRange(searchKey, true, false);
+                    case "<=" -> currTree.searchRange(searchKey, true, true);
+                    // !=
+                    default -> currTree.searchNotEq(searchKey);
+
+                };
+            }
+
+            case "double" -> {
+                double searchKey = Double.parseDouble(value);
+
+                rps = switch (operator) {
+                    case "=" -> currTree.search(searchKey);
+                    case ">" -> currTree.searchRange(searchKey, false, false);
+                    case ">=" -> currTree.searchRange(searchKey, false, true);
+                    case "<" -> currTree.searchRange(searchKey, true, false);
+                    case "<=" -> currTree.searchRange(searchKey, true, true);
+                    // !=
+                    default -> currTree.searchNotEq(searchKey);
+                };
+            }
+            case "boolean" -> {
+                boolean searchKey = Boolean.parseBoolean(value);
+
+                rps = switch (operator) {
+                    case "=" -> currTree.search(searchKey);
+                    case ">" -> currTree.searchRange(searchKey, false, false);
+                    case ">=" -> currTree.searchRange(searchKey, false, true);
+                    case "<" -> currTree.searchRange(searchKey, true, false);
+                    case "<=" -> currTree.searchRange(searchKey, true, true);
+                    // !=
+                    default -> currTree.searchNotEq(searchKey);
+                };
+            }
+            default -> {
+                String searchKey = value;
+
+                rps = switch (operator) {
+                    case "=" -> currTree.search(searchKey);
+                    case ">" -> currTree.searchRange(searchKey, false, false);
+                    case ">=" -> currTree.searchRange(searchKey, false, true);
+                    case "<" -> currTree.searchRange(searchKey, true, false);
+                    case "<=" -> currTree.searchRange(searchKey, true, true);
+                    // !=
+                    default -> currTree.searchNotEq(searchKey);
+                };
+            }
+
+        }
+        return rps;
+    }
 }

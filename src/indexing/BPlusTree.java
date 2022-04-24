@@ -492,7 +492,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
 
         var success = this.doDelete(this.treeRoot, deletedValue, rp);
-        if(this.treeRoot !=null) {
+        if (this.treeRoot != null) {
             if (this.treeRoot.numKeys == 0) {
 
                 this.treeRoot = this.treeRoot.children.get(0);
@@ -1209,4 +1209,12 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
         }
     }
 
+    // everything != value
+    public ArrayList<RecordPointer> searchNotEq(T value) {
+        // everything less then
+        var recs = searchRange(value, true, false);
+        // and everything everything greater then
+        recs.addAll(searchRange(value, false, false));
+        return recs;
+    }
 }

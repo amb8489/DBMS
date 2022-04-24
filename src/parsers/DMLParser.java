@@ -563,7 +563,7 @@ public class DMLParser {
         int fromIdx = LowerQueryStmt.indexOf("from");
         int semiIdx = LowerQueryStmt.indexOf(";");
         int orderbyIdx = LowerQueryStmt.indexOf("orderby");
-
+        ArrayList<ArrayList<Object>> records = new ArrayList<>();
         if (whereIdx > 0) {
             int stopIdx = semiIdx;
             if (semiIdx != -1 || orderbyIdx != -1) {
@@ -574,8 +574,11 @@ public class DMLParser {
                 }
                 String WhereStmt = query.substring(whereIdx, stopIdx);
 
-                // parse table unqualified rows
-                ((StorageManager) StorageManager.getStorageManager()).keepWhere(table, WhereStmt, false);
+                // REMOVE unqualified rows
+
+
+                records = ((StorageManager) StorageManager.getStorageManager()).getWhere(table, WhereStmt);
+//                ((StorageManager) StorageManager.getStorageManager()).keepWhere(table, WhereStmt, false);
             } else {
                 System.err.println("error in stmt");
                 return null;
@@ -587,7 +590,6 @@ public class DMLParser {
         //  ----------------- ----------------- ORDER-BY | SORT rows ----------------- -----------------
 
 
-        ArrayList<ArrayList<Object>> records = (StorageManager.getStorageManager()).getRecords(table);
 
 
         if (orderbyIdx != -1) {

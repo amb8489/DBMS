@@ -4,6 +4,7 @@ package parsers;
 import catalog.ACatalog;
 import catalog.Catalog;
 import common.*;
+import indexing.BPlusTree;
 import phase2tests.Phase2Testers;
 import storagemanager.AStorageManager;
 import storagemanager.StorageManager;
@@ -325,6 +326,377 @@ public class WhereP3 {
 
     }
 
+    public static boolean isAllSimpleCase1(List<String> tokens, Table table) {
+
+
+        HashSet<String> operators = new HashSet<>(List.of(new String[]{"=", ">", ">=", "<", "<=", "!="}));
+
+
+        boolean atLeastOneIsIndexed = false;
+
+
+        for (int i = 0; i < tokens.size(); i += 4) {
+
+
+            // check that first token is a column name and the third is a value
+            var firstIsColumnName = table.AttribIdxs.containsKey(tokens.get(i));
+            var thirdIsColumnName = table.AttribIdxs.containsKey(tokens.get(i + 2));
+
+
+            // if both true or both false then bad
+            if (firstIsColumnName == thirdIsColumnName) {
+                return false;
+            }
+
+            // every 3rd token should be an operator
+            var operator = operators.contains(tokens.get(i + 1));
+
+            if (!operator) {
+                System.err.println(tokens.get(i + 1));
+                return false;
+            }
+
+            // check if one of the atributes is indexed
+
+            if (firstIsColumnName && !atLeastOneIsIndexed) {
+                atLeastOneIsIndexed = table.IndexedAttributes.containsKey(tokens.get(i));
+            } else if (thirdIsColumnName && !atLeastOneIsIndexed) {
+                atLeastOneIsIndexed = table.IndexedAttributes.containsKey(tokens.get(i + 2));
+            }
+
+        }
+
+
+        // every 4th token should be "AND"
+        for (int i = 0; i < tokens.size(); i += 4) {
+            if (i + 3 < tokens.size()) {
+
+                if (!tokens.get(i + 3).equalsIgnoreCase("and")) {
+                    return false;
+                }
+            }
+        }
+        System.err.println("isAllSimpleCase1: " + atLeastOneIsIndexed);
+
+        return atLeastOneIsIndexed;
+
+    }
+
+    public static boolean isLegalCase2(List<String> tokens, Table table) {
+
+
+
+        // for ands we and to get the expression to the left and right
+
+
+        // find all the index of the and's and the or's
+
+        ArrayList<Integer> AndIdxs = new ArrayList<>();
+        for (int i = 0; i < tokens.size(); i++) {
+            if (tokens.get(i).equalsIgnoreCase("AND")) {
+                AndIdxs.add(i);
+            }
+        }
+
+
+        // ex: fish != "dog" AND snake != poodle
+        // we want to make sure (fish != "dog") , (snake != poodle) both expressions have atleast 1 indx
+        ArrayList<String[]> expressions = new ArrayList<>();
+
+        for (int AndIdx : AndIdxs) {
+            // get the left three tokens and the right three tokens from the and idx
+
+
+            var leftSideLeft = tokens.get(AndIdx - 3);
+            var leftSideOperator = tokens.get(AndIdx - 2);
+            var leftSideRight = tokens.get(AndIdx - 1);
+
+
+            var rightSideLeft = tokens.get(AndIdx + 1);
+            var rightSideOperator = tokens.get(AndIdx + 2);
+            var rightSideRight = tokens.get(AndIdx + 3);
+
+            var LeftExpression = new String[]{leftSideLeft, leftSideOperator, leftSideRight};
+            var RightExpression = new String[]{rightSideLeft, rightSideOperator, rightSideRight};
+
+
+            // check that first token is a column name and the third is a value
+            var firstIsColumnName = table.AttribIdxs.containsKey(LeftExpression[0]);
+            var thirdIsColumnName = table.AttribIdxs.containsKey(LeftExpression[2]);
+
+
+            // if both true or both false then bad
+            if (firstIsColumnName == thirdIsColumnName) {
+                return false;
+            }
+
+            // check that first token is a column name and the third is a value
+             firstIsColumnName = table.AttribIdxs.containsKey(RightExpression[0]);
+             thirdIsColumnName = table.AttribIdxs.containsKey(RightExpression[2]);
+
+
+            // if both true or both false then bad
+            if (firstIsColumnName == thirdIsColumnName) {
+                System.err.println(firstIsColumnName);
+                return false;
+            }
+
+
+
+            // test that at least one is indexed
+
+            boolean atLeastOneIndexed = isLegalIndexExpr(LeftExpression, table) || isLegalIndexExpr(RightExpression, table);
+
+
+            // failure to have and exploit indexing
+
+            if (!atLeastOneIndexed) {
+                return false;
+            }
+
+
+        }
+
+
+
+        // we are looking for adjacent ors like   or expr or
+
+        ArrayList<Object[]> logicalOpers = new ArrayList<>();
+        for (int i = 0; i < tokens.size(); i++) {
+            if (tokens.get(i).equalsIgnoreCase("OR") || tokens.get(i).equalsIgnoreCase("AND")) {
+                logicalOpers.add(new Object[]{tokens.get(i),i});
+            }
+        }
+
+
+        // find ajacent ors
+
+        // if or is first and last also
+
+        if (!logicalOpers.isEmpty()) {
+
+            // check to see if the  first operator is an OR
+
+            // expr or ...
+            if (((String) logicalOpers.get(0)[0]).equalsIgnoreCase("OR")){
+                var middleLeft = tokens.get(0);
+                var middleOperator = tokens.get(1);
+                var middleRight = tokens.get(2);
+
+                var LeftExpression = new String[]{middleLeft, middleOperator, middleRight};
+
+                // check that first token is a column name and the third is a value
+                var firstIsColumnName = table.AttribIdxs.containsKey(LeftExpression[0]);
+                var thirdIsColumnName = table.AttribIdxs.containsKey(LeftExpression[2]);
+
+
+                // if both true or both false then bad
+                if (firstIsColumnName == thirdIsColumnName) {
+                    return false;
+                }
+
+                // test that at least one is indexed
+
+                boolean atLeastOneIndexed = isLegalIndexExpr(LeftExpression, table);
+
+
+                // failure to have and exploit indexing
+
+                if (!atLeastOneIndexed) {
+                    return false;
+                }
+
+
+            }
+
+            // ... or expr
+            if (((String) logicalOpers.get(logicalOpers.size()-1)[0]).equalsIgnoreCase("OR")){
+
+
+                var middleLeft = tokens.get(tokens.size() - 3);
+                var middleOperator = tokens.get(tokens.size() - 2);
+                var middleRight = tokens.get(tokens.size() - 1);
+                var LeftExpression = new String[]{middleLeft, middleOperator, middleRight};
+
+                // check that first token is a column name and the third is a value
+                var firstIsColumnName = table.AttribIdxs.containsKey(LeftExpression[0]);
+                var thirdIsColumnName = table.AttribIdxs.containsKey(LeftExpression[2]);
+
+
+                // if both true or both false then bad
+                if (firstIsColumnName == thirdIsColumnName) {
+
+                    return false;
+                }
+
+                // test that at least one is indexed
+
+                boolean atLeastOneIndexed = isLegalIndexExpr(LeftExpression, table);
+
+                // failure to have and exploit indexing
+
+                if (!atLeastOneIndexed) {
+                    return false;
+                }
+
+
+            }
+
+            for (int i = 0; i < logicalOpers.size() - 1; i++) {
+
+
+                var left = ((String)logicalOpers.get(i)[0] );
+                var next = ((String)logicalOpers.get(i+1)[0] );
+
+                int leftOrIdx = ((Integer)logicalOpers.get(i)[1] );
+
+                if(left.equalsIgnoreCase("OR") && next.equalsIgnoreCase("OR")){
+
+                    var middleLeft = tokens.get(leftOrIdx + 3);
+                    var middleOperator = tokens.get(leftOrIdx + 2);
+                    var middleRight = tokens.get(leftOrIdx + 1);
+
+                    var LeftExpression = new String[]{middleLeft, middleOperator, middleRight};
+
+                    // check that first token is a column name and the third is a value
+                    var firstIsColumnName = table.AttribIdxs.containsKey(LeftExpression[0]);
+                    var thirdIsColumnName = table.AttribIdxs.containsKey(LeftExpression[2]);
+
+
+                    // if both true or both false then bad
+                    if (firstIsColumnName == thirdIsColumnName) {
+                        return false;
+                    }
+
+                    // test that at least one is indexed
+
+                    boolean atLeastOneIndexed = isLegalIndexExpr(LeftExpression, table);
+
+
+                    // failure to have and exploit indexing
+
+                    if (!atLeastOneIndexed) {
+                        return false;
+                    }
+
+                }
+
+            }
+
+        }
+
+            return true;
+    }
+
+
+    public static boolean isLegalIndexExpr(String[] tokens, Table table) {
+
+
+        // check that first token is a column name and the third is a value
+        var firstIsColumnName = table.AttribIdxs.containsKey(tokens[0]);
+        var thirdIsColumnName = table.AttribIdxs.containsKey(tokens[2]);
+
+
+        // if both true or both false then bad
+        if (firstIsColumnName == thirdIsColumnName) {
+            return false;
+        }
+
+
+        HashSet<String> operators = new HashSet<>(List.of(new String[]{"=", ">", ">=", "<", "<=", "!="}));
+
+        //  second token should be an operator
+        var operator = operators.contains(tokens[1]);
+
+        if (!operator) {
+            return false;
+        }
+
+        // check if one of the atributes is indexed
+
+
+        return table.IndexedAttributes.containsKey(tokens[0]) || table.IndexedAttributes.containsKey(tokens[2]);
+
+    }
+
+    public static ArrayList<RecordPointer> GetCase2Recs(List<String> tokens, Table table) {
+
+
+
+
+        ArrayList<RecordPointer> rps = new ArrayList<>();
+        // for ands we and to get the expression to the left and right
+
+        // we are looking for adjacent ors like   or expr or
+
+
+
+        ArrayList<Integer> expressionSepIdx = new ArrayList<>();
+
+        for (int i = 0; i < tokens.size(); i++) {
+            if (tokens.get(i).equalsIgnoreCase("OR") || tokens.get(i).equalsIgnoreCase("AND")) {
+                expressionSepIdx.add(i);
+
+            }
+        }
+
+        // get all the expressions
+        int start = 0;
+        ArrayList<List<String>> expressions = new ArrayList<>();
+
+        for (int end: expressionSepIdx) {
+
+            var exp = tokens.subList(start,end);
+            expressions.add(new ArrayList<>(exp));
+            start = end + 1;
+        }
+        var exp = tokens.subList(start,tokens.size());
+        expressions.add(new ArrayList<>(exp));
+
+
+        // get the indexs on the ones that we can
+
+        System.err.println(expressions);
+
+        for (var expr: expressions) {
+            // if the expression has an index grab the recs
+            var exprArr = new String[] {expr.get(0),expr.get(1),expr.get(2)};
+            if(isLegalIndexExpr(exprArr,table)){
+                System.err.println(expr);
+
+                // get record pointers for the condition on the index
+
+                var thirdIsColumnName = table.AttribIdxs.containsKey(exprArr[2]);
+                // if both true or both false then bad
+                var attributeName = exprArr[0];
+                var op = exprArr[1];
+                var value = exprArr[2];
+
+                if (thirdIsColumnName) {
+                     attributeName = exprArr[0];
+                     value = exprArr[2];
+                }
+
+
+                BPlusTree currTree = table.IndexedAttributes.get(attributeName);
+                var recs = StorageManager.GetRecsFromTreeWhere( currTree,  op,  value);
+
+
+                // todo add rects to total and return them removing dups
+
+
+            }
+
+        }
+
+
+
+
+
+
+
+        return rps;
+    }
 
     /*--------------    HOW TO USE  -------------------
 
@@ -408,7 +780,7 @@ public class WhereP3 {
         for (int i = 0; i < size; i++) {
             var row = Phase2Testers.mkRandomRec(catAt);
 //          row.set(0, rand.nextInt(bound));
-            row.set(1, size - ( i));
+            row.set(1, size - (i));
             System.out.print("INSERTING (#" + i + ") " + " " + row + " :");
             boolean b = StorageManager.getStorageManager().insertRecord(catTab, row);
             System.out.println(b);
@@ -438,21 +810,24 @@ public class WhereP3 {
         System.out.println("indexs on :" + catTab.IndexedAttributes.keySet());
 
 
-        System.exit(1);
+//        System.exit(1);
 
-//
-//        long startTime = System.currentTimeMillis();
-//
-//
-//        boolean res = parser.whereIsTrue("where t3.a = t3.a",catTab, row);
+
+        long startTime = System.currentTimeMillis();
 //
 //
-//        long endTime = System.currentTimeMillis();
-//
-//        System.out.println("STMT: " + res);
-//        System.out.println(endTime - startTime);
+//        var res = ((StorageManager) sm).getWhere(catTab, "where t1.a != 2 or t1.a != 2 or t1.uidt1 < 10 and t1.a != 2 or t1.a != 2 AND t3.uidt3 < 20 or t1.uidt1 < 5");
+        var res = ((StorageManager) sm).getWhere(catTab, "where 2 != t1.a AND t2.b != 2 AND t1.a != 2");
+
+        long endTime = System.currentTimeMillis();
+
+        System.out.println("STMT: " + res);
+        System.out.println(endTime - startTime);
+
+        // if we have an
 
     }
+
 
     /**
      * author kyle f

@@ -79,12 +79,9 @@ public class DDLParser {
                 return false;
             }
 
-            BPlusTree bTree = BPlusTree.TreeFromTableAttribute(table, attrIdx);
 
-            // TODO: change this to a set call
-            table.IndexedAttributes.put(tokens.get(5), bTree);
+            return table.addIndex(tokens.get(5));
 
-            return true;
 
         } catch (Exception e) {
             System.err.println("DDlParser: Error in creating a index");

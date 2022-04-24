@@ -16,11 +16,11 @@ public class Utilities {
 
 // list of key words not allowed for use for table/ column names
 
-    private static Set<String> KEYWORDS = Stream.of(
-            "create", "table", "drop","cartesianProduct", "insert", "into", "delete", "from", "where", "update",
-            "notnull", "primarykey", "foreignkey", "references", "add", "default", "set",
-            "values", "null", "Integer", "Double", "Boolean", "Varchar", "Char","integer","False",
-            "double", "boolean", "varchar", "char","char(","varchar(","Varchar(","true","false","True").collect(Collectors.toCollection(HashSet::new));
+    private static final Set<String> KEYWORDS = Stream.of(
+            "create", "table", "drop", "cartesianProduct", "insert", "into", "delete", "from", "where", "update",
+            "notnull", "primarykey", "foreignkey", "references", "add", "default", "set", "AND", "OR",
+            "values", "null", "Integer", "Double", "Boolean", "Varchar", "Char", "integer", "False", "and", "or",
+            "double", "boolean", "varchar", "char", "char(", "varchar(", "Varchar(", "true", "false", "True").collect(Collectors.toCollection(HashSet::new));
 
 
     // check that a type for an atrribute is legal
@@ -54,7 +54,7 @@ public class Utilities {
     // 1) not being a key word && 2) starting with a letter and only having alphanumeric
     public static boolean isiIllLegalName(String name) {
 
-        if (KEYWORDS.contains(name)) {
+        if (KEYWORDS.contains(name.toLowerCase())) {
             System.err.println("name: " + name + " is a keyword and cant be used");
             return true;
         }
@@ -319,11 +319,11 @@ public class Utilities {
 
                 int nameLen;
 
-                if(table.IndexedAttributes.containsKey(table1.attrs().get(i).getAttributeName())){
-                    nameLen = table1.attrs().get(i).getAttributeName().length() +3 ;
+                if (table.IndexedAttributes.containsKey(table1.attrs().get(i).getAttributeName())) {
+                    nameLen = table1.attrs().get(i).getAttributeName().length() + 3;
 
-                }else {
-                    nameLen = table1.attrs().get(i).getAttributeName().length() ;
+                } else {
+                    nameLen = table1.attrs().get(i).getAttributeName().length();
                 }
                 max[i] = Math.max(Math.max(max[i], o.toString().length()), nameLen);
                 if (o.toString().length() > maxStrSize) {
@@ -344,11 +344,11 @@ public class Utilities {
         for (int i = 0; i < table1.attrs().size(); i++) {
             Attribute a = table1.attrs().get(i);
 
-            if(table.IndexedAttributes.containsKey(a.getAttributeName())){
+            if (table.IndexedAttributes.containsKey(a.getAttributeName())) {
 
-                atters[i] = a.getAttributeName()+"(I)";
+                atters[i] = a.getAttributeName() + "(I)";
 
-            }else {
+            } else {
                 atters[i] = a.getAttributeName();
             }
         }
@@ -388,7 +388,7 @@ public class Utilities {
 
 
         ArrayList<Attribute> attributes = table.getAttributes();
-                ArrayList<ArrayList<Object>> rows = StorageManager.getStorageManager().getRecords(table);
+        ArrayList<ArrayList<Object>> rows = StorageManager.getStorageManager().getRecords(table);
         return new ResultSet(attributes, rows);
     }
 
@@ -481,34 +481,33 @@ public class Utilities {
         rows = Utilities.SortBy(t, sm.getRecords(t), "t2.uidt2", false);
 
 
-
         ResultSet table = new ResultSet(t.getAttributes(), rows);
 
 //        prettyPrintResultSet(table, false, 10);
     }
 
-    public static boolean Select(Table table, HashSet<String> KeepNames){
+    public static boolean Select(Table table, HashSet<String> KeepNames) {
         ArrayList<Attribute> atters = (ArrayList<Attribute>) table.getAttributes().clone();
 
 
         HashSet<String> ConflictCols = Utilities.AmbiguityCols(table);
-        for (String name :KeepNames) {
-            if (ConflictCols.contains(name)){
-                System.err.println("select ambiguous attribute:"+name);
+        for (String name : KeepNames) {
+            if (ConflictCols.contains(name)) {
+                System.err.println("select ambiguous attribute:" + name);
                 return false;
             }
 
 
         }
 
-        for (Attribute attr :table.getAttributes()) {
+        for (Attribute attr : table.getAttributes()) {
             String colname = attr.getAttributeName();
-            if (colname.contains(".")){
+            if (colname.contains(".")) {
 
                 String name = colname.split("\\.")[1];
                 String tableSpecifier = colname.split("\\.")[0];
 
-                if (KeepNames.contains(name)){
+                if (KeepNames.contains(name)) {
                     KeepNames.add(colname);
                     KeepNames.remove(name);
                 }
@@ -519,94 +518,90 @@ public class Utilities {
         var toBeDropped = new ArrayList<String>();  // temp list of attributes to be dropped.  temp so we can check
         // what's being dropped later
         for (Attribute name : atters) {
-            if(!KeepNames.contains(name.getAttributeName())){
+            if (!KeepNames.contains(name.getAttributeName())) {
                 toBeDropped.add(name.getAttributeName());  // construct a list of attribtues to be dropped
             }
         }
-        if (toBeDropped.size() == atters.size()){ // if we planned on dropping all attributes, there's a problem
+        if (toBeDropped.size() == atters.size()) { // if we planned on dropping all attributes, there's a problem
             System.err.println("No valid column selected.");
             return false;
         }
         // sike, dont check for primary key removal here
-        for (String name: toBeDropped){
+        for (String name : toBeDropped) {
             System.out.println("Dropping " + name);
-            table.dropAttributeCartTable(table,name,table.AttribIdxs.get(name));
+            table.dropAttributeCartTable(table, name, table.AttribIdxs.get(name));
         }
         return true;
     }
 
     public static void prettyPrintResultSet(ResultSet tempset, boolean bool, int maxx) {
 
-            var table1 = tempset;
+        var table1 = tempset;
 
 
-            int spacingSeparation = 0;                   // number of spaces between columns
-            int maxStrSize = 200;
-            boolean truncate = bool;
-            int maxSizeTruncate = maxx;
+        int spacingSeparation = 0;                   // number of spaces between columns
+        int maxStrSize = 200;
+        boolean truncate = bool;
+        int maxSizeTruncate = maxx;
 
-            if (truncate) {
-                maxStrSize = maxSizeTruncate;
-            }
+        if (truncate) {
+            maxStrSize = maxSizeTruncate;
+        }
 
-            int[] max = new int[table1.attrs().size()];
+        int[] max = new int[table1.attrs().size()];
 
 
-
-            for (ArrayList<Object> r : table1.results()) {
-                System.err.println(r);
-                for (int i = 0; i < r.size() &&  i < table1.attrs().size(); i++) {
-                    Object o = r.get(i);
-                    max[i] = Math.max(Math.max(max[i], o.toString().length()), table1.attrs().get(i).getAttributeName().length());
-                    if (o.toString().length() > maxStrSize) {
-                        r.set(i, o.toString().substring(0, maxStrSize - 4) + "...");
-                    }
+        for (ArrayList<Object> r : table1.results()) {
+            System.err.println(r);
+            for (int i = 0; i < r.size() && i < table1.attrs().size(); i++) {
+                Object o = r.get(i);
+                max[i] = Math.max(Math.max(max[i], o.toString().length()), table1.attrs().get(i).getAttributeName().length());
+                if (o.toString().length() > maxStrSize) {
+                    r.set(i, o.toString().substring(0, maxStrSize - 4) + "...");
                 }
             }
+        }
 
-            int[] spacing = new int[table1.attrs().size()];
-            for (int i = 0; i < table1.attrs().size(); i++) {
-                spacing[i] = Math.min(max[i], maxStrSize) + spacingSeparation;   // total spac
-                spacing[i] += 1;
-            }
-
-
-            String[] atters = new String[table1.attrs().size()];
-
-            for (int i = 0; i < table1.attrs().size(); i++) {
-                Attribute a = table1.attrs().get(i);
-                atters[i] = a.getAttributeName();
-            }
+        int[] spacing = new int[table1.attrs().size()];
+        for (int i = 0; i < table1.attrs().size(); i++) {
+            spacing[i] = Math.min(max[i], maxStrSize) + spacingSeparation;   // total spac
+            spacing[i] += 1;
+        }
 
 
-            StringBuilder formatStr = new StringBuilder();
-            formatStr.append("║ %-").append(spacing[0]);
-            for (int i = 1; i < table1.attrs().size(); i++) {
+        String[] atters = new String[table1.attrs().size()];
 
-                int idx = i % table1.attrs().size();
-                formatStr.append("s ║%-").append(spacing[idx]);
-
-            }
-            formatStr.append("s║\n");
-            String ColNames = String.format(formatStr.toString(), atters);
-            System.out.println("═".repeat(ColNames.length() - 1));
-
-            System.out.print(ColNames);
-            System.out.println("═".repeat(ColNames.length() - 1));
+        for (int i = 0; i < table1.attrs().size(); i++) {
+            Attribute a = table1.attrs().get(i);
+            atters[i] = a.getAttributeName();
+        }
 
 
-            for (int i = 0; i < table1.results().size(); i++) {
-                String rowstr = table1.results().get(i).toString().substring(1, table1.results().get(i).toString().length() - 1);
-                String[] rowStrarr = rowstr.split(",");
-                System.out.printf(formatStr.toString(), rowStrarr);
+        StringBuilder formatStr = new StringBuilder();
+        formatStr.append("║ %-").append(spacing[0]);
+        for (int i = 1; i < table1.attrs().size(); i++) {
+
+            int idx = i % table1.attrs().size();
+            formatStr.append("s ║%-").append(spacing[idx]);
+
+        }
+        formatStr.append("s║\n");
+        String ColNames = String.format(formatStr.toString(), atters);
+        System.out.println("═".repeat(ColNames.length() - 1));
+
+        System.out.print(ColNames);
+        System.out.println("═".repeat(ColNames.length() - 1));
+
+
+        for (int i = 0; i < table1.results().size(); i++) {
+            String rowstr = table1.results().get(i).toString().substring(1, table1.results().get(i).toString().length() - 1);
+            String[] rowStrarr = rowstr.split(",");
+            System.out.printf(formatStr.toString(), rowStrarr);
 //            System.out.println("".repeat(ColNames.length() - 1));
 
-            }
+        }
 
-            System.out.println("═".repeat(ColNames.length() - 1));
-
-
-
+        System.out.println("═".repeat(ColNames.length() - 1));
 
 
     }
@@ -614,25 +609,26 @@ public class Utilities {
     /**
      * Modifies the given ResultSet in place to keep only the given attrs
      * //TODO look for places errors can happen
+     *
      * @param setToChange the ResultSet to apply the select to
      * @param attrsToKeep the attributes to keep in the result set
      * @return
      */
-    public static boolean selectResultSet(ResultSet setToChange, HashSet<String> attrsToKeep){
+    public static boolean selectResultSet(ResultSet setToChange, HashSet<String> attrsToKeep) {
 
         // get the indexes of the attributes we DON'T want to keep
 
         var dropIdxs = new ArrayList<Integer>();
         int idx = 0;
-        for (Attribute attr: setToChange.attrs()){
-            if(!attrsToKeep.contains(attr.getAttributeName())){ // if this attr isn't in our keep list, screw it
+        for (Attribute attr : setToChange.attrs()) {
+            if (!attrsToKeep.contains(attr.getAttributeName())) { // if this attr isn't in our keep list, screw it
                 dropIdxs.add(idx);
 
             }
             idx++;
         }
 
-        if (setToChange.attrs().size() == dropIdxs.size()){
+        if (setToChange.attrs().size() == dropIdxs.size()) {
             System.err.println("No valid column selected.");
             return false;
         }
@@ -640,13 +636,13 @@ public class Utilities {
         Collections.reverse(dropIdxs); // reverse this list to avoid the left-shift of arraylist.remove() causing issues
 
         // modify attrs to remove unwanted ones
-        for (Integer drop: dropIdxs){
+        for (Integer drop : dropIdxs) {
             setToChange.attrs().remove(drop.intValue());
         }
 
         // modify each row of the results to remove unwanted attr values
-        for (ArrayList<Object> row: setToChange.results()){
-            for (Integer drop: dropIdxs) {
+        for (ArrayList<Object> row : setToChange.results()) {
+            for (Integer drop : dropIdxs) {
                 row.remove(drop.intValue());
             }
         }
