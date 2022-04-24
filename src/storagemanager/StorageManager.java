@@ -95,7 +95,9 @@ public class StorageManager extends AStorageManager {
 
         // getting the pk index tree
 
+
         BPlusTree tree = ((Table) table).getPkTree();
+
 
         // searching the tree
         ArrayList<RecordPointer> rps = switch (tree.Type) {
@@ -104,6 +106,10 @@ public class StorageManager extends AStorageManager {
             case "boolean" -> tree.search((Boolean) pkValue);
             default -> tree.search((String) pkValue);
         };
+        if (rps.size() <= 0) {
+            System.err.println("Record Pointer does not exist: Cannot get Record");
+            return null;
+        }
         // getting the page
         int pageName = rps.get(0).page();
         int idxInPage = rps.get(0).index();
@@ -120,7 +126,7 @@ public class StorageManager extends AStorageManager {
             Table FkTable = (Table) Catalog.getCatalog().getTable(fk.getRefTableName());
 
             // page name for head is always at idx zero
-            int headPtr = ((Table) FkTable).getPagesThatBelongToMe().get(0);
+            int headPtr = (FkTable).getPagesThatBelongToMe().get(0);
 
             // where in a row the fk val is
 
@@ -138,7 +144,7 @@ public class StorageManager extends AStorageManager {
             while (headPtr != -1) {
 
                 Page headPage = pb.getPageFromBuffer("" + headPtr, FkTable);
-                // look though all record for that page
+                // look through all record for that page
                 for (ArrayList<Object> row : headPage.getPageRecords()) {
 //                    System.err.println(row.get(fkidx)+"--------------"+fk);
 
@@ -202,14 +208,14 @@ public class StorageManager extends AStorageManager {
                     }
 
                     if (str != null) {
-                        // removing " before plaving in db
+                        // removing " before placing in db
                         record.set(idxx, str.replace("\"", ""));
                     }
                 }
                 idxx++;
             }
 
-            // looking for inserting null when it shouldnt be
+            // looking for inserting null when it shouldn't be
             for (Integer i : ((Table) table).indicesOfNotNullAttributes) {
                 if (record.get(i) == null) {
                     System.err.println("attribute: " + table.getAttributes().get(i).getAttributeName() + " cant be null");
@@ -243,7 +249,7 @@ public class StorageManager extends AStorageManager {
             // searching where in the tree this would go ????
             var pkValue = record.get(((Table) table).pkIdx());
 
-            //To finish b plus tree, we need to make sure the record doesnt already exist in a tree.
+            //To finish b plus tree, we need to make sure the record doesn't already exist in a tree.
             //Search for the record in the tree, if it does exist, error with primary key should be unique
             int listSize = switch (tree.Type) {
                 case "integer" -> tree.search((Integer) pkValue).size();
@@ -265,7 +271,7 @@ public class StorageManager extends AStorageManager {
             };
 
 
-//            // insering into page getting the page
+//            // inserting into page getting the page
             int pageName = rp.page();
             int idxInPage = rp.index();
 
@@ -294,7 +300,7 @@ public class StorageManager extends AStorageManager {
             Page page = pb.getPageFromBuffer(String.valueOf(rp.page()), table);
 
             // inserting to actual page
-            // error comming from not updating records in tree after a page split
+            // error coming from not updating records in tree after a page split
             page.insert(rp.index(), record);
 
 
@@ -323,7 +329,7 @@ public class StorageManager extends AStorageManager {
             while (headPtr != -1) {
 
                 Page headPage = pb.getPageFromBuffer("" + headPtr, table);
-                // look though all record for that page
+                // look through all record for that page
 
                 int recSize = headPage.getPageRecords().size();
 
@@ -356,7 +362,7 @@ public class StorageManager extends AStorageManager {
             while (headPtr != -1) {
 
                 Page headPage = pb.getPageFromBuffer("" + headPtr, table);
-                // look though all record for that page
+                // look through all record for that page
 
                 int recSize = headPage.getPageRecords().size();
 
@@ -397,7 +403,7 @@ public class StorageManager extends AStorageManager {
 
             // value did not exist in table
             if (rp.size() == 0) {
-                System.out.println("couldnt find: " + primaryKey + " in table");
+                System.out.println("Couldn't find: " + primaryKey + " in table");
                 return false;
             }
 
@@ -430,7 +436,7 @@ public class StorageManager extends AStorageManager {
 
                     tree = ((Table) table).IndexedAttributes.get(name);
 
-                    // grapping the value in the row that belongs to that attribute
+                    // grabbing the value in the row that belongs to that attribute
                     var inValue = DeleteRecord.get(((Table) table).AttribIdxs.get(name));
                     switch (tree.Type) {
                         case "integer" -> tree.removeRecordPointer(deleteLocation, (Integer) inValue);
@@ -448,7 +454,7 @@ public class StorageManager extends AStorageManager {
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(0);
-            System.err.println("Storage manager(insertRecord): error in deleing");
+            System.err.println("Storage manager(insertRecord): error in deleting");
             return false;
         }
 
@@ -471,8 +477,8 @@ public class StorageManager extends AStorageManager {
     @Override
     public boolean updateRecord(ITable table, ArrayList<Object> oldRecord, ArrayList<Object> newRecord) {
 
-        // search for oldRecord to make sure its in the tree , if not then return false
-        // we cant update somthing that doesnt exist
+        // search for oldRecord to make sure it's in the tree , if not then return false
+        // we can't update something that doesn't exist
 
         BPlusTree tree = ((Table) table).getPkTree();
 
@@ -619,7 +625,7 @@ public class StorageManager extends AStorageManager {
                 return false;
             }
             if (attrIndex == ((Table) table).pkIdx()) {
-                System.err.println("ERROR: tryig to drop the primary key");
+                System.err.println("ERROR: trying to drop the primary key");
                 return false;
             }
 
@@ -634,7 +640,7 @@ public class StorageManager extends AStorageManager {
 
             Table Clone = new Table(table);
 
-            // remove the atrribute attribute because we need the old schema to read in the old table pages
+            // remove the attribute because we need the old schema to read in the old table pages
             Clone.dropAttribute(table.getAttributes().get(attrIndex).getAttributeName());
 
 
@@ -722,7 +728,7 @@ public class StorageManager extends AStorageManager {
         while (headPtr != -1) {
 
             Page headPage = pb.getPageFromBuffer(String.valueOf(headPtr), table);
-            // look though all record for that page
+            // look through all record for that page
 
             idx = 0;
             for (ArrayList<Object> row : headPage.getPageRecords()) {
