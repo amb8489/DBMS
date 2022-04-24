@@ -17,6 +17,7 @@ import storagemanager.AStorageManager;
 import storagemanager.StorageManager;
 import filesystem.FileSystem;
 
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Scanner;
@@ -77,18 +78,35 @@ public class Database {
                 break;
             } else if (statement.strip().toLowerCase().startsWith("select")) {
                 //TODO kyle is this right to put this here like this??
-                ResultSet tempset = executeQuery(statement);
-                if(tempset != null)
-                    Utilities.prettyPrintResultSet(tempset, false, 16);
+                ResultSet tempset = null;
+                try {
+                    tempset = executeQuery(statement);
+                }
+                catch (Error e){
+                    System.err.println("ERROR: There was an error executing the query.");
+                }
+                if(tempset != null) {
+                    try {
+                        Utilities.prettyPrintResultSet(tempset, false, 16);
+                    }
+                    catch(Error e){
+                        System.err.println("ERROR: There was an error printing the query.");
+                    }
+                }
                 else
                     System.err.println("ERROR");
-            } else if (executeStatement(statement)) {
-                System.out.println("SUCCESS");
-            } else {
-                System.err.println("ERROR");
             }
-
-
+            else{
+                try {
+                    if (executeStatement(statement))
+                        System.out.println("SUCCESS");
+                    else
+                        System.err.println("ERROR");
+                }
+                catch (Error e){
+                    System.err.println("ERROR");
+                }
+            }
             statement = "";  // reset the statement to be blank
         }
 
@@ -109,7 +127,6 @@ public class Database {
      */
     public static boolean executeStatement(String stmt) {
         if (DDLParser.parseDDLStatement(stmt)) {
-            System.out.println("ddl");
             return true;
         } else {
             return DMLParser.parseDMLStatement(stmt);

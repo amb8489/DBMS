@@ -494,7 +494,6 @@ public class DMLParser {
      * Note: No data and error are two different cases.
      */
     public static ResultSet parseDMLQuery(String query) {
-
         //ensure formated correctly
         query = Utilities.format(query);
         String LowerQueryStmt = query.toLowerCase().replace(",", " ").replace(";", "");
@@ -576,7 +575,6 @@ public class DMLParser {
 
                 // REMOVE unqualified rows
 
-
                 records = ((StorageManager) StorageManager.getStorageManager()).getWhere(table, WhereStmt);
 //                ((StorageManager) StorageManager.getStorageManager()).keepWhere(table, WhereStmt, false);
             } else {
@@ -585,13 +583,11 @@ public class DMLParser {
             }
 
         }
-
+        else{  // set records to all of table's records
+            records = StorageManager.getStorageManager().getRecords(table);
+        }
         //
         //  ----------------- ----------------- ORDER-BY | SORT rows ----------------- -----------------
-
-
-
-
         if (orderbyIdx != -1) {
             String[] sortByAttributeName = query.substring(orderbyIdx).replace(";", "").split(" ");
             if (sortByAttributeName.length < 2) {
@@ -603,7 +599,6 @@ public class DMLParser {
                 return null;
             }
         }
-
         HashSet<ArrayList<Object>>seen = new HashSet<>();
         ArrayList<ArrayList<Object>> finRecs = new ArrayList<>();
         for(ArrayList<Object> r:records){
@@ -613,8 +608,8 @@ public class DMLParser {
             seen.add(r);
 
         }
-        ResultSet rs = new ResultSet(table.getAttributes(), finRecs);
-
+        System.out.println(finRecs.size() + " " + records.size());
+        ResultSet rs = new ResultSet(table.getAttributes(), records);
         //  ----------------- ----------------- SELECT | get only columns we asked for -----------------
 
         // get the string containing only the attributes we want (doesn't include the word "select")
@@ -628,6 +623,7 @@ public class DMLParser {
         }
         if (!(wantedAttrs.length == 1 && wantedAttrs[0].equals("*"))) { //if there's a star, leave the table in tact
             //make a list out of our array, then a hashset out of that list to send to Select function
+            System.out.println("Selecting!");
             if (!Utilities.selectResultSet(rs, new HashSet<>(Arrays.asList(wantedAttrs)))) {
                 System.out.println("Error with selected attributes");
                 return null;
