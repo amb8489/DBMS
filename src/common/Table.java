@@ -500,7 +500,6 @@ public class Table implements ITable {
                 // not needed but have to do it to read correct bytes
 
                 if (tn < numTables - 1) {
-                    System.out.println(tn + " " + numTables);
                     dataInputStr.readInt();
                 }
 
