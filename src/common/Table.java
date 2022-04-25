@@ -676,9 +676,5 @@ public class Table implements ITable {
 
     }
 
-    public void restoreIndexs() {
 
-        ((StorageManager)StorageManager.getStorageManager()).restoreIndexs(this);
-
-    }
 }
