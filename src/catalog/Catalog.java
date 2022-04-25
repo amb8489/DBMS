@@ -12,6 +12,7 @@ import common.ITable;
 import common.Table;
 import filesystem.*;
 import common.VerbosePrint;
+import storagemanager.StorageManager;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -57,7 +58,11 @@ public class Catalog extends ACatalog {
             this.pageBufferSize = dataInputStr.readInt();
 
             // read in tables.txt
+            System.out.println("restoring Tables from memory.. this may take some time");
+
             ArrayList<ITable> tabs = Table.ReadAllTablesFromDisk();
+
+
 
             if (tabs != null && tabs.size() > 0) {
                 // restoring tale data
@@ -65,6 +70,10 @@ public class Catalog extends ACatalog {
                     CurrentTablesInBD.put(table.getTableName(), table);
                 }
             }
+
+
+
+
             VerbosePrint.print("restore successful! ");
 
         } catch (IOException e) {

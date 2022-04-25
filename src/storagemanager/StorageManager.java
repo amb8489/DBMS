@@ -431,7 +431,18 @@ public class StorageManager extends AStorageManager {
                 // for case all thats left is just to get rps FROM TABLE
                 // make new table and just add these values to it
 
+
+//                Collections.sort(rps);
+                // sort by index value
+//                300 not in fk attr7 references table1(attr1)
+
+                // https://www.youtube.com/watch?v=uh4dTLJ9q9o
+
+                rps.sort(Comparator.comparing(r -> (Integer) r.index()));
+
                 Collections.reverse(rps);
+
+
                 for (RecordPointer rp : rps) {
                     Page page = pb.getPageFromBuffer(String.valueOf(rp.page()), table);
                     var row = page.getPageRecords().get(rp.index());
@@ -902,7 +913,6 @@ public class StorageManager extends AStorageManager {
 
         // 1) find what attributes in the where statement are indexed
         var table1 = ((Table) table);
-        System.out.println("indexs on :" + table1.IndexedAttributes.keySet());
 
         // 1a) parse where statement in to tokens
 
@@ -1165,4 +1175,7 @@ public class StorageManager extends AStorageManager {
         }
         return rps;
     }
+
+
+
 }
