@@ -1,6 +1,6 @@
 package common;
 
-// a class for helpul utilities
+// a class for helpful utilities
 
 import catalog.Catalog;
 import parsers.ResultSet;
@@ -8,7 +8,6 @@ import phase2tests.Phase2Testers;
 import storagemanager.StorageManager;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,7 +22,7 @@ public class Utilities {
             "double", "boolean", "varchar", "char", "char(", "varchar(", "Varchar(", "true", "false", "True").collect(Collectors.toCollection(HashSet::new));
 
 
-    // check that a type for an atrribute is legal
+    // check that a type for an attribute is legal
     public static boolean isNotLegalType(String TypeName) {
         TypeName = TypeName.toLowerCase();
         switch (TypeName) {
@@ -40,7 +39,7 @@ public class Utilities {
                     if (Rparen == Lparen + 1 || Rparen == -1) {
                         return true;
                     }
-                    //(nums)
+                    //(numbers)
                     String num = TypeName.substring(Lparen + 1, Rparen);
                     // all numbers in str
                     return !num.chars().allMatch(Character::isDigit);
@@ -58,15 +57,11 @@ public class Utilities {
             System.err.println("name: " + name + " is a keyword and cant be used");
             return true;
         }
-        if (!(name.chars().allMatch(Character::isLetterOrDigit) && (name.charAt(0) >= 'A' && name.charAt(0) <= 'z'))) {
-//            System.err.println("name must start with letter and only contain alphanumerics");
-            return true;
-        }
-
-        return false;
+        //            System.err.println("name must start with letter and only contain alphanumerics");
+        return !(name.chars().allMatch(Character::isLetterOrDigit) && (name.charAt(0) >= 'A' && name.charAt(0) <= 'z'));
     }
 
-    // will format a string removing all redundent whitespace
+    // will format a string removing all redundant whitespace
     public static String format(String stmt) {
 
         // step 1 remove all new line chars
@@ -207,7 +202,7 @@ public class Utilities {
 
     }
 
-    // given a char(#) or varchar(#) attribute and a string itll see if that string is too long/short for the #
+    // given a char(#) or varchar(#) attribute and a string it'll see if that string is too long/short for the #
     public static boolean isStringTooLong(String attribute, String string) {
 
         string = string.replace("\"", "");
@@ -217,14 +212,14 @@ public class Utilities {
         if (type.startsWith("char(") || type.startsWith("varchar(")) {
 
 
-            // lets get how big the string can be and if its too big or small
+            //  get how big the string can be and if it's too big or small
 
             int idxOfLeftParen = type.indexOf("(") + 1;
             int idxOfRightParen = type.indexOf(")");
 
             int StringSize = Integer.parseInt(type.substring(idxOfLeftParen, idxOfRightParen));
 
-            // can simpilfy but for ltr
+            // can simplify but for ltr
             if (type.toLowerCase().startsWith("char(")) {
                 return string.length() > StringSize;
             } else if (type.toLowerCase().startsWith("varchar(")) {
@@ -262,7 +257,7 @@ public class Utilities {
 
     //
     public static ArrayList<ArrayList<Object>> SortBy(Table table, ArrayList<ArrayList<Object>> rows, String AttributeName, Boolean accenting) {
-        // table does not have that atrribute
+        // table does not have that attribute
         if (!table.AttribIdxs.containsKey(AttributeName)) {
             System.err.println("Sorting on unknown attribute: " + AttributeName);
             return null;
@@ -281,7 +276,7 @@ public class Utilities {
 
         if (type.startsWith("varchar") || type.startsWith("char")) {
 
-            //comparitor based on type
+            //comparator based on type
 
             rows.sort(Comparator.comparing(r -> r.get(idx).toString()));
         } else if (type.startsWith("int") || type.startsWith("double")) {
@@ -334,7 +329,7 @@ public class Utilities {
 
         int[] spacing = new int[table1.attrs().size()];
         for (int i = 0; i < table1.attrs().size(); i++) {
-            spacing[i] = Math.min(max[i], maxStrSize) + spacingSeparation;   // total spac
+            spacing[i] = Math.min(max[i], maxStrSize) + spacingSeparation;   // total space
             spacing[i] += 1;
         }
 
@@ -396,7 +391,7 @@ public class Utilities {
     public static HashSet<String> AmbiguityCols(Table table) {
 
 
-        //find where attribute names intersect with other tables tables
+        //find where attribute names intersect with other tables
         HashSet<String> unique = new HashSet<>();
         HashSet<String> notUnique = new HashSet<>();
 
@@ -454,7 +449,7 @@ public class Utilities {
         catAt.addAll(attrs3);
 
         // 2 sample row from new table
-        ArrayList<ArrayList<Object>> rows = new ArrayList<ArrayList<Object>>();
+        ArrayList<ArrayList<Object>> rows = new ArrayList<>();
 
         for (int i = 0; i < 100; i++) {
             ArrayList<Object> row = Phase2Testers.mkRandomRec(catAt);
@@ -520,14 +515,14 @@ public class Utilities {
         // what's being dropped later
         for (Attribute name : atters) {
             if (!KeepNames.contains(name.getAttributeName())) {
-                toBeDropped.add(name.getAttributeName());  // construct a list of attribtues to be dropped
+                toBeDropped.add(name.getAttributeName());  // construct a list of attributes to be dropped
             }
         }
         if (toBeDropped.size() == atters.size()) { // if we planned on dropping all attributes, there's a problem
             System.err.println("No valid column selected.");
             return false;
         }
-        // sike, dont check for primary key removal here
+        // sike, don't check for primary key removal here
         for (String name : toBeDropped) {
             System.out.println("Dropping " + name);
             table.dropAttributeCartTable(table, name, table.AttribIdxs.get(name));
@@ -559,7 +554,7 @@ public class Utilities {
             for (int i = 0; i < r.size() && i < table1.attrs().size(); i++) {
                 Object o = r.get(i);
                 // :-}
-                if(o == null){
+                if (o == null) {
                     o = "null";
                 }
 
@@ -572,7 +567,7 @@ public class Utilities {
 
         int[] spacing = new int[table1.attrs().size()];
         for (int i = 0; i < table1.attrs().size(); i++) {
-            spacing[i] = Math.min(max[i], maxStrSize) + spacingSeparation;   // total spac
+            spacing[i] = Math.min(max[i], maxStrSize) + spacingSeparation;   // total space
             spacing[i] += 1;
         }
 
@@ -616,7 +611,6 @@ public class Utilities {
 
     /**
      * Modifies the given ResultSet in place to keep only the given attrs
-     * //TODO look for places errors can happen
      *
      * @param setToChange the ResultSet to apply the select to
      * @param attrsToKeep the attributes to keep in the result set
