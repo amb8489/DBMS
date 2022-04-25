@@ -26,7 +26,7 @@ import java.util.*;
 public class DMLParser {
 
     /**
-     * This function will parse and execute DML statements (insert, delete, update, etc)
+     * This function will parse and execute DML statements (insert, delete, update, etc.)
      * <p>
      * This will be used for parsing DML statement that do not return data
      *
@@ -42,9 +42,6 @@ public class DMLParser {
             return insertToTable(stmt);
         }
         if (stmt.toUpperCase().startsWith("UPDATE")) {
-            System.out.println("HERERERERE");
-
-
             return updateTable(stmt);
         }
         if (stmt.toUpperCase().startsWith("SELECT")) {
@@ -195,13 +192,13 @@ public class DMLParser {
 
             VerbosePrint.print("deleting from table name:" + tableName);
 
-            // cehck table exists
+            // check table exists
             ITable table = Catalog.getCatalog().getTable(tableName);
 
             // if no where clause then remove all from table
             boolean removeEverything = tokens.size() == 3;
             if (removeEverything) {
-                VerbosePrint.print("removing everyting from table : " + tableName);
+                VerbosePrint.print("removing everything from table : " + tableName);
 
                 //
                 return ((StorageManager) StorageManager.getStorageManager()).deleteRecordWhere(table, "", true);
@@ -210,7 +207,7 @@ public class DMLParser {
             //WHERE CLAUSE found
             String Where = String.join(" ", tokens.subList(4, tokens.size())).replace(";", "");
 //            System.out.println("where{" + Where + "}");
-            // deleteing where is true
+            // deleting where is true
             return ((StorageManager) StorageManager.getStorageManager()).deleteRecordWhere(table, Where, false);
 
 
@@ -272,8 +269,6 @@ public class DMLParser {
                                 .getAttributeType(), tokens.get(i).substring(1), null, null));
                         i++;
 
-//                        System.out.println(record+"<-------n"+ tokens);
-
                         while (!tokens.get(i).endsWith(")")) {
                             record.add(convertAttributeType(attributes.get(i - (4 + (attributes.size() * numberOfInserts)))
                                     .getAttributeType(), tokens.get(i), null, null));
@@ -286,7 +281,6 @@ public class DMLParser {
                         }
                     }
 
-//                    System.out.println(record);
 
                     if (record.size() == attributes.size()) {
                         boolean insertSuccess = StorageManager.getStorageManager().insertRecord(table, record);
@@ -320,7 +314,7 @@ public class DMLParser {
             // removes redundant spaces and new lines
             stmt = stmt.replace(";", "");
             List<String> tokens = Utilities.mkTokensFromStr(stmt);
-//            System.out.println(tokens);
+
 
             String tableName = tokens.get(1);
 
@@ -345,16 +339,11 @@ public class DMLParser {
             }
 
 
-//            System.out.println("updating the table: " + tableName);
-
             ITable table = Catalog.getCatalog().getTable(tableName);
 
 
             // -------
             ArrayList<ArrayList<Object>> records = StorageManager.getStorageManager().getRecords(table);
-
-
-
 
 
             ArrayList<Attribute> attributes = table.getAttributes();
@@ -376,13 +365,10 @@ public class DMLParser {
                                 }
                             }
 
-                            ((Table)table).getPkTree().print();
+                            ((Table) table).getPkTree().print();
                             updateSuccess = StorageManager.getStorageManager().updateRecord(table, row, newRow);
 
 
-
-
-//                            System.out.println("update success:" + updateSuccess);
                             if (!updateSuccess) {
                                 StorageManager.getStorageManager().insertRecord(table, row);
                             }
@@ -408,7 +394,6 @@ public class DMLParser {
                             if (!updateSuccess) {
                                 StorageManager.getStorageManager().updateRecord(table, newRow, row);
                             }
-//                            System.out.println("update success:" + updateSuccess);
                             return updateSuccess;
                         }
                     }
@@ -513,7 +498,7 @@ public class DMLParser {
      */
     public static ResultSet parseDMLQuery(String query) {
 
-        //ensure formated correctly
+        //ensure formatted correctly
         query = Utilities.format(query);
         String LowerQueryStmt = query.toLowerCase().replace(",", " ").replace(";", "");
         String OriginalQueryStmt = query.replace(",", " ").replace(";", "");
@@ -546,14 +531,12 @@ public class DMLParser {
             }
         }
 
-//        System.out.println(tables);
 
         if (tables.size() == 0) {
             System.err.println("Invalid select statement: missing <tables> in 'from'");
             return null;
         }
         tables.forEach(t -> t = t.replace(",", ""));
-//        tables.forEach(t -> t = t.replace(";", ""));
 
         ITable cartProd = selectFrom(tables);
         if (cartProd == null) {
@@ -600,10 +583,8 @@ public class DMLParser {
 
                 // REMOVE unqualified rows
 
-                System.out.println("here_________1____________");
 
                 records = ((StorageManager) StorageManager.getStorageManager()).getWhere(table, WhereStmt);
-                System.out.println("here__________2__________");
 //                ((StorageManager) StorageManager.getStorageManager()).keepWhere(table, WhereStmt, false);
             } else {
                 System.err.println("error in stmt where");
@@ -651,11 +632,11 @@ public class DMLParser {
         if (wantedAttrs.length > 1 && wantedAttrString.contains("*")) { // there's a star, but it's not the only attribute
             System.err.println("Improper use of \"*\".  Cannot combine \"*\" with other attributes.");
         }
-        if (!(wantedAttrs.length == 1 && wantedAttrs[0].equals("*"))) { //if there's a star, leave the table in tact
+        if (!(wantedAttrs.length == 1 && wantedAttrs[0].equals("*"))) { //if there's a star, leave the table intact
             //make a list out of our array, then a hashset out of that list to send to Select function
             System.out.println("Selecting!");
             if (!Utilities.selectResultSet(rs, new HashSet<>(Arrays.asList(wantedAttrs)))) {
-                System.out.println("Error with selected attributes");
+                System.err.println("Error with selected attributes");
                 return null;
             }
         }
@@ -684,9 +665,9 @@ public class DMLParser {
                 "(2, \"Kylian Mbappe\", 1)");
         DMLParser.parseDMLStatement("insert into goalScorers \n values \n (1, \"Thomas Muller\", 1)");
         // test update
-        System.out.println("Before update call: " + sm.getRecords(table1));
+
         DMLParser.parseDMLStatement("update goalScorers \n set Goals = ID + 2 \n where ID = 1");
-        System.out.println("After update call: " + sm.getRecords(table1));
+
 
         DMLParser.parseDMLStatement("select id from goalScorers, soalGcorers where goals > 2;");
     }
