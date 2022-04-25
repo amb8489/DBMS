@@ -2,6 +2,7 @@ package phase2tests;
 
 import catalog.Catalog;
 import common.ITable;
+import common.Table;
 import parsers.DDLParser;
 import parsers.DMLParser;
 import storagemanager.StorageManager;
@@ -91,6 +92,11 @@ public class Phase2Tester {
 
         System.out.println("Printing data after insert...");
         printData(data);
+
+        System.out.println("----------------------HERE------------------------");
+        ((Table)table).getPkTree().printRPS();
+
+
         String deleteStmt = "delete from large where attr1 > 90;";
         System.out.println("Stmt: " + deleteStmt);
         if (!DMLParser.parseDMLStatement(deleteStmt)) {
@@ -98,9 +104,17 @@ public class Phase2Tester {
             return false;
         }
 
+        System.out.println("----------------DELETE--HERE------------------------");
+        ((Table)table).getPkTree().printRPS();
+
         data = StorageManager.getStorageManager().getRecords(table);
         System.out.println("Printing data after delete...");
         printData(data);
+
+
+        System.out.println("----------------------HERE------------------------");
+        ((Table)table).getPkTree().printRPS();
+
 
         deleteStmt = "delete from large where attr3 = true or attr2 < 50.0;";
         System.out.println("Stmt: " + deleteStmt);
@@ -108,9 +122,26 @@ public class Phase2Tester {
             System.err.println("Error when deleting from large table");
             return false;
         }
+
+
+        ((Table)table).getPkTree().print();
+
+//        System.exit(999);
+
+
+
+
+
+
+
+
         data = StorageManager.getStorageManager().getRecords(table);
         System.out.println("Printing data after delete...");
         printData(data);
+
+
+
+
 
         String updateStmt = "update large set attr4 = \"hello\" where attr1 > 70;";
         System.out.println("Stmt: " + updateStmt);

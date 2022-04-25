@@ -472,7 +472,8 @@ public class Utilities {
         for (ArrayList<Object> ro : rows) {
             sm.insertRecord(t, ro);
         }
-        sm.keepWhere(t, "where t1.a > 50", false);
+        System.exit(123);
+//        sm.keepWhere(t, "where t1.a > 50", false);
 
 //        if (!Select(t, "t2.b, t2.uidt2,t1.a")) {
 //            return;
@@ -553,8 +554,14 @@ public class Utilities {
 
         for (ArrayList<Object> r : table1.results()) {
             System.err.println(r);
+
+
             for (int i = 0; i < r.size() && i < table1.attrs().size(); i++) {
                 Object o = r.get(i);
+                if(o == null){
+                    o = "null";
+                }
+
                 max[i] = Math.max(Math.max(max[i], o.toString().length()), table1.attrs().get(i).getAttributeName().length());
                 if (o.toString().length() > maxStrSize) {
                     r.set(i, o.toString().substring(0, maxStrSize - 4) + "...");

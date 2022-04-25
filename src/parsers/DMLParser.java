@@ -42,6 +42,9 @@ public class DMLParser {
             return insertToTable(stmt);
         }
         if (stmt.toUpperCase().startsWith("UPDATE")) {
+            System.out.println("HERERERERE");
+
+
             return updateTable(stmt);
         }
         if (stmt.toUpperCase().startsWith("SELECT")) {
@@ -199,6 +202,8 @@ public class DMLParser {
             boolean removeEverything = tokens.size() == 3;
             if (removeEverything) {
                 VerbosePrint.print("removing everyting from table : " + tableName);
+
+                //
                 return ((StorageManager) StorageManager.getStorageManager()).deleteRecordWhere(table, "", true);
 
             }
@@ -344,7 +349,14 @@ public class DMLParser {
 
             ITable table = Catalog.getCatalog().getTable(tableName);
 
+
+            // -------
             ArrayList<ArrayList<Object>> records = StorageManager.getStorageManager().getRecords(table);
+
+
+
+
+
             ArrayList<Attribute> attributes = table.getAttributes();
 //            ArrayList<Attribute> attributes = ((Table)table).indicesOfNotNullAttributes;
 
@@ -363,7 +375,13 @@ public class DMLParser {
                                     newRow.add(row.get(i));
                                 }
                             }
+
+                            ((Table)table).getPkTree().print();
                             updateSuccess = StorageManager.getStorageManager().updateRecord(table, row, newRow);
+
+
+
+
 //                            System.out.println("update success:" + updateSuccess);
                             if (!updateSuccess) {
                                 StorageManager.getStorageManager().insertRecord(table, row);

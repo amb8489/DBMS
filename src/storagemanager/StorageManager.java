@@ -318,6 +318,175 @@ public class StorageManager extends AStorageManager {
     //TODO WITH TREE
 
     public boolean deleteRecordWhere(ITable table, String where, Boolean removeAllRecords) {
+        String whereStmt = where;
+        // 1) find what attributes in the where statement are indexed
+        var table1 = ((Table) table);
+
+        // 1a) parse where statement in to tokens
+
+        whereStmt = whereStmt.replace("(", " ( ");
+        whereStmt = whereStmt.replace(")", " ) ");
+
+        whereStmt = whereStmt.replace("!", " !");
+        whereStmt = whereStmt.replace("<", " < ");
+        whereStmt = whereStmt.replace(">", " > ");
+        whereStmt = whereStmt.replace("=", " = ");
+
+        whereStmt = whereStmt.replace("<  =", " <= ");
+        whereStmt = whereStmt.replace(">  =", " >= ");
+        whereStmt = whereStmt.replace("! =", " != ");
+        whereStmt = whereStmt.replace(" .", ".");
+        whereStmt = whereStmt.replace(". ", ".");
+
+        // tokenize the string by spaces
+        List<String> tokens = Utilities.mkTokensFromStr(whereStmt);
+
+
+        // getting tokens after the where
+        int whereIdx = 1;
+        for (String t : tokens) {
+            if (t.equalsIgnoreCase("where")) {
+                tokens = tokens.subList(whereIdx, tokens.size());
+                break;
+            }
+            whereIdx++;
+        }
+
+
+        //1b) find what columns if any have indexs that can be used to reduce the search space
+
+        ArrayList<String> indexedColsInWhere = new ArrayList<>();
+        for (String token : tokens) {
+            if (((Table) table).IndexedAttributes.containsKey(token)) {
+                indexedColsInWhere.add(token);
+            }
+        }
+
+
+        // we have indexes that we can work with
+        if (!indexedColsInWhere.isEmpty()) {
+
+
+            // 2) get set of possible usable recs or at least the pages wjere those recs live
+            // so that we dont neeed to load up the entire table in mem at once
+
+            // 2a) make set of possible acceptable records
+
+            // loop though indexed attribute names and get the index tree to work with
+
+            // store of possible places to look
+
+            // 3) see if indexs can even be usful in this where statement
+
+
+            HashSet<String> operators = new HashSet<>(List.of(new String[]{"=", ">", ">=", "<", "<=", "!="}));
+
+            //==========================================================================================
+            //===================================== case 1 =============================================
+            //=================================== col op value =========================================
+
+            //  indexed operator value / value operator indexed;
+            // ex: bar = 5 if bar has an index or 5 = bar
+
+
+            if (tokens.size() == 3 && (indexedColsInWhere.size() == 1)) {
+
+                // list of final records
+                ArrayList<RecordPointer> rps = new ArrayList<>();
+
+                for (String attributeName : indexedColsInWhere) {
+                    // get the tree for that attribute
+                    var currTree = ((Table) table).IndexedAttributes.get(attributeName);
+
+                    // find the operator should be in the middle
+                    String operator = null;
+                    int idx = 0;
+                    for (String token : tokens) {
+                        if (operators.contains(token)) {
+                            operator = token;
+                            break;
+                        }
+                        idx++;
+                    }
+
+                    // operator should exist and should bein the middle
+                    if (operator == null || idx != 1) {
+                        System.err.println("error in where statement missing/ badly placed operator");
+                        return false;
+                    }
+
+                    // find the value and index
+                    String attrib = tokens.get(0);
+                    String value = tokens.get(2);
+
+                    if (indexedColsInWhere.contains(tokens.get(2))) {
+                        attrib = tokens.get(2);
+                        value = tokens.get(0);
+                    }
+
+
+                    rps = GetRecsFromTreeWhere(currTree, operator, value);
+
+                }
+                // for case all thats left is just to get rps FROM TABLE
+                // make new table and just add these values to it
+
+                Collections.reverse(rps);
+                for (RecordPointer rp : rps) {
+                    Page page = pb.getPageFromBuffer(String.valueOf(rp.page()), table);
+                    var row = page.getPageRecords().get(rp.index());
+                    System.out.println("success----> deleting :"+row.get(((Table) table).pkIdx())+" "+deleteRecord(table,row.get(((Table) table).pkIdx())));
+                    System.out.println("-------------------delte where HERE------------------------"+rps.size());
+                    ((Table)table).getPkTree().printRPS();
+                }
+
+                // because simple case we wont need to check were for correctness its implicit from the tree
+                return true;
+
+            }
+
+
+            //==========================================================================================
+            //===================================== case 2 =============================================
+            //================ multiple case1 chained by AND and ors  ===============
+
+
+            // case three much more complicated
+            // we can have or if they have an index, we we dont have one then
+            // we have no choice but to brute force it
+            // we can have a mix of ands and ors iff the ands have at least one idx and the ors also have and index
+            // CHAIN of OR and AND where ALL needed cases have an index
+            // over hea night not be woth it in larger cases
+            // add recs to hash set to reduce dubs
+            // case1 or case1 { or case1... cas1}
+            boolean isLegalCase3 = WhereP3.isLegalCase2(tokens, (Table) table);
+
+            if (isLegalCase3) {
+//                System.err.println("isLegalCase3 __>" + isLegalCase3);
+
+                ArrayList<RecordPointer> rps = WhereP3.GetCase2Recs(tokens, (Table) table);
+
+                ArrayList<ArrayList<Object>> found = new ArrayList<>();
+
+                for (var rp : rps) {
+                    int pageName = rp.page();
+                    int pageidx = rp.index();
+                    Page p = pb.getPageFromBuffer(String.valueOf(pageName), table);
+
+                    var row = p.getPageRecords().get(pageidx);
+
+                    if (wp.whereIsTrue(whereStmt, (Table) table, row)) {
+                        deleteRecord(table,row.get(((Table) table).pkIdx()));
+                    }
+
+                }
+                return true;
+            }
+        }
+        System.out.println("INDEX NOT USEFUL IN THIS WHERE STATEMENT");
+        // no useful index operation old style
+        ArrayList<ArrayList<Object>> found = new ArrayList<>();
+
         try {
 
 
@@ -335,8 +504,10 @@ public class StorageManager extends AStorageManager {
 
                 for (int i = recSize - 1; i > -1; i--) {
                     ArrayList<Object> row = headPage.getPageRecords().get(i);
-                    if (removeAllRecords || wp.whereIsTrue(where, (Table) table, row)) {
-                        headPage.delete(i);
+                    if (wp.whereIsTrue(whereStmt, (Table) table, row)) {
+
+                        deleteRecord(table,row.get(((Table) table).pkIdx()));
+
                     }
                 }
 
@@ -350,45 +521,6 @@ public class StorageManager extends AStorageManager {
         }
     }
 
-    //TODO WITH TREE
-
-    public boolean keepWhere(ITable table, String where, Boolean removeAllRecords) {
-
-
-        try {
-
-            // what we want to do is is use the were to find what records we should test
-            // now
-            // page name for head is always at idx zero
-            int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
-
-            ArrayList<Attribute> attributes = table.getAttributes();
-            // loop though all the tables pages in order
-            while (headPtr != -1) {
-
-                Page headPage = pb.getPageFromBuffer("" + headPtr, table);
-                // look through all record for that page
-
-                int recSize = headPage.getPageRecords().size();
-
-                for (int i = recSize - 1; i > -1; i--) {
-                    ArrayList<Object> row = headPage.getPageRecords().get(i);
-                    if (removeAllRecords || (!wp.whereIsTrue(where, (Table) table, row))) {
-                        headPage.delete(i);
-                    }
-                }
-
-                // next page
-                headPtr = headPage.getPtrToNextPage();
-            }
-            return true;
-        } catch (
-                Exception e) {
-            System.err.println("error removing in remove where in sm");
-            return false;
-        }
-
-    }
 
     // done
     @Override
@@ -433,6 +565,8 @@ public class StorageManager extends AStorageManager {
             Page page = pb.getPageFromBuffer(String.valueOf(deleteLocation.page()), table);
 
             var DeleteRecord = page.getPageRecords().get(deleteLocation.index());
+
+
 
             // get the row tht was deleted and update the other indexed tables
 
