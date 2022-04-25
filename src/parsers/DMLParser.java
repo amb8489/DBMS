@@ -42,8 +42,6 @@ public class DMLParser {
             return insertToTable(stmt);
         }
         if (stmt.toUpperCase().startsWith("UPDATE")) {
-            System.out.println("HERERERERE");
-
 
             return updateTable(stmt);
         }
