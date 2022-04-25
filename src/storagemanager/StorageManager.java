@@ -1,5 +1,5 @@
 /*
-Kyle Ferguson, Aaron Berghash
+Kyle Ferguson, Aaron Berghash, Emma Reynolds
  */
 
 package storagemanager;
@@ -14,18 +14,11 @@ import java.util.*;
 
 import filesystem.FileSystem;
 import parsers.WhereP3;
-import parsers.WhereParser;
 
 
 /*
 //////////////////// TODO ////////////////////
-
   - restore tree when restoring DB
-  - use the tree in where testing
-  - errors on old phases
-  - look for case sensitive types
-
-
 /////////////////////////////////////////////
 */
 public class StorageManager extends AStorageManager {
@@ -225,9 +218,6 @@ public class StorageManager extends AStorageManager {
 
 
             HashMap<String, Integer> AttribNamesIdx = ((Table) table).AttribIdxs;
-
-            //TODO why is this happening here???--------------------------------------------
-
             // checking if fk in other table will need to optimize search
             for (ForeignKey fk : (table).getForeignKeys()) {
                 String fkAttribute = fk.getAttrName();
@@ -315,7 +305,6 @@ public class StorageManager extends AStorageManager {
         }
     }
 
-    //TODO WITH TREE
 
     public boolean deleteRecordWhere(ITable table, String where, Boolean removeAllRecords) {
         String whereStmt = where;
@@ -353,7 +342,7 @@ public class StorageManager extends AStorageManager {
         }
 
 
-        //1b) find what columns if any have indexs that can be used to reduce the search space
+        //1b) find what columns if any have indices that can be used to reduce the search space
 
         ArrayList<String> indexedColsInWhere = new ArrayList<>();
         for (String token : tokens) {
@@ -363,12 +352,12 @@ public class StorageManager extends AStorageManager {
         }
 
 
-        // we have indexes that we can work with
+        // we have indices that we can work with
         if (!indexedColsInWhere.isEmpty()) {
 
 
-            // 2) get set of possible usable recs or at least the pages wjere those recs live
-            // so that we dont neeed to load up the entire table in mem at once
+            // 2) get set of possible usable recs or at least the pages where those recs live
+            // so that we don't need to load up the entire table in mem at once
 
             // 2a) make set of possible acceptable records
 
@@ -376,7 +365,7 @@ public class StorageManager extends AStorageManager {
 
             // store of possible places to look
 
-            // 3) see if indexs can even be usful in this where statement
+            // 3) see if indices can even be useful in this where statement
 
 
             HashSet<String> operators = new HashSet<>(List.of(new String[]{"=", ">", ">=", "<", "<=", "!="}));
@@ -409,7 +398,7 @@ public class StorageManager extends AStorageManager {
                         idx++;
                     }
 
-                    // operator should exist and should bein the middle
+                    // operator should exist and should be in the middle
                     if (operator == null || idx != 1) {
                         System.err.println("error in where statement missing/ badly placed operator");
                         return false;
@@ -428,7 +417,7 @@ public class StorageManager extends AStorageManager {
                     rps = GetRecsFromTreeWhere(currTree, operator, value);
 
                 }
-                // for case all thats left is just to get rps FROM TABLE
+                // for case all that's left is just to get rps FROM TABLE
                 // make new table and just add these values to it
 
 
@@ -446,12 +435,12 @@ public class StorageManager extends AStorageManager {
                 for (RecordPointer rp : rps) {
                     Page page = pb.getPageFromBuffer(String.valueOf(rp.page()), table);
                     var row = page.getPageRecords().get(rp.index());
-                    System.out.println("success----> deleting :"+row.get(((Table) table).pkIdx())+" "+deleteRecord(table,row.get(((Table) table).pkIdx())));
-                    System.out.println("-------------------delte where HERE------------------------"+rps.size());
-                    ((Table)table).getPkTree().printRPS();
+//                    System.out.println("success----> deleting :"+row.get(((Table) table).pkIdx())+" "+deleteRecord(table,row.get(((Table) table).pkIdx())));
+//                    System.out.println("-------------------delte where HERE------------------------"+rps.size());
+//                    ((Table)table).getPkTree().printRPS();
                 }
 
-                // because simple case we wont need to check were for correctness its implicit from the tree
+                // because simple case we won't need to check were for correctness it's implicit from the tree
                 return true;
 
             }
@@ -463,11 +452,11 @@ public class StorageManager extends AStorageManager {
 
 
             // case three much more complicated
-            // we can have or if they have an index, we we dont have one then
+            // we can have or if they have an index, we don't have one then
             // we have no choice but to brute force it
             // we can have a mix of ands and ors iff the ands have at least one idx and the ors also have and index
             // CHAIN of OR and AND where ALL needed cases have an index
-            // over hea night not be woth it in larger cases
+            // over hea night not be with it in larger cases
             // add recs to hash set to reduce dubs
             // case1 or case1 { or case1... cas1}
             boolean isLegalCase3 = WhereP3.isLegalCase2(tokens, (Table) table);
@@ -487,14 +476,14 @@ public class StorageManager extends AStorageManager {
                     var row = p.getPageRecords().get(pageidx);
 
                     if (wp.whereIsTrue(whereStmt, (Table) table, row)) {
-                        deleteRecord(table,row.get(((Table) table).pkIdx()));
+                        deleteRecord(table, row.get(((Table) table).pkIdx()));
                     }
 
                 }
                 return true;
             }
         }
-        System.out.println("INDEX NOT USEFUL IN THIS WHERE STATEMENT");
+        //System.out.println("INDEX NOT USEFUL IN THIS WHERE STATEMENT");
         // no useful index operation old style
         ArrayList<ArrayList<Object>> found = new ArrayList<>();
 
@@ -517,7 +506,7 @@ public class StorageManager extends AStorageManager {
                     ArrayList<Object> row = headPage.getPageRecords().get(i);
                     if (wp.whereIsTrue(whereStmt, (Table) table, row)) {
 
-                        deleteRecord(table,row.get(((Table) table).pkIdx()));
+                        deleteRecord(table, row.get(((Table) table).pkIdx()));
 
                     }
                 }
@@ -561,7 +550,7 @@ public class StorageManager extends AStorageManager {
             RecordPointer deleteLocation = rp.get(0);
 
 
-            // delete rp & update indexes for thatt page in tree -1 from each idx
+            // delete rp & update indexes for that page in tree -1 from each idx
 
 
             switch (tree.Type) {
@@ -578,13 +567,12 @@ public class StorageManager extends AStorageManager {
             var DeleteRecord = page.getPageRecords().get(deleteLocation.index());
 
 
-
             // get the row tht was deleted and update the other indexed tables
 
-            String pkAtrributeNAme = table.getAttributes().get(((Table) table).pkIdx()).getAttributeName();
+            String pkAttributeNAme = table.getAttributes().get(((Table) table).pkIdx()).getAttributeName();
             for (String name : ((Table) table).IndexedAttributes.keySet()) {
 
-                if (!name.equals(pkAtrributeNAme)) {
+                if (!name.equals(pkAttributeNAme)) {
 
                     tree = ((Table) table).IndexedAttributes.get(name);
 
@@ -654,7 +642,7 @@ public class StorageManager extends AStorageManager {
 
         deleteRecord(table, oldRecord.get(((Table) table).pkIdx()));
 
-        // if we can insert it meaning no dup pk then inserrt new rec
+        // if we can insert it meaning no dup pk then insert new rec
 
         boolean successfulInsert = insertRecord(table, newRecord);
 
@@ -913,6 +901,7 @@ public class StorageManager extends AStorageManager {
 
         // 1) find what attributes in the where statement are indexed
         var table1 = ((Table) table);
+        //System.out.println("indices on :" + table1.IndexedAttributes.keySet());
 
         // 1a) parse where statement in to tokens
 
@@ -945,22 +934,22 @@ public class StorageManager extends AStorageManager {
         }
 
 
-        //1b) find what columns if any have indexs that can be used to reduce the search space
+        //1b) find what columns if any have indices that can be used to reduce the search space
 
         ArrayList<String> indexedColsInWhere = new ArrayList<>();
         for (String token : tokens) {
-            if (((Table) table).IndexedAttributes.containsKey(token)) {
+            if ((table).IndexedAttributes.containsKey(token)) {
                 indexedColsInWhere.add(token);
             }
         }
 
 
-        // we have indexes that we can work with
+        // we have indices that we can work with
         if (!indexedColsInWhere.isEmpty()) {
 
 
-            // 2) get set of possible usable recs or at least the pages wjere those recs live
-            // so that we dont neeed to load up the entire table in mem at once
+            // 2) get set of possible usable recs or at least the pages where those recs live
+            // so that we don't need to load up the entire table in mem at once
 
             // 2a) make set of possible acceptable records
 
@@ -968,7 +957,7 @@ public class StorageManager extends AStorageManager {
 
             // store of possible places to look
 
-            // 3) see if indexs can even be usful in this where statement
+            // 3) see if indices can even be useful in this where statement
 
 
             HashSet<String> operators = new HashSet<>(List.of(new String[]{"=", ">", ">=", "<", "<=", "!="}));
@@ -988,7 +977,7 @@ public class StorageManager extends AStorageManager {
 
                 for (String attributeName : indexedColsInWhere) {
                     // get the tree for that attribute
-                    var currTree = ((Table) table).IndexedAttributes.get(attributeName);
+                    var currTree = (table).IndexedAttributes.get(attributeName);
 
                     // find the operator should be in the middle
                     String operator = null;
@@ -1001,7 +990,7 @@ public class StorageManager extends AStorageManager {
                         idx++;
                     }
 
-                    // operator should exist and should bein the middle
+                    // operator should exist and should be in the middle
                     if (operator == null || idx != 1) {
                         System.err.println("error in where statement missing/ badly placed operator");
                         return null;
@@ -1020,7 +1009,7 @@ public class StorageManager extends AStorageManager {
                     rps = GetRecsFromTreeWhere(currTree, operator, value);
 
                 }
-                // for case all thats left is just to get rps FROM TABLE
+                // for case all that's left is just to get rps FROM TABLE
                 // make new table and just add these values to it
                 ArrayList<ArrayList<Object>> found = new ArrayList<>();
                 for (RecordPointer rp : rps) {
@@ -1029,7 +1018,7 @@ public class StorageManager extends AStorageManager {
                     found.add(row);
                 }
 
-                // because simple case we wont need to check were for correctness its implicit from the tree
+                // because simple case we won't need to check were for correctness it's implicit from the tree
                 return found;
 
             }
@@ -1041,11 +1030,11 @@ public class StorageManager extends AStorageManager {
 
 
             // case three much more complicated
-            // we can have or if they have an index, we we dont have one then
+            // we can have or if they have an index, we don't have one then
             // we have no choice but to brute force it
             // we can have a mix of ands and ors iff the ands have at least one idx and the ors also have and index
             // CHAIN of OR and AND where ALL needed cases have an index
-            // over hea night not be woth it in larger cases
+            // over hea night not be with it in larger cases
             // add recs to hash set to reduce dubs
             // case1 or case1 { or case1... cas1}
             boolean isLegalCase3 = WhereP3.isLegalCase2(tokens, table);
@@ -1074,7 +1063,7 @@ public class StorageManager extends AStorageManager {
 
 
         }
-        System.out.println("INDEX NOT USEFUL IN THIS WHERE STATEMENT");
+        //System.out.println("INDEX NOT USEFUL IN THIS WHERE STATEMENT");
         // no useful index operation old style
         ArrayList<ArrayList<Object>> found = new ArrayList<>();
 
@@ -1082,7 +1071,7 @@ public class StorageManager extends AStorageManager {
 
 
             // page name for head is always at idx zero
-            int headPtr = ((Table) table).getPagesThatBelongToMe().get(0);
+            int headPtr = (table).getPagesThatBelongToMe().get(0);
 
             ArrayList<Attribute> attributes = table.getAttributes();
             // loop though all the tables pages in order

@@ -26,7 +26,7 @@ import java.util.*;
 public class DMLParser {
 
     /**
-     * This function will parse and execute DML statements (insert, delete, update, etc)
+     * This function will parse and execute DML statements (insert, delete, update, etc.)
      * <p>
      * This will be used for parsing DML statement that do not return data
      *
@@ -42,9 +42,6 @@ public class DMLParser {
             return insertToTable(stmt);
         }
         if (stmt.toUpperCase().startsWith("UPDATE")) {
-            System.out.println("HERERERERE");
-
-
             return updateTable(stmt);
         }
         if (stmt.toUpperCase().startsWith("SELECT")) {

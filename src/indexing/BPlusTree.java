@@ -1,26 +1,14 @@
 package indexing;
 
 import catalog.Catalog;
-import common.Page;
 import common.RecordPointer;
 import common.Table;
 import storagemanager.StorageManager;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-
-//------------- TODO's ------------------
 
 
-// ERROR IN DELETE WERE LAST NODE IS SAVE A DUP POINTER
-//TODO comment up code
-
-//TODO STORE/RESORE TO/FROM MEMORY--
-
-//TODO put throws on all functions
-
-// TODO optimization could add binary search to find values in nodes and not linear scan
+//TODO STORE/RESTORE TO/FROM MEMORY--
 
 
 //-------------------------------------
@@ -38,7 +26,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
     public String Type;
 
 
-    // maps the start end end of pages that nodes
+    // maps the start end of pages that nodes
 
 
     public BPlusTree(int MaxPageSize, int MaxAttributeSize) {
@@ -234,7 +222,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
 
         if (this.treeRoot == null) {
-            this.treeRoot = new BTreeNode<T>(this.nextIndex++, this.TreeNsize);
+            this.treeRoot = new BTreeNode<>(this.nextIndex++, this.TreeNsize);
             this.treeRoot.keys.set(0, insertedValue);
             this.treeRoot.rps.set(0, rp);
 
@@ -327,7 +315,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
             this.treeRoot = this.split(tree);
             return true;
-            // non root
+            // non-root
         } else {
 
             BTreeNode<T> newNode = this.split(tree);
@@ -435,7 +423,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
             // the root becomes the rising node now
         } else {
-            this.treeRoot = new BTreeNode<T>(this.nextIndex++, this.TreeNsize);
+            this.treeRoot = new BTreeNode<>(this.nextIndex++, this.TreeNsize);
             this.treeRoot.keys.set(0, risingNode);
             this.treeRoot.children.set(0, leftNode);
             this.treeRoot.children.set(1, rightNode);
@@ -460,7 +448,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
                     System.out.println("ROOT" + ROOT.keys.subList(0, ROOT.numKeys));
 
                 } else {
-                    // sromthing wtong with spitting ??
+                    // something wrong with spitting ??
 //                    System.out.println(tab + "|--" + ROOT.rps.subList(0, ROOT.numKeys));
                     System.out.println(tab + "|--" + ROOT.keys.subList(0, ROOT.numKeys));
 
@@ -604,7 +592,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
                 var repair = tree;
 
 
-                // ---- TODO somthing here is making the repair upset
+                // ---- TODO something here is making the repair upset
 //                //////-------updating the record pointers after a removal
 //
 //
@@ -657,7 +645,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
     public void repairAfterDelete(BTreeNode<T> tree) {
 
-        // less then the min required
+        // less than the min required
         if (tree.numKeys < this.min_keys) {
 
             // root
@@ -783,7 +771,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
 
         } else {
-            // todo--
+
             tree.keys.set(tree.numKeys - 1, parentNode.keys.get(parentIndex));
             parentNode.keys.set(parentIndex, rightSib.keys.get(0));
         }
@@ -836,7 +824,6 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
             parentNode.rps.set(parentIndex - 1, leftSib.rps.get(leftSib.numKeys - 1));
 
         } else {
-            // todo--
 
             tree.keys.set(0, parentNode.keys.get(parentIndex - 1));
             parentNode.keys.set(parentIndex - 1, leftSib.keys.get(leftSib.numKeys - 1));
@@ -958,7 +945,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
         String type = table.getAttributes().get(AttributeIdx).getAttributeType().toLowerCase();
 
-        // gettting the init params for tree
+        // getting the init params for tree
 
         int maxPageSize = Catalog.getCatalog().getPageSize();
         int maxAttributeSize = table.getMaxAttributeSize();
@@ -1028,7 +1015,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
         // insert
         // repair
 
-        RecordPointer where = null;
+        RecordPointer where;
         if (tree.isLeaf) {
             var insertIndex = tree.numKeys;
 
@@ -1040,10 +1027,10 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
             // get where it would inset
             //
 
-            // carful for -1 idx or when  at the first element in leaf, that means
+            // careful with -1 idx or when  at the first element in leaf, that means
             // we want to insert before the first and not between
 
-            RecordPointer prev = null;
+            RecordPointer prev;
 
             int onPageIndex = 0;
 
@@ -1082,7 +1069,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
 //
 
-//        / find the first node contaings a record with page # old page
+//        / find the first node containing a record with page # old page
 
         var startingNode = getFirstNodeContaining(this.treeRoot, startRecKey);
 
@@ -1095,14 +1082,14 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
             idxInNode = startingNode.keys.subList(0, startingNode.numKeys).indexOf(startRecKey);
         }
 
-        //. dups clause
+        //. dupes clause
         while (startingNode.rps.get(idxInNode).page() != leftPageName) {
 
             if (idxInNode >= startingNode.numKeys - 1) {
                 idxInNode = 0;
 
 
-                // go to next node weve looked though all the values for this node
+                // go to next node we've looked through all the values for this node
 
                 if (startingNode.next == null) {
                     return;
@@ -1112,16 +1099,14 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
                 idxInNode++;
             }
         }
-        // startingNode.rps.get(idxInNode).index() should be  >= page.size - numberRecsChanged not 0 . dups clause
-        //TODO < or <=
-        // should start past the number of recs not being updated.. dups clause
+        // startingNode.rps.get(idxInNode).index() should be  >= page.size - numberRecsChanged not 0 . dupes clause
 
         while (startingNode.rps.subList(0, startingNode.numKeys).get(idxInNode).index() < numberRecsNotChanged) {
             if (idxInNode >= startingNode.numKeys - 1) {
                 idxInNode = 0;
 
 
-                // go to next node weve looked though all the values for this node
+                // go to next node we've looked through all the values for this node
 
                 if (startingNode.next == null) {
                     return;
@@ -1137,13 +1122,13 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
         // the index in the new page
         int idxInSplitPage = 0;
 
-        //current node we are updaing values for
+        //current node we are updating values for
         var curr = startingNode;
         // change the next n records to the new page
 
         while (idxInSplitPage < numberRecsChanged) {
 
-            // maybe  idxInNode is not incrimenting on the first round
+            // maybe  idxInNode is not incrementing on the first round
 //            System.out.println("idxInNode:"+idxInNode + "  nodesize:"+curr.numKeys+" | idxpage:" + idxInSplitPage + "  page name:" + newPageName + " being changed " + curr.rps.get(idxInNode));
             curr.rps.set(idxInNode, new RecordPointer(newPageName, idxInSplitPage));
 
@@ -1152,7 +1137,7 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
                 idxInNode = 0;
 
 
-                // go to next node weve looked though all the values for this node
+                // go to next node we've looked through all the values for this node
 
                 if (curr.next == null) {
 
@@ -1209,9 +1194,9 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
 
     // everything != value
     public ArrayList<RecordPointer> searchNotEq(T value) {
-        // everything less then
+        // everything less than
         var recs = searchRange(value, true, false);
-        // and everything everything greater then
+        // and everything greater then
         recs.addAll(searchRange(value, false, false));
         return recs;
     }
