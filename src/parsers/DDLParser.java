@@ -444,7 +444,7 @@ public class DDLParser {
                 } else {
 
                     // if our default is a string let check that its legal for the type of string
-                    if (defaultValueType.equals("String")) {
+                    if (defaultValueType.equals("string")) {
 
 
                         // was the type given a string as well

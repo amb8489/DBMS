@@ -558,6 +558,7 @@ public class Utilities {
 
             for (int i = 0; i < r.size() && i < table1.attrs().size(); i++) {
                 Object o = r.get(i);
+                // :-}
                 if(o == null){
                     o = "null";
                 }
