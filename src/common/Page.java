@@ -17,8 +17,6 @@ import java.util.stream.IntStream;
 
 import filesystem.FileSystem;
 import indexing.BPlusTree;
-import pagebuffer.PageBuffer;
-import storagemanager.AStorageManager;
 import storagemanager.StorageManager;
 
 
@@ -141,7 +139,7 @@ public class Page {
 
             int charlen = 0;
             ArrayList<String> schema = new ArrayList<>();
-            // looping though table attribs to get their types
+            // looping though table attributes to get their types
             for (Attribute att : table.getAttributes()) {
                 schema.add(att.getAttributeType());
 
@@ -179,8 +177,6 @@ public class Page {
 
             //for each row in the page
             for (int rn = 0; rn < numRecs; rn++) {
-
-                //------------------------ TODO WHAT IS GOING ON WITH THE BIT MASK FOR NULL VALS ------------------------
 
                 // 4) read in int for bit array size (in bytes)
                 int bitArraySizeInNumOfbytes = dataInputStr.readInt();
@@ -233,7 +229,7 @@ public class Page {
 
                                     // then read in that many bytes
                                     rec.add(new String(dataInputStr.readNBytes(VarCharsize), StandardCharsets.UTF_8));
-                                    currentSize += (VarCharsize) + 4;// 4 for the int we need to save for the varcahr
+                                    currentSize += (VarCharsize) + 4;// 4 for the int we need to save for the varchar
                                 }
                         }
                     } else {
@@ -289,7 +285,7 @@ public class Page {
                 outputStream.write(ByteBuffer.allocate(4).putInt(this.ptrToNextPage).array());
 
 
-                VerbosePrint.print("atemping store page " + pageName + " to disk");
+                VerbosePrint.print("attempting store page " + pageName + " to disk");
 
 
                 //for each row in the table
@@ -297,10 +293,9 @@ public class Page {
                 for (ArrayList<Object> record : this.pageRecords) {
 
                     //for each attrib in row store to byte array
-                    // TODO
-                    //FIRST LETS TAKE CARE OF NULL VALS :)
 
-                    //------------------------ TODO WHAT IS GOING ON WITH THE BIT MASK FOR NULL VALS ------------------------
+                    //FIRST LETS TAKE CARE OF NULL VALUES :)
+
 
                     int[] nullIndexes = IntStream.range(0, record.size()).filter(N -> record.get(N) == null).toArray();
                     BitSet bitSet = new BitSet(record.size());
@@ -318,27 +313,27 @@ public class Page {
 
 
                     // make byte array from record
-                    // look though reach attribute and check the schema for its type and convert it to its bytes
-                    // and add it to outputStream btye array
+                    // look through each attribute and check the schema for its type and convert it to its bytes
+                    // and add it to outputStream byte array
                     for (int idx = 0; idx < record.size(); idx++) {
                         if (record.get(idx) != null) {
 
                             switch (schema.get(idx).toLowerCase()) {
                                 case "integer":
-                                    //add it to outputStream btye array
+                                    //add it to outputStream byte array
                                     outputStream.write(ByteBuffer.allocate(4).putInt((Integer) record.get(idx)).array());
                                     break;
                                 case "double":
-                                    //add it to outputStream btye array
+                                    //add it to outputStream byte array
 
                                     outputStream.write(ByteBuffer.allocate(8).putDouble((Double) record.get(idx)).array());
                                     break;
                                 case "boolean":
-                                    //add it to outputStream btye array
+                                    //add it to outputStream byte array
                                     outputStream.write(ByteBuffer.allocate(1).put(new byte[]{(byte) ((Boolean) record.get(idx) ? 1 : 0)}).array());
                                     break;
                                 default:
-                                    //add it to outputStream btye array
+                                    //add it to outputStream byte array
                                     // char(#)
                                     if (schema.get(idx).startsWith("char(")) {
                                         outputStream.write(((String) record.get(idx)).getBytes());
@@ -381,11 +376,11 @@ public class Page {
         ITable table = page.IBelongTo;
         List<ArrayList<Object>> recs = page.getPageRecords();
         // get schema from table that we need in order to know what type we are reading in
-        // if record has a Char(#) type we need to know how long that char is so we know how many bytes to read in
+        // if record has a Char(#) type we need to know how long that char is so that we know how many bytes to read in
         int charlen = 0;
         ArrayList<String> schema = new ArrayList<>();
 
-        // looping though table attribs to get their types
+        // looping though table attributes to get their types
         for (Attribute att : table.getAttributes()) {
             schema.add(att.getAttributeType());
             // found a char(#) paring for the number
@@ -400,10 +395,9 @@ public class Page {
 
             //for each attrib in row store to byte array
             // make byte array from record
-            // look though reach attribute and check the schema for its type and convert it to its bytes
-            // and add it to outputStream btye array
+            // look through reach attribute and check the schema for its type and convert it to its bytes
+            // and add it to outputStream byte array
 
-            //TODO ??????
             size += 2;
 
             for (int idx = 0; idx < r.size(); idx++) {
@@ -441,10 +435,10 @@ public class Page {
 
 
         // get schema from table that we need in order to know what type we are reading in
-        // if record has a Char(#) type we need to know how long that char is so we know how many bytes to read in
+        // if record has a Char(#) type we need to know how long that char is so that we know how many bytes to read in
         int charlen = 0;
         ArrayList<String> schema = new ArrayList<>();
-        // looping though table attribs to get their types
+        // looping though table attributes to get their types
         for (Attribute att : this.IBelongTo.getAttributes()) {
             schema.add(att.getAttributeType());
 
@@ -518,18 +512,15 @@ public class Page {
         // add new page to buffer
         StorageManager sm = (StorageManager) StorageManager.getStorageManager();
         if (!sm.getPagebuffer().insertSplitPage(splitPage)) {
-            System.err.println("ERORR SPLITTING PAGE, REVERTING PAGE (TODO)");
+            System.err.println("ERROR SPLITTING PAGE, REVERTING PAGE");
             return null;
         }
         splitPage.writeToDisk(ACatalog.getCatalog().getDbLocation(), this.IBelongTo);
         this.writeToDisk(ACatalog.getCatalog().getDbLocation(), this.IBelongTo);
 
 
-        //Udating bptree
+        //Updating BPlusTree
         var indexedAtts = ((Table) this.IBelongTo).IndexedAttributes;
-
-
-        // TODO for each tree in the table this wont work for other trees
 
 
         for (String name : indexedAtts.keySet()) {
@@ -538,7 +529,7 @@ public class Page {
             // get the records effected by the split
             var records = splitPage.getPageRecords();
 
-            // what index in the schema this attribute is
+            // which index in the schema this attribute is
             int idxOfAtrributeIndexed = ((Table) this.IBelongTo).AttribIdxs.get(name);
 
             // get the first record effected by the split
@@ -547,17 +538,21 @@ public class Page {
             // get the second record effected by the split
 
 
-            // upding rp to have this page name now
+            // updating rp to have this page name now
             int newPageName = splitPage.pageName;
             int numberOfRecordsChanged = splitPage.getPageRecords().size();
             int numberRecsNotChanged = this.pageRecords.size();
-            // update from ther start to the end;
+            // update from the start to the end;
 
             switch (tree.Type) {
-                case "integer" -> tree.updatePageNameAfterPageSplit((Integer) startRecSplit, this.pageName, newPageName, numberOfRecordsChanged, numberRecsNotChanged);
-                case "double" -> tree.updatePageNameAfterPageSplit((Double) startRecSplit, this.pageName, newPageName, numberOfRecordsChanged, numberRecsNotChanged);
-                case "boolean" -> tree.updatePageNameAfterPageSplit((Boolean) startRecSplit, this.pageName, newPageName, numberOfRecordsChanged, numberRecsNotChanged);
-                default -> tree.updatePageNameAfterPageSplit((String) startRecSplit, this.pageName, newPageName, numberOfRecordsChanged, numberRecsNotChanged);
+                case "integer" ->
+                        tree.updatePageNameAfterPageSplit((Integer) startRecSplit, this.pageName, newPageName, numberOfRecordsChanged, numberRecsNotChanged);
+                case "double" ->
+                        tree.updatePageNameAfterPageSplit((Double) startRecSplit, this.pageName, newPageName, numberOfRecordsChanged, numberRecsNotChanged);
+                case "boolean" ->
+                        tree.updatePageNameAfterPageSplit((Boolean) startRecSplit, this.pageName, newPageName, numberOfRecordsChanged, numberRecsNotChanged);
+                default ->
+                        tree.updatePageNameAfterPageSplit((String) startRecSplit, this.pageName, newPageName, numberOfRecordsChanged, numberRecsNotChanged);
             }
 
 
