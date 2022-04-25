@@ -472,7 +472,7 @@ public class StorageManager extends AStorageManager {
                 return true;
             }
         }
-        System.out.println("INDEX NOT USEFUL IN THIS WHERE STATEMENT");
+        //System.out.println("INDEX NOT USEFUL IN THIS WHERE STATEMENT");
         // no useful index operation old style
         ArrayList<ArrayList<Object>> found = new ArrayList<>();
 
@@ -890,7 +890,7 @@ public class StorageManager extends AStorageManager {
 
         // 1) find what attributes in the where statement are indexed
         var table1 = ((Table) table);
-        System.out.println("indices on :" + table1.IndexedAttributes.keySet());
+        //System.out.println("indices on :" + table1.IndexedAttributes.keySet());
 
         // 1a) parse where statement in to tokens
 
@@ -1052,7 +1052,7 @@ public class StorageManager extends AStorageManager {
 
 
         }
-        System.out.println("INDEX NOT USEFUL IN THIS WHERE STATEMENT");
+        //System.out.println("INDEX NOT USEFUL IN THIS WHERE STATEMENT");
         // no useful index operation old style
         ArrayList<ArrayList<Object>> found = new ArrayList<>();
 

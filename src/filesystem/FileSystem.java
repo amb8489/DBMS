@@ -160,8 +160,8 @@ public class FileSystem {
         try {
             Files.deleteIfExists(pagePath);
         } catch (IOException e) {
-            ERROR(String.format("Problem deleting page file: %d\n", num));
-            ERROR(e.getMessage());
+            //ERROR(String.format("Problem deleting page file: %d\n", num));
+            //ERROR(e.getMessage());
         }
         return true;
     }
