@@ -54,7 +54,7 @@ public class PageBuffer {
                     // to update LRU order
                     pageBuffer.add(pageBuffer.remove(idx));
                     //gets the last element in list
-                    VerbosePrint.print("found page [" + p.getPageName() + "] in buffer");
+                    //VerbosePrint.print("found page [" + p.getPageName() + "] in buffer");
                     return pageBuffer.get(pageBuffer.size() - 1);
                 }
                 idx++;
@@ -73,7 +73,7 @@ public class PageBuffer {
 
     //write all pages in the buffer to disk and empty th e buffer
     public boolean PurgeBuffer() {
-        VerbosePrint.print("[purging buffer]");
+        //VerbosePrint.print("[purging buffer]");
 
 
         //write all pages in buffer to disk

@@ -184,8 +184,6 @@ public class BPlusTree<T extends Comparable<T>> implements IBPlusTree<T> {
             return found;
 
         } catch (Exception e) {
-
-            System.err.println("here in search range");
             return null;
         }
     }

@@ -582,8 +582,6 @@ public class DMLParser {
         ArrayList<ArrayList<Object>> records = new ArrayList<>();
 
         if (whereIdx > 0) {
-
-            System.err.println(whereIdx + " ; " + semiIdx + " orderby " + orderbyIdx + "    " + LowerQueryStmt);
             int stopIdx = semiIdx;
             if (semiIdx != -1 || orderbyIdx != -1) {
                 if (semiIdx == -1) {
