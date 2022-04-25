@@ -96,11 +96,8 @@ public class Database {
                     System.err.println("ERROR");
                 }
             }
-
-
             statement = "";  // reset the statement to be blank
         }
-
         terminateDatabase();
     }
 

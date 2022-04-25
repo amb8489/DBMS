@@ -595,10 +595,7 @@ public class DMLParser {
 
                 // REMOVE unqualified rows
 
-                System.out.println("here_________1____________");
-
                 records = ((StorageManager) StorageManager.getStorageManager()).getWhere(table, WhereStmt);
-                System.out.println("here__________2__________");
 //                ((StorageManager) StorageManager.getStorageManager()).keepWhere(table, WhereStmt, false);
             } else {
                 System.err.println("error in stmt where");
