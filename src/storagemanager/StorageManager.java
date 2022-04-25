@@ -18,13 +18,7 @@ import parsers.WhereP3;
 
 /*
 //////////////////// TODO ////////////////////
-
   - restore tree when restoring DB
-  - use the tree in where testing
-  - errors on old phases
-  - look for case sensitive types
-
-
 /////////////////////////////////////////////
 */
 public class StorageManager extends AStorageManager {
@@ -224,9 +218,6 @@ public class StorageManager extends AStorageManager {
 
 
             HashMap<String, Integer> AttribNamesIdx = ((Table) table).AttribIdxs;
-
-            //TODO why is this happening here???--------------------------------------------
-
             // checking if fk in other table will need to optimize search
             for (ForeignKey fk : (table).getForeignKeys()) {
                 String fkAttribute = fk.getAttrName();
@@ -314,7 +305,6 @@ public class StorageManager extends AStorageManager {
         }
     }
 
-    //TODO WITH TREE
 
     public boolean deleteRecordWhere(ITable table, String where, Boolean removeAllRecords) {
         String whereStmt = where;
