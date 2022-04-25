@@ -2,8 +2,6 @@ package filesystem;
 
 import java.io.*;
 import java.nio.file.*;
-
-import catalog.Catalog;
 import common.VerbosePrint;
 
 
@@ -29,11 +27,10 @@ public class FileSystem {
 
     /**
      * Provides the database location to the requester.
-     * TODO - decide if this should be private or public.  Private for now because only FileSystem should use it
      *
      * @return the database location
      */
-    public static boolean setDBLocation(String dbLoc) {
+    private static boolean setDBLocation(String dbLoc) {
         if (hasLocation()) {
             ERROR("Attempted to set database location when location already established.");
             return false;
@@ -45,7 +42,6 @@ public class FileSystem {
     /**
      * Getter for the database location.
      * Protects the use of the location variable, gives an error if location is not set
-     * TODO - decide if this isn't useful, or if it should be used internally
      *
      * @return the database location
      */
@@ -112,7 +108,7 @@ public class FileSystem {
             } catch (IOException e) {  // shouldn't happen, but just in case
                 ERROR("pages directory did not exist, but errored on creation.");
                 ERROR(e.getMessage());
-                return false;   //TODO decide if this should actually return false
+                return false;
             }
         }
 
@@ -123,7 +119,7 @@ public class FileSystem {
             } catch (IOException e) {  // shouldn't happen, but just in case
                 ERROR("tabs directory did not exist, but errored on creation.");
                 ERROR(e.getMessage());
-                return false;   //TODO decide if this should actually return false
+                return false;
             }
         }
 
@@ -134,7 +130,7 @@ public class FileSystem {
             } catch (IOException e) {  // shouldn't happen, but just in case
                 ERROR("catalog directory did not exist, but errored on creation.");
                 ERROR(e.getMessage());
-                return false;  //TODO ditto line 91
+                return false;
             }
         }
 
@@ -145,7 +141,7 @@ public class FileSystem {
 
     // ---------------------------- PAGE MANAGEMENT -------------------------------------------
     // makes large use of  java.nio.file.Files: http://tutorials.jenkov.com/java-nio/files.html
-    // would reccomend reading the docs
+    // would recommend reading the docs
 
     /**
      * Deletes a page file using the established page path in
