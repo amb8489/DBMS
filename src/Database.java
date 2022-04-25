@@ -83,15 +83,15 @@ public class Database {
                 try {
                     tempset = executeQuery(statement);
                 }
-                catch (Error e){
+                catch (Error | Exception e){
                     System.err.println("ERROR: There was an error executing the query.");
                 }
                 if(tempset != null) {
                     try {
                         Utilities.prettyPrintResultSet(tempset, false, 16);
                     }
-                    catch(Error e){
-                        System.err.println("ERROR: There was an error printing the query.");
+                    catch(Error | Exception e){
+                        System.err.println("ERROR: There was an error while printing the query.");
                     }
                 }
                 else
@@ -104,7 +104,7 @@ public class Database {
                     else
                         System.err.println("ERROR");
                 }
-                catch (Error e){
+                catch (Error | Exception e){
                     System.err.println("ERROR");
                 }
             }
